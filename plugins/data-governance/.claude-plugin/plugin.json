@@ -1,0 +1,7 @@
+{
+  "name": "data-governance",
+  "version": "0.1.0",
+  "description": "Data governance for the platform: data contracts, catalog & lineage, access control, classification, retention and quality SLAs",
+  "author": { "name": "Murat Öztürk" },
+  "license": "MIT"
+}
