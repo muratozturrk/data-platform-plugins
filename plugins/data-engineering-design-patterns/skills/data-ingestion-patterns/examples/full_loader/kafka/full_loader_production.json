@@ -1,0 +1,16 @@
+{
+  "name": "product-categories-full-loader",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "connection.url": "jdbc:postgresql://source-db:5432/mydb",
+    "connection.user": "user",
+    "connection.password": "${env:DB_PASSWORD}",
+    "table.whitelist": "product_categories",
+    "mode": "bulk",
+    "poll.interval.ms": "3600000",
+    "topic.prefix": "full_load_",
+    "transforms": "addTimestamp",
+    "transforms.addTimestamp.type": "org.apache.kafka.connect.transforms.InsertField$Value",
+    "transforms.addTimestamp.timestamp.field": "loaded_at"
+  }
+}

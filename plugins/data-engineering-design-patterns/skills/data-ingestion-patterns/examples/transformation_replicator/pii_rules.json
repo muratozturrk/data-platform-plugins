@@ -1,0 +1,17 @@
+{
+  "dataset": "devices",
+  "owner": "devices-team",
+  "default_action": "fail",
+  "columns": {
+    "device_id": {"action": "keep"},
+    "type": {"action": "keep"},
+    "version": {"action": "keep"},
+    "event_time": {"action": "keep"},
+    "user_id": {"action": "hash"},
+    "full_name": {"action": "expr", "expr": "SUBSTRING(full_name, 2, LENGTH(full_name))"},
+    "email": {"action": "mask"},
+    "ip": {"action": "drop"},
+    "latitude": {"action": "drop"},
+    "longitude": {"action": "drop"}
+  }
+}

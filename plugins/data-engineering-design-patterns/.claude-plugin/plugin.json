@@ -1,0 +1,10 @@
+{
+  "name": "data-engineering-design-patterns",
+  "version": "0.1.0",
+  "description": "Data pipeline design patterns as skills, agents and Spark/Kafka/Airflow code samples: ingestion, error management, idempotency, data value, flow, security, storage, quality, observability, integration",
+  "author": {
+    "name": "Murat Öztürk",
+    "url": "https://github.com/muratozturrk/data-platform-plugins"
+  },
+  "license": "MIT"
+}
