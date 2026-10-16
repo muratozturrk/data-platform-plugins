@@ -1,0 +1,10 @@
+{
+  "name": "spark-code-optimizer",
+  "version": "0.1.0",
+  "description": "PySpark code optimizer built on the sparkopt rule engine: joins, aggregations, I/O and partitioning, persistence (cache / localCheckpoint / checkpoint / StorageLevel), physical-plan analysis and complex workloads, with an offline CLI that turns a DataFrame profile or explain() plan into prioritized recommendations and code",
+  "author": {
+    "name": "Murat Öztürk",
+    "url": "https://github.com/muratozturrk/data-platform-plugins"
+  },
+  "license": "MIT"
+}

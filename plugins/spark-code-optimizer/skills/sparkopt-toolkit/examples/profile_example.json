@@ -1,0 +1,16 @@
+{
+  "row_count": 50000000,
+  "col_count": 14,
+  "estimated_mb": 8192,
+  "partition": {"count": 200, "skew_ratio": 5.5, "avg_rows": 250000, "max_rows": 1375000},
+  "lineage": {"depth": 12, "estimated_reuse_count": 3, "has_iterative_loop": false,
+              "has_streaming_source": false, "wide_transform_count": 3},
+  "memory": {"executor_memory_mb": 8192, "executor_count": 20},
+  "columns": {"user_id": {"dtype": "long", "null_ratio": 0.0, "distinct_count": 4200000},
+              "category": {"dtype": "string", "null_ratio": 0.02, "distinct_count": 120}},
+  "join_cols": ["user_id"],
+  "agg_cols": ["category"],
+  "right_table_bytes": 52428800,
+  "df_name": "orders_df",
+  "spark_parallelism": 400
+}
