@@ -4,8 +4,14 @@
 # kendi Claude Code marketplace reponuzu oluşturur.
 #
 # Kullanım:
-#   ./build-platform-plugins.sh [HEDEF_DIZIN]
+#   ./build-platform-plugins.sh [HEDEF_DIZIN] [--force]
 #   Varsayılan hedef: ./data-platform-plugins
+#   --force: upstream-lock.json'u yok say, tüm plugin'leri yeniden kopyala
+#
+# Artımlı çalışır: upstream ${XDG_CACHE_HOME:-~/.cache}/dpp-upstream-cache altında
+# kalıcı bir sparse clone olarak tutulur; sonraki çalıştırmalar yalnızca farkı
+# fetch eder. Her plugin'in upstream tree hash'i <hedef>/upstream-lock.json'a
+# yazılır; hash değişmeyen plugin'ler kopyalanmaz. (Gereksinim: bash 4+)
 #
 # Çıktı yapısı:
 #   <hedef>/
@@ -20,8 +26,14 @@
 #   └── README.md
 set -euo pipefail
 
-TARGET="${1:-./data-platform-plugins}"
+FORCE=0
+ARGS=()
+for a in "$@"; do
+  if [[ "$a" == "--force" ]]; then FORCE=1; else ARGS+=("$a"); fi
+done
+TARGET="${ARGS[0]:-./data-platform-plugins}"
 UPSTREAM="https://github.com/wshobson/agents.git"
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/dpp-upstream-cache"
 WORK="$(mktemp -d)"
 
 MARKET_NAME="data-platform-plugins"
@@ -59,24 +71,60 @@ PLUGINS=(
   "security-compliance:governance"
   "review-agent-governance:governance"
   "code-documentation:documentation"
+  # Software engineering
+  "developer-essentials:engineering"
+  "comprehensive-review:engineering"
+  "code-refactoring:engineering"
+  "git-pr-workflows:engineering"
 )
 
 count () { [[ -d "$1" ]] && ls -1 "$1" | wc -l || echo 0; }
 
 # ---------------------------------------------------------------------------
-echo "▶ Upstream klonlanıyor: $UPSTREAM"
-git clone --quiet --depth 1 "$UPSTREAM" "$WORK/upstream"
+# Kalıcı sparse clone: yalnızca listedeki plugin klasörleri (ve kök dosyalar) indirilir
+SPARSE=()
+for entry in "${PLUGINS[@]}"; do SPARSE+=("plugins/${entry%%:*}"); done
+if [[ -d "$CACHE/.git" ]]; then
+  echo "▶ Upstream güncelleniyor (yalnızca fark): $UPSTREAM"
+  if ! git -C "$CACHE" fetch --quiet --depth 1 origin HEAD; then
+    echo "git fetch başarısız (ağ bağlantısını kontrol edin); cache korunuyor: $CACHE" >&2
+    exit 1
+  fi
+  if ! { git -C "$CACHE" reset --quiet --hard FETCH_HEAD && git -C "$CACHE" sparse-checkout set "${SPARSE[@]}"; }; then
+    echo "  ⚠ cache bozuk, yeniden klonlanacak"
+    rm -rf "$CACHE"
+  fi
+fi
+if [[ ! -d "$CACHE/.git" ]]; then
+  echo "▶ Upstream ilk kez klonlanıyor (sparse): $UPSTREAM"
+  mkdir -p "$(dirname "$CACHE")"
+  git clone --quiet --depth 1 --filter=blob:none --sparse "$UPSTREAM" "$CACHE"
+  git -C "$CACHE" sparse-checkout set "${SPARSE[@]}"
+fi
 
 mkdir -p "$TARGET/plugins" "$TARGET/.claude-plugin"
 TARGET="$(cd "$TARGET" && pwd)"
 
+# Son kopyalanan upstream tree hash'leri; hash aynıysa plugin atlanır
+LOCK_FILE="$TARGET/upstream-lock.json"
+declare -A LOCK=()
+if [[ -f "$LOCK_FILE" && "$FORCE" -eq 0 ]]; then
+  while IFS=$'\t' read -r k v; do LOCK["$k"]="$v"; done < <(
+    sed -nE 's/^[[:space:]]*"([^"]+)":[[:space:]]*"([0-9a-f]+)".*/\1\t\2/p' "$LOCK_FILE")
+fi
+
 echo "▶ Plugin'ler kopyalanıyor → $TARGET/plugins"
 for entry in "${PLUGINS[@]}"; do
   name="${entry%%:*}"
-  src="$WORK/upstream/plugins/$name"
+  src="$CACHE/plugins/$name"
   dst="$TARGET/plugins/$name"
   if [[ ! -d "$src" ]]; then
     echo "  ⚠ upstream'de yok, atlandı: $name"
+    continue
+  fi
+  hash="$(git -C "$CACHE" rev-parse "HEAD:plugins/$name")"
+  if [[ -d "$dst" && "${LOCK[$name]:-}" == "$hash" ]]; then
+    printf "  = %-30s değişmedi\n" "$name"
     continue
   fi
   # Mevcut examples/ korunur, geri kalanı upstream'den tazelenir
@@ -101,7 +149,21 @@ gösteren kod örneklerini buraya koyun (ör. \`airflow/\`, \`dbt/\`, \`ci/\`).
 EOF
   a=$(count "$dst/agents"); c=$(count "$dst/commands"); s=$(count "$dst/skills")
   printf "  ✔ %-30s agents:%-2s commands:%-2s skills:%-2s\n" "$name" "$a" "$c" "$s"
+  LOCK["$name"]="$hash"
 done
+
+# Listeden çıkarılan plugin'ler lock'tan da düşer
+{
+  echo "{"
+  sep=""
+  for entry in "${PLUGINS[@]}"; do
+    name="${entry%%:*}"
+    [[ -n "${LOCK[$name]:-}" ]] || continue
+    printf '%s    "%s":  "%s"' "$sep" "$name" "${LOCK[$name]}"
+    sep=$',\n'
+  done
+  printf '\n}\n'
+} > "$LOCK_FILE"
 
 # ---------------------------------------------------------------------------
 # data-governance: upstream'de yok, sıfırdan iskelet
@@ -247,6 +309,8 @@ echo "▶ marketplace.json üretiliyor"
 CATS_FILE="$WORK/cats.txt"
 printf "%s\n" "${PLUGINS[@]}" > "$CATS_FILE"
 echo "data-governance:governance" >> "$CATS_FILE"
+echo "data-engineering-design-patterns:data" >> "$CATS_FILE"
+echo "spark-code-optimizer:data" >> "$CATS_FILE"
 
 python3 - "$TARGET" "$MARKET_NAME" "$OWNER_NAME" "$OWNER_URL" "$CATS_FILE" <<'PY'
 import json, sys, pathlib
@@ -285,7 +349,7 @@ PY
 # ---------------------------------------------------------------------------
 # README + lisans notu
 # ---------------------------------------------------------------------------
-cp "$WORK/upstream/LICENSE" "$TARGET/LICENSE-wshobson-agents" 2>/dev/null || true
+cp "$CACHE/LICENSE" "$TARGET/LICENSE-wshobson-agents" 2>/dev/null || true
 cat > "$TARGET/README.md" <<EOF
 # ${MARKET_NAME}
 
@@ -319,7 +383,7 @@ plugins/<plugin>/
 Upstream'den yeniden çekmek için \`./build-platform-plugins.sh .\` çalıştırın.
 \`data-governance\` ve \`examples/\` içerikleri script tarafından ezilmez.
 EOF
-cp "$0" "$TARGET/build-platform-plugins.sh" 2>/dev/null || true
+cp "$0" "$TARGET/$(basename "$0")" 2>/dev/null || true
 
 rm -rf "$WORK"
 echo "✅ Tamamlandı → $TARGET"

@@ -6,6 +6,12 @@
 .KULLANIM
   .\build-platform-plugins.ps1                       # .\data-platform-plugins oluşturur
   .\build-platform-plugins.ps1 -Target .             # mevcut repo içinde upstream'i tazeler
+  .\build-platform-plugins.ps1 -Target . -Force      # değişmemiş plugin'leri de yeniden kopyalar
+
+  Artımlı çalışır: upstream %LOCALAPPDATA%\dpp-upstream-cache altında kalıcı bir
+  sparse clone olarak tutulur; sonraki çalıştırmalar yalnızca farkı fetch eder.
+  Her plugin'in upstream tree hash'i <hedef>\upstream-lock.json'a yazılır; hash
+  değişmeyen plugin'ler kopyalanmaz.
 
   İlk çalıştırmada "running scripts is disabled" hatası alırsanız:
     Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
@@ -21,7 +27,8 @@
 param(
     [string]$Target    = ".\data-platform-plugins",
     [string]$OwnerName = "Murat Öztürk",
-    [string]$OwnerUrl  = ""          # boş bırakılırsa aşağıdaki GitHub kullanıcı adından üretilir
+    [string]$OwnerUrl  = "",         # boş bırakılırsa aşağıdaki GitHub kullanıcı adından üretilir
+    [switch]$Force                   # upstream-lock.json'u yok say, tüm plugin'leri yeniden kopyala
 )
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -62,6 +69,11 @@ $Plugins = [ordered]@{
     "security-compliance"         = "governance"
     "review-agent-governance"     = "governance"
     "code-documentation"          = "documentation"
+    # Software engineering
+    "developer-essentials"        = "engineering"
+    "comprehensive-review"        = "engineering"
+    "code-refactoring"            = "engineering"
+    "git-pr-workflows"            = "engineering"
 }
 
 # ---------------------------------------------------------------------------
@@ -86,19 +98,51 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 $Work = Join-Path $env:TEMP ("dpp-" + [guid]::NewGuid().ToString("N").Substring(0, 8))
 New-Item -ItemType Directory -Path $Work | Out-Null
 
-Write-Host "▶ Upstream klonlanıyor: $Upstream"
-git clone --quiet --depth 1 $Upstream (Join-Path $Work "upstream")
-if ($LASTEXITCODE -ne 0) { throw "git clone başarısız." }
+# Kalıcı sparse clone: yalnızca listedeki plugin klasörleri (ve kök dosyalar) indirilir
+$Cache  = Join-Path $env:LOCALAPPDATA "dpp-upstream-cache"
+$Sparse = @($Plugins.Keys | ForEach-Object { "plugins/$_" })
+if (Test-Path (Join-Path $Cache ".git")) {
+    Write-Host "▶ Upstream güncelleniyor (yalnızca fark): $Upstream"
+    git -C $Cache fetch --quiet --depth 1 origin HEAD
+    if ($LASTEXITCODE -ne 0) { throw "git fetch başarısız (ağ bağlantısını kontrol edin); cache korunuyor: $Cache" }
+    git -C $Cache reset --quiet --hard FETCH_HEAD
+    if ($LASTEXITCODE -eq 0) { git -C $Cache sparse-checkout set @Sparse }
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ⚠ cache bozuk, yeniden klonlanacak"
+        Remove-Item $Cache -Recurse -Force
+    }
+}
+if (-not (Test-Path (Join-Path $Cache ".git"))) {
+    Write-Host "▶ Upstream ilk kez klonlanıyor (sparse): $Upstream"
+    git clone --quiet --depth 1 --filter=blob:none --sparse $Upstream $Cache
+    if ($LASTEXITCODE -ne 0) { throw "git clone başarısız." }
+    git -C $Cache sparse-checkout set @Sparse
+    if ($LASTEXITCODE -ne 0) { throw "git sparse-checkout başarısız." }
+}
 
 New-Item -ItemType Directory -Path (Join-Path $Target "plugins") -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $Target ".claude-plugin") -Force | Out-Null
 $Target = (Resolve-Path $Target).Path
 
+# Son kopyalanan upstream tree hash'leri; hash aynıysa plugin atlanır
+$LockPath = Join-Path $Target "upstream-lock.json"
+$Lock = @{}
+if ((Test-Path $LockPath) -and -not $Force) {
+    (Get-Content $LockPath -Raw -Encoding UTF8 | ConvertFrom-Json).PSObject.Properties |
+        ForEach-Object { $Lock[$_.Name] = $_.Value }
+}
+
 Write-Host "▶ Plugin'ler kopyalanıyor → $Target\plugins"
 foreach ($name in $Plugins.Keys) {
-    $src = Join-Path $Work "upstream\plugins\$name"
+    $src = Join-Path $Cache "plugins\$name"
     $dst = Join-Path $Target "plugins\$name"
     if (-not (Test-Path $src)) { Write-Host "  ⚠ upstream'de yok, atlandı: $name"; continue }
+
+    $hash = (git -C $Cache rev-parse "HEAD:plugins/$name").Trim()
+    if ((Test-Path $dst) -and $Lock[$name] -eq $hash) {
+        Write-Host ("  = {0,-30} değişmedi" -f $name)
+        continue
+    }
 
     # Mevcut examples/ korunur, geri kalanı upstream'den tazelenir
     $keep = $null
@@ -131,7 +175,13 @@ gösteren kod örneklerini buraya koyun (ör. ``airflow/``, ``dbt/``, ``ci/``).
     $c = Count-Items (Join-Path $dst "commands")
     $s = Count-Items (Join-Path $dst "skills")
     Write-Host ("  ✔ {0,-30} agents:{1,-2} commands:{2,-2} skills:{3,-2}" -f $name, $a, $c, $s)
+    $Lock[$name] = $hash
 }
+
+# Listeden çıkarılan plugin'ler lock'tan da düşer
+$lockOut = [ordered]@{}
+foreach ($k in $Plugins.Keys) { if ($Lock.ContainsKey($k)) { $lockOut[$k] = $Lock[$k] } }
+Write-Utf8NoBom $LockPath (($lockOut | ConvertTo-Json) + "`n")
 
 # ---------------------------------------------------------------------------
 # data-governance: upstream'de yok, sıfırdan iskelet (varsa korunur)
@@ -281,6 +331,8 @@ Write-Host "▶ marketplace.json üretiliyor"
 $cats = @{}
 foreach ($k in $Plugins.Keys) { $cats[$k] = $Plugins[$k] }
 $cats["data-governance"] = "governance"
+$cats["data-engineering-design-patterns"] = "data"
+$cats["spark-code-optimizer"] = "data"
 
 $entries = @()
 foreach ($pdir in Get-ChildItem (Join-Path $Target "plugins") -Directory | Sort-Object Name) {
@@ -316,7 +368,7 @@ Write-Host "  ✔ $($entries.Count) plugin kaydedildi"
 # ---------------------------------------------------------------------------
 # README + lisans + script kopyası
 # ---------------------------------------------------------------------------
-$lic = Join-Path $Work "upstream\LICENSE"
+$lic = Join-Path $Cache "LICENSE"
 if (Test-Path $lic) { Copy-Item $lic (Join-Path $Target "LICENSE-wshobson-agents") }
 
 $repoSlug = $OwnerUrl -replace "^https://github.com/", ""
@@ -354,7 +406,10 @@ Upstream'den yeniden çekmek için ``.\build-platform-plugins.ps1 -Target .`` ç
 ``data-governance`` ve ``examples/`` içerikleri script tarafından ezilmez.
 "@
 
-Copy-Item $PSCommandPath (Join-Path $Target "build-platform-plugins.ps1") -Force
+$selfDst = Join-Path $Target "build-platform-plugins.ps1"
+if ([System.IO.Path]::GetFullPath($PSCommandPath) -ne [System.IO.Path]::GetFullPath($selfDst)) {
+    Copy-Item $PSCommandPath $selfDst -Force
+}
 
 Remove-Item $Work -Recurse -Force
 Write-Host "✅ Tamamlandı → $Target"
