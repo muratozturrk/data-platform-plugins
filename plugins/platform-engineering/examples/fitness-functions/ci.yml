@@ -1,0 +1,20 @@
+name: architecture-fitness
+on: [pull_request]
+jobs:
+  fitness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install import-linter jsonschema oasdiff-py pytest
+      - name: Dependency rules
+        run: lint-imports --config examples/fitness-functions/importlinter.ini
+      - name: No domain nouns / hard-coded environment in core
+        run: python examples/fitness-functions/forbidden_tokens.py src/platform/core
+      - name: Manifests validate against schema
+        run: python -c "import json,glob,yaml,jsonschema; s=json.load(open('schemas/v1/pipeline.json')); [jsonschema.validate(yaml.safe_load(open(p)), s) for p in glob.glob('examples/manifests/pipeline*.yaml')]"
+      - name: SPI contract tests against all registered plugins
+        run: pytest -q src/platform/sdk/testing
+      - name: Public API has no unannounced breaking change
+        run: oasdiff breaking docs/openapi/last-release.yaml docs/openapi/current.yaml --fail-on ERR

@@ -249,6 +249,17 @@
                         "category":  "operations"
                     },
                     {
+                        "name":  "platform-engineering",
+                        "source":  "./plugins/platform-engineering",
+                        "description":  "Build a data platform as a reusable, productizable product: platform-as-product thinking, config-driven design, microkernel/plugin architecture, multi-tenancy, versioned APIs/SDKs and automated architectural governance (fitness functions)",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk"
+                                   },
+                        "license":  "MIT",
+                        "category":  "platform"
+                    },
+                    {
                         "name":  "python-development",
                         "source":  "./plugins/python-development",
                         "description":  "Modern Python development with Python 3.12+, Django, FastAPI, async patterns, and production best practices",
@@ -295,6 +306,18 @@
                                    },
                         "license":  "MIT",
                         "category":  "data"
+                    },
+                    {
+                        "name":  "spark-property-based-testing",
+                        "source":  "./plugins/spark-property-based-testing",
+                        "description":  "Property-based testing for PySpark with Hypothesis: DataFrame strategies (nulls, skew, edge cases), schema and nested-type contract tests, Great Expectations 1.x content checks, transformation invariants (row counts, sums, idempotency, joins, windows), plus a bundled spark-prop-testing library with pytest plugin, CLI and HTML reports",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk",
+                                       "url":  "https://github.com/muratozturrk/data-platform-plugins"
+                                   },
+                        "license":  "MIT",
+                        "category":  "testing"
                     },
                     {
                         "name":  "tdd-workflows",

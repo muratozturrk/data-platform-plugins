@@ -333,6 +333,8 @@ foreach ($k in $Plugins.Keys) { $cats[$k] = $Plugins[$k] }
 $cats["data-governance"] = "governance"
 $cats["data-engineering-design-patterns"] = "data"
 $cats["spark-code-optimizer"] = "data"
+$cats["spark-property-based-testing"] = "testing"
+$cats["platform-engineering"] = "platform"
 
 $entries = @()
 foreach ($pdir in Get-ChildItem (Join-Path $Target "plugins") -Directory | Sort-Object Name) {

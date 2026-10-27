@@ -311,6 +311,8 @@ printf "%s\n" "${PLUGINS[@]}" > "$CATS_FILE"
 echo "data-governance:governance" >> "$CATS_FILE"
 echo "data-engineering-design-patterns:data" >> "$CATS_FILE"
 echo "spark-code-optimizer:data" >> "$CATS_FILE"
+echo "spark-property-based-testing:testing" >> "$CATS_FILE"
+echo "platform-engineering:platform" >> "$CATS_FILE"
 
 python3 - "$TARGET" "$MARKET_NAME" "$OWNER_NAME" "$OWNER_URL" "$CATS_FILE" <<'PY'
 import json, sys, pathlib

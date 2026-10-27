@@ -1,0 +1,19 @@
+apiVersion: platform.example/v1
+kind: Pipeline
+metadata:
+  name: landing-to-silver
+  owner: team-a            # domain owner; required by governance
+spec:
+  source: { ref: sources/erp-postgres }
+  loadStrategy: { type: incremental, key: updated_at }
+  transforms:
+    - plugin: sql-transform@v1
+      config: { file: silver/accounts.sql }
+  quality:
+    - plugin: expectations@v1
+      config: { suite: silver/accounts.yaml, onFailure: block }
+  sink: { ref: sinks/lakehouse-silver }
+  schedule: { cron: "0 * * * *", timezone: "${tenant.tz}" }
+  sla: { freshnessMinutes: 90 }
+# tenant, project and environment are NOT in this file: they come from TenantContext
+# and the config layers (defaults <- plugin <- tenant <- project <- env <- runtime).

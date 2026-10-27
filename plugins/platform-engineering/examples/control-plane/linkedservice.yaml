@@ -1,0 +1,11 @@
+apiVersion: platform.example/v1
+kind: LinkedService
+metadata: { name: erp-postgres, workspace: finance }
+spec:
+  type: postgres                           # plugin type → resolves to a SourceConnector/SinkConnector SPI impl
+  connectVia: { integrationRuntime: default-pool }
+  connection:
+    host: { fromConfig: environments.erp.host }      # resolved from the environment layer
+    database: erp
+    credentials: { secretRef: erp/postgres }          # Vault path under tenants/{tenant}/
+  options: { sslmode: require }

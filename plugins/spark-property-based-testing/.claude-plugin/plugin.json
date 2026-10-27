@@ -1,0 +1,10 @@
+{
+  "name": "spark-property-based-testing",
+  "version": "0.1.0",
+  "description": "Property-based testing for PySpark with Hypothesis: DataFrame strategies (nulls, skew, edge cases), schema and nested-type contract tests, Great Expectations 1.x content checks, transformation invariants (row counts, sums, idempotency, joins, windows), plus a bundled spark-prop-testing library with pytest plugin, CLI and HTML reports",
+  "author": {
+    "name": "Murat Öztürk",
+    "url": "https://github.com/muratozturrk/data-platform-plugins"
+  },
+  "license": "MIT"
+}

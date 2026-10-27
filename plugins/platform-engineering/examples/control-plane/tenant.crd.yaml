@@ -1,0 +1,64 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata: { name: tenants.platform.example }
+spec:
+  group: platform.example
+  scope: Cluster
+  names: { kind: Tenant, plural: tenants, singular: tenant }
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      subresources: { status: {} }
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [plan, region, isolation]
+              properties:
+                displayName: { type: string }
+                plan: { type: string, enum: [starter, team, enterprise] }
+                region: { type: string }
+                tz: { type: string, default: UTC }
+                identity:
+                  type: object
+                  properties:
+                    mode: { type: string, enum: [organization, realm], default: organization }
+                    idp: { type: object, properties: { type: {type: string}, issuer: {type: string}, emailDomains: {type: array, items: {type: string}} } }
+                isolation:
+                  type: object
+                  properties:
+                    storage:  { type: string, enum: [pool, bridge, silo], default: bridge }
+                    catalog:  { type: string, enum: [pool, bridge, silo], default: bridge }
+                    kafka:    { type: string, enum: [pool, bridge, silo], default: pool }
+                    compute:  { type: string, enum: [pool, bridge, silo], default: pool }
+                    olap:     { type: string, enum: [pool, bridge, silo], default: pool }
+                    bi:       { type: string, enum: [pool, silo], default: pool }
+                quotas:
+                  type: object
+                  properties:
+                    concurrentJobs: { type: integer }
+                    pipelines: { type: integer }
+                    kafkaProducerBytesPerSec: { type: integer }
+                    storageGiB: { type: integer }
+                    clickhouseQueriesPerHour: { type: integer }
+                features:
+                  type: object
+                  additionalProperties: { type: boolean }
+            status:
+              type: object
+              properties:
+                phase: { type: string }
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type: { type: string }      # KeycloakReady, VaultReady, StorageReady, CatalogReady, KafkaReady, SparkReady, AirflowReady, OpaReady, OpenMetadataReady, ClickHouseReady, SupersetReady, GrafanaReady
+                      status: { type: string }
+                      reason: { type: string }
+                      message: { type: string }
+                      lastTransitionTime: { type: string }

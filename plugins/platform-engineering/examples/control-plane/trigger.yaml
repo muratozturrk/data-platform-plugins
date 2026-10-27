@@ -1,0 +1,15 @@
+apiVersion: platform.example/v1
+kind: Trigger
+metadata: { name: hourly-landing, workspace: finance }
+spec:
+  type: schedule                         # schedule | event | tumblingWindow | manual
+  schedule: { cron: "0 * * * *", timezone: "${tenant.tz}" }
+  pipelines: [landing-to-silver]
+---
+apiVersion: platform.example/v1
+kind: Trigger
+metadata: { name: on-new-file, workspace: finance }
+spec:
+  type: event
+  event: { source: storage, linkedService: landing-adls, pathPrefix: inbox/, eventType: created }
+  pipelines: [landing-to-silver]

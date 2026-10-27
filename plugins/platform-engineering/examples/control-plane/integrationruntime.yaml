@@ -1,0 +1,19 @@
+apiVersion: platform.example/v1
+kind: IntegrationRuntime
+metadata: { name: default-pool, workspace: finance }
+spec:
+  type: platform                         # platform | remote (customer-hosted, like ADF self-hosted IR)
+  engines:
+    spark:
+      namespace: "${tenant}-spark"
+      resourceQuota: { cpu: "32", memory: 128Gi }
+    airflow: { pool: "${tenant}-default", slots: 8 }
+    trino: { resourceGroup: "${tenant}" }
+---
+apiVersion: platform.example/v1
+kind: IntegrationRuntime
+metadata: { name: onprem-dc1, workspace: finance }
+spec:
+  type: remote
+  registration: { tokenSecretRef: ir/onprem-dc1 }
+  capabilities: [copy, spark-sql]

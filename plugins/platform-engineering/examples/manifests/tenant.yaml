@@ -1,0 +1,18 @@
+apiVersion: platform.example/v1
+kind: Tenant
+metadata: { name: tenant-a }
+spec:
+  plan: team
+  region: eu-central-1
+  tz: Europe/Istanbul
+  isolation:
+    storage: silo        # dedicated bucket/prefix + credentials
+    compute: pool        # shared pool with concurrency limit below
+    catalog: bridge      # shared metastore, dedicated catalog
+  limits:
+    concurrentJobs: 4
+    pipelines: 50
+    rowsPerDay: 500000000
+  features:
+    incrementalTransforms: true
+    customPythonPlugins: false

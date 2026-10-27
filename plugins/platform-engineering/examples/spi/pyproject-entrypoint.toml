@@ -1,0 +1,8 @@
+# Plugin discovery via entry points. A tenant-provided plugin package declares:
+[project]
+name = "acme-platform-plugins"           # package name may be customer-specific; the SPI is not
+version = "0.1.0"
+dependencies = ["platform-sdk>=1,<2"]    # only the public SDK, never platform internals
+
+[project.entry-points."platform.plugins.source"]
+sap-odata-source = "acme_plugins.sap:SapODataSource"

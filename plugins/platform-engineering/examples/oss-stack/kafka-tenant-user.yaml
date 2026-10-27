@@ -1,0 +1,23 @@
+# One Kafka tenant boundary = one principal + prefix ACLs + quotas (Strimzi).
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: t-tenant-a
+  namespace: kafka
+  labels: { strimzi.io/cluster: platform-kafka, platform.example/tenant: tenant-a }
+spec:
+  authentication: { type: tls }
+  authorization:
+    type: simple
+    acls:
+      - resource: { type: topic, name: "t.tenant-a.", patternType: prefix }
+        operations: [Read, Write, Describe, Create]
+      - resource: { type: group, name: "t.tenant-a.", patternType: prefix }
+        operations: [Read]
+      - resource: { type: transactionalId, name: "t.tenant-a.", patternType: prefix }
+        operations: [Write, Describe]
+  quotas:
+    producerByteRate: 20971520      # 20 MiB/s
+    consumerByteRate: 41943040      # 40 MiB/s
+    requestPercentage: 30
+    controllerMutationRate: 10

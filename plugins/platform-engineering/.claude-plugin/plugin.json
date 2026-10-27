@@ -1,0 +1,8 @@
+{
+  "name": "platform-engineering",
+  "version": "0.1.0",
+  "description": "Build a data platform as a reusable, productizable product: platform-as-product thinking, config-driven design, microkernel/plugin architecture, multi-tenancy, versioned APIs/SDKs and automated architectural governance (fitness functions)",
+  "author": { "name": "Murat Öztürk" },
+  "license": "MIT",
+  "keywords": ["platform-engineering", "platform-as-product", "multi-tenancy", "microkernel", "config-driven", "fitness-functions", "data-platform"]
+}

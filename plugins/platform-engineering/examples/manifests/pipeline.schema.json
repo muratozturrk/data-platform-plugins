@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platform.example/schemas/v1/pipeline.json",
+  "title": "Pipeline v1",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": { "const": "platform.example/v1" },
+    "kind": { "const": "Pipeline" },
+    "metadata": {
+      "type": "object", "required": ["name", "owner"], "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9-]{3,63}$" },
+        "owner": { "type": "string" },
+        "labels": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "spec": {
+      "type": "object", "required": ["source", "sink"], "additionalProperties": false,
+      "properties": {
+        "source": { "$ref": "#/$defs/ref" },
+        "sink": { "$ref": "#/$defs/ref" },
+        "loadStrategy": {
+          "type": "object", "required": ["type"],
+          "properties": { "type": { "enum": ["full", "incremental", "cdc"] }, "key": { "type": "string" } }
+        },
+        "transforms": { "type": "array", "items": { "$ref": "#/$defs/pluginStep" } },
+        "quality": { "type": "array", "items": { "$ref": "#/$defs/pluginStep" } },
+        "schedule": {
+          "type": "object", "required": ["cron"],
+          "properties": { "cron": { "type": "string" }, "timezone": { "type": "string" } }
+        },
+        "sla": { "type": "object", "properties": { "freshnessMinutes": { "type": "integer", "minimum": 1 } } }
+      }
+    }
+  },
+  "$defs": {
+    "ref": { "type": "object", "required": ["ref"], "additionalProperties": false,
+             "properties": { "ref": { "type": "string", "pattern": "^(sources|sinks)/[a-z0-9-]+$" } } },
+    "pluginStep": { "type": "object", "required": ["plugin"], "additionalProperties": false,
+                    "properties": { "plugin": { "type": "string", "pattern": "^[a-z0-9-]+@v[0-9]+$" },
+                                    "config": { "type": "object" } } }
+  }
+}

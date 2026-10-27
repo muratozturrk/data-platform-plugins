@@ -1,0 +1,14 @@
+apiVersion: platform.example/v1
+kind: Registry
+metadata: { name: default }
+spec:
+  sources:
+    erp-postgres:
+      plugin: postgres-source@v1
+      connection: { secretRef: secrets/erp-postgres }   # resolved via SecretProvider SPI with tenant ctx
+      options: { schema: public, sslmode: require }
+  sinks:
+    lakehouse-silver:
+      plugin: lakehouse-sink@v1
+      location: { logical: silver }                     # physical path resolved by StorageProvider per tenant
+      format: delta

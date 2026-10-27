@@ -1,0 +1,18 @@
+apiVersion: platform.example/v1
+kind: Policy
+metadata: { name: silver-access, workspace: finance }
+spec:
+  subjects:
+    - role: analyst
+      grants: [{ dataset: silver/*, access: read }]
+    - role: engineer
+      grants: [{ dataset: silver/*, access: write }, { dataset: landing/*, access: read }]
+  masking:
+    - dataset: silver/accounts
+      columns: [{ name: iban, mask: last4 }, { name: email, mask: hash }]
+      unlessRole: pii-reader
+  retention:
+    - dataset: landing/*
+      days: 30
+# Compiled to: OPA data bundle (Trino/Airflow/Kafka), Polaris catalog grants, ClickHouse row policies/roles,
+# Superset RLS rules, OpenMetadata tags (PII) — by the Policy controller.

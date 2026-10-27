@@ -1,0 +1,81 @@
+# Capability → OSS component → how it is deployed → wave → default tenancy
+apiVersion: platform.example/v1
+kind: StackMap
+spec:
+  substrate:
+    kubernetes: { azure: AKS, onprem: [OpenShift, vanilla], operators: [Stackable, Strimzi, SparkOperator, Altinity] }
+    objectStorage: { azure: ADLSGen2, onprem: MinIO, other: S3 }
+  components:
+    - capability: identity
+      component: keycloak
+      deploy: keycloak-operator
+      wave: 1
+      tenancy: { default: pool, mechanism: organizations, silo: realm-per-tenant }
+    - capability: secrets
+      component: vault            # or OpenBao
+      deploy: vault-helm
+      wave: 1
+      tenancy: { default: pool, mechanism: "policy + path tenants/{tenant}/" }
+    - capability: table-catalog
+      component: polaris          # Iceberg REST catalog with credential vending
+      deploy: helm
+      wave: 1
+      tenancy: { default: bridge, mechanism: catalog-per-tenant, pool: namespace-per-tenant }
+    - capability: streaming
+      component: kafka
+      deploy: strimzi
+      wave: 1
+      tenancy: { default: pool, mechanism: "prefix t.{tenant}. + prefix ACL + quotas", silo: cluster-per-tenant }
+    - capability: batch-compute
+      component: spark
+      deploy: stackable-spark-operator
+      wave: 1
+      tenancy: { default: pool, mechanism: "namespace + ResourceQuota per tenant" }
+    - capability: orchestration
+      component: airflow
+      deploy: stackable-airflow-operator
+      wave: 1
+      tenancy: { default: pool, mechanism: "pools + DAG folder per tenant", silo: instance-per-tenant }
+    - capability: policy
+      component: opa
+      deploy: stackable-opa-operator
+      wave: 1
+      tenancy: { default: pool, mechanism: "tenant data bundle" }
+    - capability: metadata-lineage
+      component: openmetadata
+      deploy: helm
+      wave: 1
+      tenancy: { default: pool, mechanism: "domain + team per tenant" }
+    - capability: observability
+      component: [opentelemetry, prometheus, grafana, loki]
+      deploy: kube-prometheus-stack
+      wave: 1
+      tenancy: { default: pool, mechanism: "tenant label; Grafana org per tenant" }
+    - capability: sql-federation
+      component: trino
+      deploy: stackable-trino-operator
+      wave: 2
+      tenancy: { default: pool, mechanism: "OPA grants + resource groups" }
+    - capability: olap-serving
+      component: clickhouse
+      deploy: altinity-operator
+      wave: 2
+      tenancy: { default: pool, mechanism: "db + role + quota + row policy", silo: cluster-per-tenant }
+    - capability: bi
+      component: superset
+      deploy: stackable-superset-operator
+      wave: 2
+      tenancy: { default: pool, mechanism: "RLS + embedded guest tokens" }
+    - capability: sql-transform
+      component: dbt
+      deploy: compiled-by-control-plane
+      wave: 2
+      tenancy: { default: pool, mechanism: "project per workspace" }
+    - capability: quality
+      component: great-expectations
+      deploy: compiled-by-control-plane
+      wave: 2
+    - capability: portal
+      component: backstage
+      deploy: helm
+      wave: 2
