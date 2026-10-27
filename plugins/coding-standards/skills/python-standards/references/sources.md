@@ -1,0 +1,13 @@
+# Sources
+- PEP 8 — Style Guide for Python Code. https://peps.python.org/pep-0008/
+- PEP 257 (docstrings), PEP 484/526/563 (typing), PEP 621 (pyproject metadata).
+- Google Python Style Guide. https://google.github.io/styleguide/pyguide.html
+- Ruff rules reference and `ruff format` (Black-compatible). https://docs.astral.sh/ruff/rules/
+- mypy documentation, strict mode. https://mypy.readthedocs.io
+- Pytest good practices. https://docs.pytest.org/en/stable/explanation/goodpractices.html
+- Robert C. Martin, *Clean Code* (functions, comments, error handling chapters).
+- Dustin Boswell, Trevor Foucher, *The Art of Readable Code*.
+- Steve McConnell, *Code Complete* 2e (routines, defensive programming, layout).
+- Brett Slatkin, *Effective Python*, 2nd ed. Addison-Wesley, 2019.
+- Luciano Ramalho, *Fluent Python*, 2nd ed. O'Reilly, 2022.
+- Hypothesis documentation (property-based testing). https://hypothesis.readthedocs.io

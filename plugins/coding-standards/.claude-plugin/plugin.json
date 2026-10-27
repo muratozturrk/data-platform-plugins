@@ -1,0 +1,8 @@
+{
+  "name": "coding-standards",
+  "version": "0.1.0",
+  "description": "Coding standards for a data platform codebase: Python, SQL/dbt, PySpark, YAML/Kubernetes/Airflow config, TypeScript, error handling and logging, documentation, Git workflow; with reviewer and style-guide-author agents, lint/pre-commit setup and standards-review commands",
+  "author": { "name": "Murat Öztürk" },
+  "license": "MIT",
+  "keywords": ["coding-standards", "style-guide", "python", "sql", "pyspark", "ruff", "sqlfluff", "pre-commit", "conventional-commits"]
+}

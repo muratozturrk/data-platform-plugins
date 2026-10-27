@@ -1,0 +1,10 @@
+extends: default
+rules:
+  line-length: { max: 120, allow-non-breakable-inline-mappings: true }
+  indentation: { spaces: 2, indent-sequences: true }
+  document-start: { present: true }
+  truthy: { allowed-values: ["true", "false"] }
+  comments: { min-spaces-from-content: 1 }
+  key-duplicates: enable
+ignore: |
+  charts/**/templates/

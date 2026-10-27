@@ -1,0 +1,37 @@
+apiVersion: platform.example/v1
+kind: NamingScheme
+metadata: { name: default, version: 1 }
+spec:
+  tenant_id: { regex: "^t-[a-z0-9]{2,16}$", note: "short: it is a prefix component everywhere" }
+  assets:
+    python_function:  { case: snake,  regex: "^[a-z_][a-z0-9_]{2,40}$", banned_words: [data, info, tmp, helper, util, process, handle] }
+    python_class:     { case: pascal, regex: "^[A-Z][A-Za-z0-9]{2,40}$", banned_suffixes: [Manager, Helper, Util, Data, Info] }
+    sql_table:        { case: snake,  regex: "^(stg|int|fct|dim|mart)_[a-z0-9]+(__[a-z0-9_]+)?$|^[a-z][a-z0-9_]{1,62}$", plural: true, max_len: 63 }
+    sql_column:       { case: snake,  regex: "^_?[a-z][a-z0-9_]{0,62}$", suffix_rules: { timestamp: _at, date: _date, boolean_prefix: [is_, has_, can_], count: _count, fk: _id }, max_len: 63 }
+    dbt_staging:      { regex: "^stg_[a-z0-9]+__[a-z0-9_]+$" }
+    dbt_intermediate: { regex: "^int_[a-z0-9_]+__[a-z]+ed$" }
+    dbt_mart:         { regex: "^(fct|dim)_[a-z0-9_]+$" }
+    kafka_topic:      { regex: "^t-[a-z0-9]{2,16}\\.[a-z0-9-]+\\.[a-z0-9-]+\\.(?:[a-z-]+|cdc|snapshot|cmd|log)(?:\\.dlq)?\\.v[0-9]+$", max_len: 249, charset: "[a-zA-Z0-9._-]" }
+    consumer_group:   { regex: "^t-[a-z0-9]{2,16}\\.[a-z0-9-]+\\.[a-z0-9-]+$" }
+    airflow_dag_id:   { regex: "^t-[a-z0-9]{2,16}__[a-z0-9-]+__[a-z0-9-]+$", max_len: 250 }
+    airflow_task_id:  { regex: "^[a-z]+_[a-z0-9_]+$" }
+    manifest_name:    { regex: "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$", max_len: 63, note: "DNS-1123 label" }
+    k8s_namespace:    { regex: "^(t-[a-z0-9]{2,16}|platform)-[a-z0-9-]+$", max_len: 63 }
+    k8s_resource:     { regex: "^[a-z0-9]([a-z0-9-]{0,251}[a-z0-9])?$", max_len: 253 }
+    helm_release:     { regex: "^(t-[a-z0-9]{2,16}-)?[a-z0-9-]+$", max_len: 53 }
+    vault_path:       { regex: "^tenants/t-[a-z0-9]{2,16}/[a-z0-9-]+/[a-z0-9-]+$" }
+    azure_resource:   { regex: "^(rg|aks|kv|evhns|synw|adf|dbw|st|vnet|snet|id|law)-?[a-z0-9-]+$", note: "CAF abbreviations; storage accounts without hyphens 3-24 chars" }
+    storage_container: { regex: "^[a-z0-9][a-z0-9-]{2,61}[a-z0-9]$" }
+    rest_path:        { regex: "^/v[0-9]+(/[a-z0-9-]+(/\\{[a-z_]+_id\\})?)+$", collections_plural: true }
+    json_field:       { case: snake,  regex: "^[a-z][a-z0-9_]{0,62}$" }
+    error_code:       { regex: "^[a-z]+\\.[a-z_]+$" }
+    event_name:       { regex: "^[a-z_]+\\.[a-z_]+ed$" }
+    cli_command:      { regex: "^platform [a-z-]+ [a-z-]+$" }
+    git_branch:       { regex: "^(feat|fix|chore|docs|refactor|test|ci|hotfix|release)/[a-z0-9-]+(-[0-9]+)?$" }
+    git_tag:          { regex: "^v[0-9]+\\.[0-9]+\\.[0-9]+(-[a-z0-9.]+)?$" }
+  cross_system_consistency:
+    - { concept: customer, name: customer_id, applies_to: [sql_column, json_field, kafka_key, manifest_field] }
+    - { concept: timestamp, suffix: _at, applies_to: [sql_column, json_field] }
+  forbidden_components:
+    data_names: [environment, team, person, date, version]   # version only in kafka_topic / rest_path
+    infra_names: [team, person]

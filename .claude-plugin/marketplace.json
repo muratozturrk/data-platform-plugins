@@ -82,6 +82,17 @@
                         "category":  "engineering"
                     },
                     {
+                        "name":  "coding-standards",
+                        "source":  "./plugins/coding-standards",
+                        "description":  "Coding standards for a data platform codebase: Python, SQL/dbt, PySpark, YAML/Kubernetes/Airflow config, TypeScript, error handling and logging, documentation, Git workflow; with reviewer and style-guide-author agents, lint/pre-commit setup and standards-review commands",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk"
+                                   },
+                        "license":  "MIT",
+                        "category":  "engineering"
+                    },
+                    {
                         "name":  "comprehensive-review",
                         "source":  "./plugins/comprehensive-review",
                         "description":  "Multi-perspective code analysis covering architecture, security, and best practices",
@@ -235,6 +246,17 @@
                                    },
                         "license":  "MIT",
                         "category":  "cicd"
+                    },
+                    {
+                        "name":  "naming-conventions",
+                        "source":  "./plugins/naming-conventions",
+                        "description":  "Research-backed naming conventions for code identifiers, data assets (layers, tables, columns, dbt models), Kafka topics, pipelines/DAGs, Kubernetes and Azure resources, APIs and a controlled glossary; with audit, scheme-design and rename-planning commands",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk"
+                                   },
+                        "license":  "MIT",
+                        "category":  "engineering"
                     },
                     {
                         "name":  "observability-monitoring",

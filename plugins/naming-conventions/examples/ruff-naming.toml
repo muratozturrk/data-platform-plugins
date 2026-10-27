@@ -1,0 +1,6 @@
+# Add to pyproject.toml under [tool.ruff.lint]
+[tool.ruff.lint]
+select = ["N", "E", "F", "I"]      # N = pep8-naming
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["pydantic.validator", "classmethod"]
+ignore-names = ["setUp", "tearDown"]

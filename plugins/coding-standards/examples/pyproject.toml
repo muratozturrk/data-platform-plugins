@@ -1,0 +1,46 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["E","F","W","I","N","UP","B","C4","SIM","RET","ARG","PTH","PL","RUF","T20","S","BLE","G","ERA","ASYNC","D"]
+ignore = ["D100","D104","D107","PLR2004","S101"]   # S101: asserts allowed in tests via per-file-ignores below
+pydocstyle = { convention = "google" }
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101","D","PLR0913","ARG"]
+"src/platform/plugins/**" = ["D"]
+
+[tool.ruff.lint.pylint]
+max-args = 5
+max-branches = 10
+max-statements = 40
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_any_generics = true
+check_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["platform.core.*", "platform.sdk.*"]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers --cov=src --cov-report=term-missing"
+markers = ["integration: needs running services", "slow: > 1s"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true

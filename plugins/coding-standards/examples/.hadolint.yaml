@@ -1,0 +1,6 @@
+failure-threshold: warning
+ignored: []
+trustedRegistries:
+  - ghcr.io
+  - quay.io
+  - registry.example.internal

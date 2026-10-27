@@ -1,0 +1,8 @@
+{
+  "name": "naming-conventions",
+  "version": "0.1.0",
+  "description": "Research-backed naming conventions for code identifiers, data assets (layers, tables, columns, dbt models), Kafka topics, pipelines/DAGs, Kubernetes and Azure resources, APIs and a controlled glossary; with audit, scheme-design and rename-planning commands",
+  "author": { "name": "Murat Öztürk" },
+  "license": "MIT",
+  "keywords": ["naming", "conventions", "data-platform", "dbt", "kafka", "kubernetes", "azure", "api"]
+}

@@ -1,0 +1,40 @@
+apiVersion: platform.example/v1
+kind: Glossary
+metadata: { name: default }
+spec:
+  terms:
+    tenant:
+      definition: Customer organisation isolated on the platform
+      canonical: tenant
+      banned_synonyms: [client, customer_org, org, account]
+      id: tenant_id
+    workspace:
+      definition: Project boundary inside a tenant
+      canonical: workspace
+      banned_synonyms: [project, factory, env]
+      id: workspace_id
+    pipeline:
+      definition: Declarative DAG of activities over datasets
+      canonical: pipeline
+      banned_synonyms: [job, flow, dag, workflow]
+      id: pipeline_id
+    run:
+      definition: One execution of a pipeline
+      canonical: run
+      banned_synonyms: [execution, instance, job_run]
+      id: run_id
+    dataset:
+      definition: Named, typed reference to data in a linked service
+      canonical: dataset
+      banned_synonyms: [table_ref, source_table, feed]
+    linked_service:
+      definition: Connection to an external system (ADF term kept on purpose)
+      canonical: linked_service
+      banned_synonyms: [connection, datasource, connector_instance]
+    integration_runtime:
+      definition: Compute pool that executes activities
+      canonical: integration_runtime
+      banned_synonyms: [cluster, pool, runtime, agent]
+  abbreviations:
+    allowed: [id, url, uri, api, db, cfg, env, prod, stg, dev, weu, neu, rg, aks, kv, st, pk, fk, uq, ix, dlq, cdc, utc, ms, iso, iban, vat, sku]
+    expansions: { dlq: dead letter queue, cdc: change data capture, weu: westeurope, neu: northeurope }

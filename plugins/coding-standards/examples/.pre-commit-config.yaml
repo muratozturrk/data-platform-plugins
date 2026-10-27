@@ -1,0 +1,40 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks: [{ id: end-of-file-fixer }, { id: trailing-whitespace }, { id: check-yaml, args: [--allow-multiple-documents] }, { id: check-json }, { id: check-added-large-files, args: [--maxkb=1024] }, { id: detect-private-key }]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.0
+    hooks: [{ id: ruff, args: [--fix] }, { id: ruff-format }]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.16.0
+    hooks: [{ id: mypy, additional_dependencies: [pydantic] }]
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 3.4.0
+    hooks: [{ id: sqlfluff-lint, additional_dependencies: [dbt-trino, sqlfluff-templater-dbt] }]
+  - repo: https://github.com/dbt-checkpoint/dbt-checkpoint
+    rev: v2.0.6
+    hooks:
+      - { id: check-model-has-description }
+      - { id: check-model-has-tests, args: [--tests, unique, not_null, "--"] }
+      - { id: check-script-ref-and-source }
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.37.1
+    hooks: [{ id: yamllint }]
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks: [{ id: hadolint }]
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.0
+    hooks: [{ id: gitleaks }]
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.22.0
+    hooks: [{ id: commitlint, stages: [commit-msg], additional_dependencies: ["@commitlint/config-conventional"] }]
+  - repo: local
+    hooks:
+      - id: naming-check
+        name: naming scheme check
+        entry: python tools/check_names.py naming-scheme.yaml .names-inventory.json
+        language: python
+        additional_dependencies: [pyyaml]
+        pass_filenames: false

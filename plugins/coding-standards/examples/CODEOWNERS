@@ -1,0 +1,8 @@
+# Two approvals required for these paths (enforced in branch protection)
+/src/platform/core/           @org/platform-core
+/src/platform/sdk/            @org/platform-core
+/schemas/                     @org/platform-core @org/data-governance
+/plugins/data-governance/     @org/data-governance
+/infra/                       @org/platform-ops
+/docs/standards/              @org/platform-core
+/naming-scheme.yaml           @org/platform-core

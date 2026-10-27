@@ -1,0 +1,25 @@
+name: standards
+on: [pull_request]
+jobs:
+  standards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: pip install pre-commit uv && npm ci
+      - name: pre-commit (same hooks as local)
+        run: pre-commit run --all-files --show-diff-on-failure
+      - name: type check
+        run: uv run mypy src
+      - name: tests
+        run: uv run pytest
+      - name: eslint
+        run: npx eslint . --max-warnings 0
+      - name: legacy ratchet
+        run: python tools/ratchet.py --baseline .standards-baseline.json
+      - name: commitlint (PR commits)
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.sha }}
