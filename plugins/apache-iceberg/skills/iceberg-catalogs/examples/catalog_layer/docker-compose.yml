@@ -1,0 +1,97 @@
+# Catalog lab stack: one engine container, three catalog services, one object store.
+#   rest     Apache Iceberg REST catalog reference server (JDBC/SQLite behind the REST API)
+#   polaris  Apache Polaris (REST catalog with RBAC, principals and catalog roles)
+#   nessie   Project Nessie (Git-like catalog: branches, tags, multi-table commits)
+# Modeled on the Iceberg Spark quickstart (https://iceberg.apache.org/spark-quickstart/),
+# the Polaris getting-started compose files (https://github.com/apache/polaris/tree/main/getting-started)
+# and the Nessie Spark guide (https://projectnessie.org/iceberg/spark/).
+# Local dev credentials come from env vars (defaults match config/s3.json; change both together).
+# Run with: docker compose -p iceberg-catalog-layer up -d --build
+# No container_name / host ports: other lab stacks can run in parallel on the same host.
+services:
+  spark-iceberg:
+    build: .
+    depends_on:
+      rest: {condition: service_started}
+      polaris: {condition: service_healthy}
+      nessie: {condition: service_started}
+      create-bucket: {condition: service_completed_successfully}
+    volumes:
+      - ./:/home/iceberg/labs
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      ICEBERG_REST_URI: http://rest:8181
+      POLARIS_URI: http://polaris:8181
+      POLARIS_ROOT_CLIENT_ID: ${POLARIS_ROOT_CLIENT_ID:-root}
+      POLARIS_ROOT_CLIENT_SECRET: ${POLARIS_ROOT_CLIENT_SECRET:-s3cr3t}
+      NESSIE_URI: http://nessie:19120
+      S3_ENDPOINT: http://seaweedfs:8333
+    networks: [lake_net]
+
+  rest:
+    image: apache/iceberg-rest-fixture:1.8.1   # keep in sync with the Spark Iceberg runtime (1.8.1)
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/rest/
+      # File-backed SQLite: the default in-memory DB is per connection and breaks concurrent commits.
+      CATALOG_URI: jdbc:sqlite:file:/tmp/iceberg_catalog.db
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://seaweedfs:8333
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    networks: [lake_net]
+
+  polaris:
+    # Apache Polaris 1.8.0 (Docker Hub "latest" on 2026-10-19; server built with Iceberg 1.11.0).
+    image: apache/polaris:latest
+    environment:
+      # The server itself writes table metadata files to S3.
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,${POLARIS_ROOT_CLIENT_ID:-root},${POLARIS_ROOT_CLIENT_SECRET:-s3cr3t}
+      polaris.realm-context.realms: POLARIS
+      quarkus.otel.sdk.disabled: "true"
+      JAVA_OPTS_APPEND: -Xms128m -Xmx512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8182/q/health/ready >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks: [lake_net]
+
+  nessie:
+    # Docker Hub only carries Nessie up to 0.76.6 (newer images are on ghcr.io/quay.io).
+    # 0.76.6 serves the Nessie API v2 (no Iceberg REST endpoint yet); in-memory version store.
+    image: projectnessie/nessie:0.76.6   # fix: pinned (was :latest = 0.76.6, last tag on Docker Hub, 2024-01-26)
+    environment:
+      JAVA_OPTS_APPEND: -Xms64m -Xmx384m
+      NESSIE_VERSION_STORE_TYPE: IN_MEMORY
+    networks: [lake_net]
+
+  seaweedfs:
+    # S3-compatible object store (MinIO images are no longer published on Docker Hub).
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -s3.iam.config=/etc/seaweedfs/iam.json -dir=/data -volume.max=100 -master.volumeSizeLimitMB=256"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+      - ./config/iam.json:/etc/seaweedfs/iam.json:ro
+    networks: [lake_net]
+
+  create-bucket:
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q warehouse; do
+        echo 's3.bucket.create -name warehouse' | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+      done; echo bucket warehouse ready
+      "
+    networks: [lake_net]
+
+networks:
+  lake_net:

@@ -1,0 +1,17 @@
+{
+  "catalogs": [
+    {"allow": "all"}
+  ],
+  "schemas": [
+    {"user": "admin", "owner": true},
+    {"owner": false}
+  ],
+  "tables": [
+    {"user": "admin", "privileges": ["SELECT", "INSERT", "DELETE", "UPDATE", "OWNERSHIP", "GRANT_SELECT"]},
+    {"user": "analyst", "schema": ".*_semantic", "privileges": ["SELECT"],
+     "columns": [{"name": "customer_email", "mask": "'***'"}]},
+    {"user": "m[0-9]+", "schema": ".*_semantic", "privileges": ["SELECT"],
+     "filter": "merchant_id = current_user"},
+    {"privileges": []}
+  ]
+}

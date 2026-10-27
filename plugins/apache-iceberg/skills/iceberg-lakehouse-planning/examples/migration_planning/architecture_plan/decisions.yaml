@@ -1,0 +1,65 @@
+# Hamerliva Bank component decisions.
+#   choice + rationale: from the reference scenario (source: scenario) and the road-show refinements (source: road-show).
+#   satisfies: assumption of this example (which requirement each decision is meant to meet).
+#   source: lab -> decision added for the audit-derived requirements of this example.
+decisions:
+  - id: D-STORAGE
+    component: storage
+    source: scenario
+    choice: Hybrid object storage - Amazon S3 for analytics, on-prem MinIO clusters in the EU and US data centers
+    rationale: S3-compatible everywhere; on-prem clusters keep regulated data in region (GDPR, SEC Rule 17a-4)
+    satisfies: [STO-01, STO-02]
+  - id: D-TIERING
+    component: storage
+    source: road-show
+    choice: Tiered storage strategy with capacity alerts and automated lifecycle policies
+    rationale: Added after IT operations raised hybrid storage cost concerns in the road show
+    satisfies: [STO-03]
+  - id: D-BATCH
+    component: ingestion
+    source: scenario
+    choice: Apache Spark batch jobs orchestrated by Apache Airflow
+    rationale: Retains existing Spark pipelines for reporting data, compliance logs, historical trades
+    satisfies: [ING-02, ING-03]
+  - id: D-STREAM
+    component: ingestion
+    source: scenario
+    choice: Apache Flink and Kafka Connect for append-heavy streams; corrections in controlled batch jobs
+    rationale: Streaming for market ticks and order events; update logic where validation is easier
+    satisfies: [ING-01]
+  - id: D-CONNECTORS
+    component: ingestion
+    source: scenario
+    choice: Connector-based ingestion tool (Fivetran, Airbyte or Qlik under evaluation)
+    rationale: Simplifies onboarding of APIs, SaaS platforms and operational databases
+    satisfies: []
+  - id: D-CONVERT
+    component: ingestion
+    source: lab
+    choice: CSV and JSON landing files converted by CTAS; existing Parquet registered in place with add_files
+    rationale: Lab audit finding F-ROW-FORMATS / F-PARQUET-IN-PLACE; verified by the pilot migration
+    satisfies: [STO-04]
+  - id: D-CATALOG
+    component: catalog
+    source: scenario
+    choice: Apache Polaris (Iceberg REST catalog) with RBAC and the corporate identity provider
+    rationale: REST spec for engine interoperability, one catalog across on-prem and cloud, commit log
+    satisfies: [CAT-01, CAT-02, CAT-03]
+  - id: D-FEDERATION
+    component: federation
+    source: scenario
+    choice: Dremio as primary query engine with semantic layer, Arrow Flight and REST APIs
+    rationale: Federates S3, HDFS and relational systems; Iceberg-native acceleration
+    satisfies: [FED-01, FED-02, FED-03, CON-03]
+  - id: D-BI
+    component: consumption
+    source: scenario
+    choice: Tableau connected to Dremio over ODBC
+    rationale: Governed self-service BI with shared semantic definitions and access controls
+    satisfies: [CON-01, CON-02]
+  - id: D-PYTHON
+    component: consumption
+    source: scenario
+    choice: Python workflows (PyIceberg, notebooks) on curated Iceberg datasets
+    rationale: Feature engineering and model training without custom ETL extracts
+    satisfies: [CON-04]

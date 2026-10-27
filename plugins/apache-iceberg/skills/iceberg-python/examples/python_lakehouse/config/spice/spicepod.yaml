@@ -1,0 +1,30 @@
+# Spice OSS runtime: federated SQL over the lab's Iceberg REST catalog and a local CSV file.
+# Docs: https://spiceai.org/docs/components/data-connectors/iceberg
+# The S3 keys below are LOCAL-ONLY dev credentials matching config/s3.json and the compose
+# defaults. Outside this sandbox, reference secrets instead of literals (Spice secret stores).
+version: v1
+kind: Spicepod
+name: python_lakehouse
+datasets:
+  - from: iceberg:http://rest:8181/v1/namespaces/spice_demo/tables/trips
+    name: trips
+    params:
+      iceberg_s3_endpoint: http://seaweedfs:8333
+      iceberg_s3_region: us-east-1
+      iceberg_s3_access_key_id: admin
+      iceberg_s3_secret_access_key: password
+      iceberg_s3_path_style_access: true
+  # Writable dataset on a separate table: Spice writes equality deletes (see platform_sdks/test_spice.py).
+  - from: iceberg:http://rest:8181/v1/namespaces/spice_demo/tables/trips_rw
+    name: trips_rw
+    access: read_write
+    params:
+      iceberg_s3_endpoint: http://seaweedfs:8333
+      iceberg_s3_region: us-east-1
+      iceberg_s3_access_key_id: admin
+      iceberg_s3_secret_access_key: password
+      iceberg_s3_path_style_access: true
+  - from: file:/app/drivers.csv
+    name: driver_ratings
+    params:
+      file_format: csv

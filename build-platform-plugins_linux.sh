@@ -315,6 +315,7 @@ echo "spark-property-based-testing:testing" >> "$CATS_FILE"
 echo "platform-engineering:platform" >> "$CATS_FILE"
 echo "naming-conventions:engineering" >> "$CATS_FILE"
 echo "coding-standards:engineering" >> "$CATS_FILE"
+echo "apache-iceberg:data" >> "$CATS_FILE"
 
 
 python3 - "$TARGET" "$MARKET_NAME" "$OWNER_NAME" "$OWNER_URL" "$CATS_FILE" <<'PY'

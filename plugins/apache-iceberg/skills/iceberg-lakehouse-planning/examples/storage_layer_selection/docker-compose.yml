@@ -1,0 +1,101 @@
+# Storage selection stack: one engine container, two S3 implementations, one REST catalog per store,
+# and a local volume that stands in for block storage.
+#   seaweedfs     SeaweedFS S3 gateway (main object store, Prometheus request counters on :9324)
+#   rustfs        RustFS (second S3 implementation, for S3 API compatibility comparison)
+#   rest          Iceberg REST catalog fixture writing to SeaweedFS
+#   rest-rustfs   Iceberg REST catalog fixture writing to RustFS
+# Modeled on the Iceberg Spark quickstart (https://iceberg.apache.org/spark-quickstart/).
+# Credentials and keys are local dev defaults: override them through the environment.
+# Run with: docker compose -p iceberg-storage-selection up -d --build
+# No container_name / host ports: other stacks can run in parallel on the same host.
+services:
+  spark-iceberg:
+    build: .
+    depends_on:
+      rest: {condition: service_started}
+      rest-rustfs: {condition: service_started}
+      create-bucket: {condition: service_completed_successfully}
+    volumes:
+      - ./:/home/iceberg/labs
+      - blockvol:/data/block          # local disk: the "block storage" warehouse of block_vs_object
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      ICEBERG_REST_URI: http://rest:8181
+      ICEBERG_REST_RUSTFS_URI: http://rest-rustfs:8181
+      S3_ENDPOINT: http://seaweedfs:8333
+      S3_METRICS_URL: http://seaweedfs:9324/metrics
+      RUSTFS_ENDPOINT: http://rustfs:9000
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfs-secret}
+    networks: [lake_net]
+
+  rest:
+    image: apache/iceberg-rest-fixture:1.8.1   # keep in sync with the Spark Iceberg runtime (1.8.1)
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/rest/
+      # File-backed SQLite: the default in-memory DB is per connection and breaks concurrent commits.
+      CATALOG_URI: jdbc:sqlite:file:/tmp/iceberg_catalog.db
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://seaweedfs:8333
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+      JAVA_TOOL_OPTIONS: -Xmx384m
+    networks: [lake_net]
+
+  rest-rustfs:
+    image: apache/iceberg-rest-fixture:1.8.1
+    environment:
+      AWS_ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      AWS_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY:-rustfs-secret}
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/rest/
+      CATALOG_URI: jdbc:sqlite:file:/tmp/iceberg_catalog.db
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://rustfs:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+      JAVA_TOOL_OPTIONS: -Xmx384m
+    networks: [lake_net]
+
+  seaweedfs:
+    # S3-compatible object store (MinIO images are no longer published on Docker Hub).
+    # Every bucket is a SeaweedFS collection with its own volumes: the tests create ~20 buckets,
+    # so the volume slots are raised (100 slots ran out and turned PUTs into HTTP 500).
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -volume.max=500 -master.volumeSizeLimitMB=64 -metricsPort=9324"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+    networks: [lake_net]
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfs-secret}
+      RUSTFS_VOLUMES: /data
+      # Local-dev-only static master key for SSE-S3 (base64, 32 bytes). Production: an external KMS.
+      RUSTFS_SSE_S3_MASTER_KEY: ${RUSTFS_SSE_S3_MASTER_KEY:-862W4/n+AfjiQd/L72KFYWweW52Y+C3zBSdlSTtIonU=}
+    networks: [lake_net]
+
+  create-bucket:
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      for b in warehouse rnd; do
+        until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q $$b; do
+          echo \"s3.bucket.create -name $$b\" | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+        done; echo bucket $$b ready;
+      done
+      "
+    networks: [lake_net]
+
+networks:
+  lake_net:
+
+volumes:
+  blockvol:

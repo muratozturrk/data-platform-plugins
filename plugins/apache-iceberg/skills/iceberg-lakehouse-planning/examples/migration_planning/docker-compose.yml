@@ -1,0 +1,82 @@
+# Migration planning stack: a "legacy" data platform to audit (PostgreSQL warehouse + Hive-style file lake on S3)
+# next to the target Iceberg lakehouse (Spark + Iceberg REST catalog + the same S3 store).
+# Based on the official Apache Iceberg Spark quickstart: https://iceberg.apache.org/spark-quickstart/
+# No container names and no published ports: several stacks can run side by side.
+# Credentials are local dev defaults: override them through the environment.
+# Run with: docker compose -p iceberg-migration-planning up -d --build
+services:
+  spark-iceberg:
+    build: .
+    depends_on:
+      rest: {condition: service_started}
+      postgres: {condition: service_healthy}
+      create-bucket: {condition: service_completed_successfully}
+    volumes:
+      - ./:/home/iceberg/labs
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      ICEBERG_REST_URI: http://rest:8181
+      S3_ENDPOINT: http://seaweedfs:8333
+      PG_DSN: host=postgres port=5432 dbname=legacy user=${PG_USER:-auditor} password=${PG_PASSWORD:-auditor}
+      PG_USER: ${PG_USER:-auditor}
+      PG_PASSWORD: ${PG_PASSWORD:-auditor}
+      PG_JDBC_URL: jdbc:postgresql://postgres:5432/legacy
+    networks: [iceberg_net]
+
+  postgres:
+    # The legacy warehouse. pg_stat_statements records the real query workload for the audit.
+    image: postgres:16-alpine
+    command: ["postgres", "-c", "shared_preload_libraries=pg_stat_statements", "-c", "pg_stat_statements.track=top"]
+    environment:
+      POSTGRES_DB: legacy
+      POSTGRES_USER: ${PG_USER:-auditor}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-auditor}
+    volumes:
+      - ./config/legacy-warehouse.sql:/docker-entrypoint-initdb.d/01-legacy-warehouse.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d legacy"]
+      interval: 3s
+      retries: 30
+    networks: [iceberg_net]
+
+  rest:
+    image: apache/iceberg-rest-fixture:1.8.1   # keep in sync with the Spark Iceberg runtime (1.8.1)
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/
+      # File-backed SQLite: the default in-memory DB is per-connection and breaks concurrent commits.
+      CATALOG_URI: jdbc:sqlite:file:/tmp/iceberg_catalog.db
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://seaweedfs:8333
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    networks: [iceberg_net]
+
+  seaweedfs:
+    # S3-compatible object store (MinIO images are no longer published on Docker Hub).
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -volume.max=100 -master.volumeSizeLimitMB=256"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+    networks: [iceberg_net]
+
+  create-bucket:
+    # "warehouse" = Iceberg lakehouse, "legacy-lake" = the existing file-based data lake to audit.
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      for b in warehouse legacy-lake; do
+        until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -qw $$b; do
+          echo s3.bucket.create -name $$b | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+        done; echo bucket $$b ready;
+      done
+      "
+    networks: [iceberg_net]
+
+networks:
+  iceberg_net:

@@ -1,0 +1,58 @@
+# Local Iceberg lakehouse: Spark + Iceberg REST catalog + SeaweedFS (S3 API).
+# Based on the official Apache Iceberg Spark quickstart:
+# https://iceberg.apache.org/spark-quickstart/
+# No container_name / published ports: several example stacks run side by side.
+# Run with: docker compose -p iceberg-core-features up -d --build
+services:
+  spark-iceberg:
+    build: .
+    depends_on:
+      rest: {condition: service_started}
+      create-bucket: {condition: service_completed_successfully}
+    volumes:
+      - ./:/home/iceberg/labs
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      ICEBERG_REST_URI: http://rest:8181
+      S3_ENDPOINT: http://seaweedfs:8333
+    networks: [iceberg_net]
+
+  rest:
+    image: apache/iceberg-rest-fixture:1.8.1   # keep in sync with the Spark Iceberg runtime (1.8.1)
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      CATALOG_WAREHOUSE: s3://warehouse/
+      # File-backed SQLite: the default in-memory DB is per-connection, which breaks
+      # concurrent commits.
+      CATALOG_URI: jdbc:sqlite:file:/tmp/iceberg_catalog.db
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://seaweedfs:8333
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    networks: [iceberg_net]
+
+  seaweedfs:
+    # S3-compatible object store (MinIO images are no longer published on Docker Hub).
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -volume.max=100 -master.volumeSizeLimitMB=256"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+    networks: [iceberg_net]
+
+  create-bucket:
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q warehouse; do
+        echo 's3.bucket.create -name warehouse' | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+      done; echo bucket warehouse ready
+      "
+    networks: [iceberg_net]
+
+networks:
+  iceberg_net:

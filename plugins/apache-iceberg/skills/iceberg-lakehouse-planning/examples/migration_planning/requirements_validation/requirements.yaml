@@ -1,0 +1,166 @@
+# Hamerliva Bank architectural requirements.
+#   source: scenario -> statement from the Hamerliva Bank reference scenario, quoted verbatim.
+#   source: lab      -> requirement derived from this audit's own findings (platform_audit).
+#   priority, stakeholders, traces, acceptance: assumptions of this example.
+# priority: critical | nice-to-have | future-facing
+# acceptance: probe (executable check, acceptance_probes) | metric + op + target (+ unit) | manual (described check)
+requirements:
+  # ---------------------------------------------------------------- storage
+  - id: STO-01
+    component: storage
+    source: scenario
+    statement: All regulated data collected in the EU must remain in regionally bound, on-premises storage.
+    priority: critical
+    stakeholders: [compliance, it_infrastructure]
+    traces: [S-COMPLIANCE, F-PII]
+    acceptance: {manual: Every catalog table classified as EU-regulated has a location on an EU on-prem bucket}
+  - id: STO-02
+    component: storage
+    source: scenario
+    statement: Storage systems must expose S3-compatible APIs to ensure integration with all query engines and ingestion frameworks.
+    priority: critical
+    stakeholders: [it_infrastructure, data_engineering]
+    traces: [S-IT]
+    acceptance: {probe: s3_api}
+  - id: STO-03
+    component: storage
+    source: scenario
+    statement: Cold data older than 60 days must be eligible for archival tiering, while remaining queryable through Iceberg metadata.
+    priority: future-facing
+    stakeholders: [it_infrastructure, business]
+    traces: [S-BUSINESS]
+    acceptance: {metric: cold_data_age_days, op: "<=", target: 60, unit: days}
+  - id: STO-04
+    component: storage
+    source: lab
+    statement: Row-based and semi-structured landing files must be converted to a columnar table format before analytical use.
+    priority: critical
+    stakeholders: [data_engineering, analytics]
+    traces: [F-ROW-FORMATS, F-SMALL-FILES]
+    acceptance: {manual: Pilot migration converts every CSV and JSON dataset to Parquet-backed Iceberg tables}
+
+  # ---------------------------------------------------------------- ingestion
+  - id: ING-01
+    component: ingestion
+    source: scenario
+    statement: >-
+      Streaming ingestion must handle late-arriving events and ensure consistent record updates when the same
+      logical entity is received multiple times, preserving deterministic results under concurrent and repeated writes.
+    priority: critical
+    stakeholders: [data_engineering, analytics]
+    traces: [S-ENG, S-ANALYTICS]
+    acceptance: {probe: idempotent_upsert}
+  - id: ING-02
+    component: ingestion
+    source: scenario
+    statement: Batch jobs must run nightly and be orchestrated through Apache Spark integrated with existing Airflow DAGs.
+    priority: nice-to-have
+    stakeholders: [data_engineering]
+    traces: [S-ENG]
+    acceptance: {metric: batch_runs_per_day, op: ">=", target: 1, unit: runs}
+  - id: ING-03
+    component: ingestion
+    source: scenario
+    statement: All ingestion pipelines must support schema evolution and emit lineage metadata for catalog registration.
+    priority: critical
+    stakeholders: [data_engineering, compliance]
+    traces: [S-ENG, F-SEMI-STRUCTURED]
+    acceptance: {manual: A new source column reaches the table without a pipeline stop; the run emits a lineage event}
+  - id: ING-04
+    component: ingestion
+    source: lab
+    statement: Every table that receives upserts must declare a unique row identifier in the table schema.
+    priority: critical
+    stakeholders: [data_engineering]
+    traces: [F-NO-PRIMARY-KEY]
+    acceptance: {probe: identifier_fields}
+
+  # ---------------------------------------------------------------- catalog
+  - id: CAT-01
+    component: catalog
+    source: scenario
+    statement: The catalog must support the Iceberg REST Catalog specification to ensure compatibility across all query engines.
+    priority: critical
+    stakeholders: [data_engineering, it_infrastructure]
+    traces: [S-ENG, S-IT]
+    acceptance: {probe: rest_catalog}
+  - id: CAT-02
+    component: catalog
+    source: scenario
+    statement: Versioned schema evolution must be enabled, with rollback support and user attribution for all changes.
+    priority: critical
+    stakeholders: [data_engineering, compliance]
+    traces: [S-ENG, S-COMPLIANCE]
+    acceptance: {probe: schema_evolution_rollback}
+  - id: CAT-03
+    component: catalog
+    source: scenario
+    statement: Catalog must support RBAC for dataset-level permissions and integrate with corporate identity providers (e.g., Active Directory).
+    priority: critical
+    stakeholders: [compliance, it_infrastructure]
+    traces: [S-COMPLIANCE, F-PII]
+    acceptance: {manual: A role without a grant gets 403 on loadTable; the grant is resolved from the IdP group}
+
+  # ---------------------------------------------------------------- federation
+  - id: FED-01
+    component: federation
+    source: scenario
+    statement: Query engines must support federated access across Iceberg tables, S3 buckets, and on-premises HDFS without data duplication.
+    priority: critical
+    stakeholders: [analytics, data_engineering]
+    traces: [S-ANALYTICS]
+    acceptance: {manual: One query joins an Iceberg table with a non-Iceberg source without a copy job}
+  - id: FED-02
+    component: federation
+    source: scenario
+    statement: The platform must provide a common semantic layer to define reusable business logic across federated queries.
+    priority: nice-to-have
+    stakeholders: [analytics, business]
+    traces: [S-ANALYTICS, F-WAREHOUSE-VIEWS]
+    acceptance: {manual: A metric defined once returns the same value from every BI tool}
+  - id: FED-03
+    component: federation
+    source: scenario
+    statement: Federated queries must enforce row- and column-level access controls consistently across all sources.
+    priority: critical
+    stakeholders: [compliance]
+    traces: [S-COMPLIANCE, F-PII]
+    acceptance: {manual: A masked column stays masked when the same data is reached through a federated source}
+
+  # ---------------------------------------------------------------- consumption
+  - id: CON-01
+    component: consumption
+    source: scenario
+    statement: Interactive dashboards must return query results within 5 seconds for typical analytical workloads.
+    priority: critical
+    stakeholders: [analytics, business]
+    traces: [S-ANALYTICS, F-HOT-DATASETS]
+    acceptance: {metric: dashboard_query_seconds_p95, op: "<=", target: 5, unit: seconds}
+  - id: CON-02
+    component: consumption
+    source: scenario
+    statement: Query engines must enforce row-level access policies defined in the catalog and aligned with enterprise roles.
+    priority: critical
+    stakeholders: [compliance, analytics]
+    traces: [S-COMPLIANCE]
+    acceptance: {manual: Two roles running the same query see different row sets}
+  - id: CON-03
+    component: consumption
+    source: scenario
+    statement: >-
+      The platform must provide standard programmatic and SQL-based access interfaces required by downstream tools,
+      including support for columnar data exchange where the tools depend on it.
+    priority: nice-to-have
+    stakeholders: [analytics]
+    traces: [S-ANALYTICS]
+    acceptance: {manual: JDBC/ODBC and Arrow Flight clients run the same query}
+  - id: CON-04
+    component: consumption
+    source: scenario
+    statement: >-
+      Data science users must be able to access and analyze Iceberg tables from Python-based workflows using tools
+      and libraries commonly adopted within the organization.
+    priority: nice-to-have
+    stakeholders: [analytics]
+    traces: [S-ANALYTICS, S-BUSINESS]
+    acceptance: {probe: python_access}

@@ -1,0 +1,23 @@
+# Hamerliva Bank stakeholder interview findings (reference scenario).
+# IDs are added so requirements can trace back to them.
+findings:
+  - id: S-ENG
+    stakeholder: data_engineering
+    observation: Fragile, manually intensive pipelines
+    challenge: Complex schema evolution, redundant regional pipelines, and operational overhead
+  - id: S-ANALYTICS
+    stakeholder: analytics
+    observation: Slow and inconsistent access to trusted data
+    challenge: Need for improved data freshness, clarity, and reduced manual preprocessing
+  - id: S-COMPLIANCE
+    stakeholder: compliance
+    observation: Strong regulatory compliance needs around data residency, encryption, and lineage
+    challenge: Lack of built-in auditability and dynamic access controls
+  - id: S-BUSINESS
+    stakeholder: business
+    observation: Demand for faster insights and lower analytics costs
+    challenge: Desire for new data-driven products is blocked by slow platform agility
+  - id: S-IT
+    stakeholder: it_infrastructure
+    observation: Scalability and operational complexity challenges
+    challenge: Hybrid cloud/on-prem needs; difficulties maintaining legacy on-prem resources

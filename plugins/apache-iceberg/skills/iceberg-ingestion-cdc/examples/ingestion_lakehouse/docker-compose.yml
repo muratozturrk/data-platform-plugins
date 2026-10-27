@@ -1,0 +1,84 @@
+# Local streaming lakehouse: Kafka (KRaft) -> Spark Structured Streaming -> Iceberg.
+# Based on the official Apache Iceberg Spark quickstart (https://iceberg.apache.org/spark-quickstart/)
+# and the apache/kafka Docker image docs (https://hub.docker.com/r/apache/kafka).
+# Run with: docker compose -p iceberg-ingestion-lakehouse up -d --build
+# No container_name / host ports: other local stacks can run in parallel on the same host.
+services:
+  spark-iceberg:
+    build: .
+    depends_on:
+      rest: {condition: service_started}
+      kafka: {condition: service_healthy}
+      create-bucket: {condition: service_completed_successfully}
+    volumes:
+      - ./:/home/iceberg/labs
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}          # local dev default, matches config/s3.json
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}  # local dev default
+      AWS_REGION: us-east-1
+      ICEBERG_REST_URI: http://rest:8181
+      S3_ENDPOINT: http://seaweedfs:8333
+      KAFKA_BOOTSTRAP: kafka:9092
+    networks: [lake_net]
+
+  kafka:
+    # Single-node KRaft broker (combined broker + controller), no ZooKeeper.
+    image: apache/kafka:3.9.1
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 4
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_HEAP_OPTS: -Xmx512m -Xms512m
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+    networks: [lake_net]
+
+  rest:
+    image: apache/iceberg-rest-fixture:1.8.1   # keep in sync with the Spark Iceberg runtime (1.8.1)
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}          # local dev default, matches config/s3.json
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}  # local dev default
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/
+      # File-backed SQLite: the default in-memory DB is per connection and breaks concurrent commits.
+      CATALOG_URI: jdbc:sqlite:file:/tmp/iceberg_catalog.db
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://seaweedfs:8333
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    networks: [lake_net]
+
+  seaweedfs:
+    # S3-compatible object store (MinIO images are no longer published on Docker Hub).
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -volume.max=100 -master.volumeSizeLimitMB=256"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+    networks: [lake_net]
+
+  create-bucket:
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q warehouse; do
+        echo 's3.bucket.create -name warehouse' | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+      done; echo bucket warehouse ready
+      "
+    networks: [lake_net]
+
+networks:
+  lake_net:

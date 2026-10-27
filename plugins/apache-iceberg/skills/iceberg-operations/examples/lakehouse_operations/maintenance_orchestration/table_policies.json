@@ -1,0 +1,20 @@
+{
+  "sales.orders_cdc": {
+    "small_file_threshold_mb": 20,
+    "max_small_files": 500,
+    "max_delete_files": 20,
+    "target_file_size_mb": 128,
+    "retain_last": 50,
+    "max_snapshot_age_hours": 24,
+    "max_snapshots": 500
+  },
+  "sales.monthly_report": {
+    "small_file_threshold_mb": 20,
+    "max_small_files": 2000,
+    "max_delete_files": 200,
+    "target_file_size_mb": 256,
+    "retain_last": 12,
+    "max_snapshot_age_hours": 2160,
+    "max_snapshots": 100
+  }
+}

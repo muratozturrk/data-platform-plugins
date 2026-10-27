@@ -1,0 +1,23 @@
+{
+  "rootGroups": [
+    {
+      "name": "global",
+      "softMemoryLimit": "100%",
+      "hardConcurrencyLimit": 50,
+      "maxQueued": 500,
+      "schedulingPolicy": "weighted",
+      "subGroups": [
+        {"name": "etl",   "softMemoryLimit": "50%", "hardConcurrencyLimit": 4,  "maxQueued": 50,  "schedulingWeight": 1},
+        {"name": "bi",    "softMemoryLimit": "40%", "hardConcurrencyLimit": 10, "maxQueued": 100, "schedulingWeight": 3},
+        {"name": "adhoc", "softMemoryLimit": "20%", "hardConcurrencyLimit": 1,  "maxQueued": 1,   "schedulingWeight": 1},
+        {"name": "other", "softMemoryLimit": "100%", "hardConcurrencyLimit": 20, "maxQueued": 200, "schedulingWeight": 1}
+      ]
+    }
+  ],
+  "selectors": [
+    {"user": "etl", "group": "global.etl"},
+    {"source": "(superset|tableau|powerbi).*", "group": "global.bi"},
+    {"clientTags": ["adhoc"], "group": "global.adhoc"},
+    {"group": "global.other"}
+  ]
+}

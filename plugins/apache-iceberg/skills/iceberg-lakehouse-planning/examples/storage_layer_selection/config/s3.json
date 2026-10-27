@@ -1,0 +1,19 @@
+{
+  "identities": [
+    {
+      "name": "admin",
+      "credentials": [{"accessKey": "admin", "secretKey": "password"}],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    },
+    {
+      "name": "analyst",
+      "credentials": [{"accessKey": "analyst", "secretKey": "analyst-secret"}],
+      "actions": ["Read:warehouse", "List:warehouse"]
+    },
+    {
+      "name": "rnd_team",
+      "credentials": [{"accessKey": "rnd", "secretKey": "rnd-secret"}],
+      "actions": ["Read:rnd", "Write:rnd", "List:rnd"]
+    }
+  ]
+}

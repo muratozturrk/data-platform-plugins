@@ -1,0 +1,107 @@
+# A pure-Python Iceberg lakehouse.
+# Python engines (PyIceberg, Polars, DuckDB, Daft) + Iceberg REST catalog + SeaweedFS (S3 API),
+# plus the open-source Spice and Dremio runtimes for the platform SDK tests.
+# Modeled on the Iceberg quickstart stack (https://iceberg.apache.org/spark-quickstart/) and the
+# PyIceberg docs (https://py.iceberg.apache.org/), with Spark removed.
+# No container_name / published ports: several stacks can run side by side.
+# Run with: docker compose -p iceberg-python-lakehouse up -d --build
+services:
+  runner:
+    build: ./runner
+    depends_on:
+      rest: {condition: service_started}
+      create-bucket: {condition: service_completed_successfully}
+    volumes:
+      - ./:/labs
+    environment:
+      ICEBERG_REST_URI: http://rest:8181
+      S3_ENDPOINT: http://seaweedfs:8333
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      # Default PyIceberg catalog for APIs that call load_catalog() without arguments
+      # (Polars write_iceberg with a table name).
+      PYICEBERG_CATALOG__DEFAULT__URI: http://rest:8181
+      PYICEBERG_CATALOG__DEFAULT__S3__ENDPOINT: http://seaweedfs:8333
+      PYICEBERG_CATALOG__DEFAULT__S3__ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      PYICEBERG_CATALOG__DEFAULT__S3__SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      PYICEBERG_CATALOG__DEFAULT__S3__REGION: us-east-1
+      PYICEBERG_CATALOG__DEFAULT__S3__PATH_STYLE_ACCESS: "true"
+      SPICE_FLIGHT_URL: grpc://spice:50051
+      SPICE_HTTP_URL: http://spice:8090
+    command: ["sleep", "infinity"]
+    networks: [lake_net]
+
+  spice:
+    # Spice.ai OSS runtime (Apache-2.0): Arrow Flight SQL on 50051, HTTP on 8090. No cloud account.
+    image: spiceai/spiceai:2.3.2
+    command: ["--http", "0.0.0.0:8090", "--flight", "0.0.0.0:50051"]
+    depends_on:
+      seed: {condition: service_completed_successfully}
+    volumes:
+      - ./config/spice/spicepod.yaml:/app/spicepod.yaml:ro
+      - ./config/spice/drivers.csv:/app/drivers.csv:ro
+    mem_limit: 1g
+    networks: [lake_net]
+
+  dremio:
+    # Dremio OSS (Apache-2.0): REST API on 9047, Arrow Flight on 32010. Bootstrapped by the tests.
+    image: dremio/dremio-oss:26.0.5
+    environment:
+      DREMIO_MAX_HEAP_MEMORY_SIZE_MB: "1536"
+      DREMIO_MAX_DIRECT_MEMORY_SIZE_MB: "1536"
+    mem_limit: 4g
+    networks: [lake_net]
+
+  seed:
+    # Creates the Iceberg tables named in the Spicepod before Spice starts.
+    build: ./runner
+    depends_on:
+      rest: {condition: service_started}
+      create-bucket: {condition: service_completed_successfully}
+    volumes:
+      - ./:/labs
+    environment:
+      ICEBERG_REST_URI: http://rest:8181
+      S3_ENDPOINT: http://seaweedfs:8333
+    command: ["sh", "-c", "until python -m common.seed_spice; do sleep 2; done"]
+    restart: "no"
+    networks: [lake_net]
+
+  rest:
+    image: apache/iceberg-rest-fixture:1.8.1
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/
+      # File-backed SQLite: the default in-memory DB is per-connection.
+      CATALOG_URI: jdbc:sqlite:file:/tmp/iceberg_catalog.db
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://seaweedfs:8333
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    mem_limit: 768m
+    networks: [lake_net]
+
+  seaweedfs:
+    # S3-compatible object store (MinIO images are no longer published on Docker Hub).
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -volume.max=100 -master.volumeSizeLimitMB=256"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+    networks: [lake_net]
+
+  create-bucket:
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q warehouse; do
+        echo 's3.bucket.create -name warehouse' | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+      done; echo bucket warehouse ready
+      "
+    networks: [lake_net]
+
+networks:
+  lake_net:

@@ -337,6 +337,7 @@ $cats["spark-property-based-testing"] = "testing"
 $cats["platform-engineering"] = "platform"
 $cats["naming-conventions"] = "engineering"
 $cats["coding-standards"] = "engineering"
+$cats["apache-iceberg"] = "data"
 
 $entries = @()
 foreach ($pdir in Get-ChildItem (Join-Path $Target "plugins") -Directory | Sort-Object Name) {

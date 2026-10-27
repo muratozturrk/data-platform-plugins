@@ -10,6 +10,18 @@
                  },
     "plugins":  [
                     {
+                        "name":  "apache-iceberg",
+                        "source":  "./plugins/apache-iceberg",
+                        "description":  "Apache Iceberg lakehouse skills, agents and runnable Spark/PyIceberg/Trino samples: table format and metadata, catalogs (REST, Polaris, Nessie), ingestion and CDC, federation and consumption, maintenance and metadata tables, operations (orchestration, WAP, disaster recovery), Python engines and lakehouse planning",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk",
+                                       "url":  "https://github.com/muratozturrk/data-platform-plugins"
+                                   },
+                        "license":  "MIT",
+                        "category":  "data"
+                    },
+                    {
                         "name":  "api-scaffolding",
                         "source":  "./plugins/api-scaffolding",
                         "description":  "REST and GraphQL API scaffolding, framework selection, backend architecture, and API generation",

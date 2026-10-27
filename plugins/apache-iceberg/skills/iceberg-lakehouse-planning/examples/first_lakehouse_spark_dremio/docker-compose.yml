@@ -1,0 +1,81 @@
+# First lakehouse: PostgreSQL (source) -> Spark (ingestion) -> Iceberg tables tracked by Nessie,
+# files on S3-compatible storage -> Dremio (query engine, Arrow Flight for BI).
+# Modeled on the official Iceberg Spark quickstart (https://iceberg.apache.org/spark-quickstart/).
+# SeaweedFS plays the MinIO role (MinIO images are no longer published on Docker Hub); pinned image tags;
+# no container_name and no published ports, so several stacks can run side by side.
+# Credentials are local dev defaults: override them through the environment.
+# Run with: docker compose -p iceberg-first-lakehouse up -d --build
+services:
+  spark-iceberg:
+    build: .
+    depends_on:
+      nessie: {condition: service_started}
+      postgres: {condition: service_healthy}
+      create-bucket: {condition: service_completed_successfully}
+    volumes:
+      - ./:/home/iceberg/labs
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-admin}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-password}
+      AWS_REGION: us-east-1
+      NESSIE_URI: http://nessie:19120/api/v2
+      S3_ENDPOINT: http://seaweedfs:8333
+      POSTGRES_JDBC_URL: jdbc:postgresql://postgres:5432/mydb
+      DREMIO_URL: http://dremio:9047
+      DREMIO_FLIGHT: grpc+tcp://dremio:32010
+      DREMIO_PASSWORD: ${DREMIO_PASSWORD:-password1}
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+    networks: [lakehouse-net]
+
+  nessie:
+    # Catalog with in-memory version store (state is lost on restart).
+    image: projectnessie/nessie:0.76.6
+    networks: [lakehouse-net]
+
+  seaweedfs:
+    # S3-compatible object store (MinIO role).
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -volume.max=100 -master.volumeSizeLimitMB=256"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+    networks: [lakehouse-net]
+
+  create-bucket:
+    # Creates the bucket `warehouse` (the manual console step in a MinIO setup).
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q warehouse; do
+        echo 's3.bucket.create -name warehouse' | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+      done; echo bucket warehouse ready
+      "
+    networks: [lakehouse-net]
+
+  postgres:
+    # Operational source system; the init script replaces a manual psql session.
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+    volumes:
+      - ./config/postgres-init.sql:/docker-entrypoint-initdb.d/01-fashion-sales.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d mydb"]
+      interval: 3s
+      retries: 30
+    networks: [lakehouse-net]
+
+  dremio:
+    image: dremio/dremio-oss:26.0.5
+    environment:
+      # Cap memory: other stacks share the Docker VM. Dremio's defaults size off host RAM.
+      DREMIO_MAX_HEAP_MEMORY_SIZE_MB: "2048"
+      DREMIO_MAX_DIRECT_MEMORY_SIZE_MB: "2048"
+    networks: [lakehouse-net]
+
+networks:
+  lakehouse-net:

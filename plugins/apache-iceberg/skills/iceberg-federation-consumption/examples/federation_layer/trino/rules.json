@@ -1,0 +1,34 @@
+{
+  "catalogs": [
+    {"user": "admin|engineer|etl", "catalog": ".*", "allow": "all"},
+    {"user": "analyst_.*|bi_dashboard", "catalog": "lake", "allow": "read-only"},
+    {"catalog": "system", "allow": "read-only"},
+    {"catalog": ".*", "allow": "none"}
+  ],
+  "schemas": [
+    {"user": "admin|engineer|etl", "owner": true},
+    {"user": "analyst_.*|bi_dashboard", "catalog": "lake", "schema": "semantic|accel", "owner": false}
+  ],
+  "tables": [
+    {"user": "admin|engineer|etl", "privileges": ["SELECT", "INSERT", "DELETE", "UPDATE", "OWNERSHIP", "GRANT_SELECT"]},
+    {
+      "user": "analyst_eu",
+      "catalog": "lake", "schema": "semantic", "table": "customer_360",
+      "privileges": ["SELECT"],
+      "filter": "region = 'EUROPE'",
+      "columns": [{"name": "email", "mask": "regexp_replace(email, '^[^@]+', '***')"}]
+    },
+    {"user": "analyst_.*|bi_dashboard", "catalog": "lake", "schema": "semantic|accel", "privileges": ["SELECT"]},
+    {"catalog": "system", "schema": "information_schema|metadata|runtime|jdbc", "privileges": ["SELECT"]}
+  ],
+  "functions": [
+    {"user": "admin|engineer", "catalog": "pg", "schema": "system", "function": "query", "privileges": ["EXECUTE"]},
+    {"user": "admin|engineer|etl", "catalog": "lake", "schema": "system", "privileges": ["EXECUTE"]}
+  ],
+  "procedures": [
+    {"user": "admin|engineer|etl", "privileges": ["EXECUTE"]}
+  ],
+  "system_information": [
+    {"user": "admin|engineer", "allow": ["read"]}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "apache-iceberg",
+  "version": "0.1.0",
+  "description": "Apache Iceberg lakehouse skills, agents and runnable Spark/PyIceberg/Trino samples: table format and metadata, catalogs (REST, Polaris, Nessie), ingestion and CDC, federation and consumption, maintenance and metadata tables, operations (orchestration, WAP, disaster recovery), Python engines and lakehouse planning",
+  "author": {
+    "name": "Murat Öztürk",
+    "url": "https://github.com/muratozturrk/data-platform-plugins"
+  },
+  "license": "MIT"
+}
