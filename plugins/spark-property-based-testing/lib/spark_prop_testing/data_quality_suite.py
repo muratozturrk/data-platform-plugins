@@ -19,8 +19,6 @@ from hypothesis import strategies as st
 
 from ._hypothesis                       import spark_settings
 from .schema.schema_validator          import SchemaValidator
-from .ge_integration.property_bridge   import GEPropertyValidator, SuiteValidationResult
-from .ge_integration.expectation_builder import ExpectationSuiteBuilder, ColumnExpectationSpec
 from .strategies.dataframe_strategy   import spark_dataframes, DataFrameConfig
 
 
@@ -39,6 +37,13 @@ class QualitySuiteConfig:
                      )
     max_examples:    int                           = 20
     custom_properties: List[DataFrameProperty]     = field(default_factory=list)
+    # Optional transformation under test: run_property_loop() generates inputs
+    # from input_schema, applies transform, and validates the OUTPUT.
+    transform:       Optional[Callable[[DataFrame], DataFrame]] = None
+    input_schema:    Optional[StructType]          = None   # default: expected_schema
+    # Hypothesis phases for run_property_loop(), e.g. (Phase.explicit, Phase.generate)
+    # to skip shrinking when you only need to know *that* the suite fails.
+    phases:          Optional[tuple]               = None
 
 
 @dataclass
@@ -47,7 +52,7 @@ class UnifiedQualityReport:
     suite_name:        str
     schema_results:    List[str]                   = field(default_factory=list)
     schema_valid:      List[bool]                  = field(default_factory=list)
-    ge_results:        List[SuiteValidationResult] = field(default_factory=list)
+    ge_results:        List[Any]                   = field(default_factory=list)   # SuiteValidationResult
     property_failures: List[str]                   = field(default_factory=list)
 
     @property
@@ -104,7 +109,11 @@ class DataQualityPropertySuite:
     def __init__(self, spark: SparkSession, config: QualitySuiteConfig):
         self._spark      = spark
         self._config     = config
-        self._ge_validator = GEPropertyValidator()
+        self._ge_validator = None
+        if config.ge_suite:
+            # Imported here: suites without ge_suite must not need GX installed.
+            from .ge_integration.property_bridge import GEPropertyValidator
+            self._ge_validator = GEPropertyValidator()
         self._schema_validator = (
             SchemaValidator(config.expected_schema, schema_name=config.suite_name)
             if config.expected_schema
@@ -147,19 +156,23 @@ class DataQualityPropertySuite:
         quality contracts hold FOR ALL POSSIBLE inputs, not just one.
         """
         report       = UnifiedQualityReport(suite_name=self._config.suite_name)
-        schema       = self._config.expected_schema
+        schema       = self._config.input_schema or self._config.expected_schema
         df_config    = self._config.df_config
         max_examples = self._config.max_examples
+        transform    = self._config.transform
+        last         = {}   # report of the last example run (the shrunk one on failure)
 
         if schema is None:
             raise ValueError(
-                "run_property_loop() requires expected_schema in config"
+                "run_property_loop() requires expected_schema (or input_schema) in config"
             )
 
-        @spark_settings(max_examples)
+        @spark_settings(max_examples, phases=self._config.phases)
         @given(df=spark_dataframes(self._spark, schema, df_config))
         def _inner(df):
-            single_report = self.run(df)
+            output = transform(df) if transform is not None else df
+            single_report = self.run(output)
+            last["report"] = single_report
             if not single_report.is_valid:
                 raise AssertionError(
                     f"Quality suite failed on generated DataFrame:\n"
@@ -171,5 +184,12 @@ class DataQualityPropertySuite:
         except Exception as e:
             # Hypothesis re-raises the shrunk (minimal) failing example.
             report.property_failures.append(str(e))
+
+        # Surface the per-layer results of the last example (on failure: the
+        # minimal failing one), so reports and the CLI table show them.
+        if "report" in last:
+            report.schema_results = list(last["report"].schema_results)
+            report.schema_valid   = list(last["report"].schema_valid)
+            report.ge_results     = list(last["report"].ge_results)
 
         return report

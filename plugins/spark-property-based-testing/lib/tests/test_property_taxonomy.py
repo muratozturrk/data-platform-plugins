@@ -21,7 +21,7 @@ from pyspark.sql import functions as F
 class TestPropertyTaxonomy:
 
     # CATEGORY 2: Idempotency of dropDuplicates
-    @settings(suppress_health_check=[HealthCheck.too_slow], max_examples=15)
+    @settings(max_examples=15)  # inherits the 'spark' profile's health checks
     @given(
         rows=st.lists(
             st.fixed_dictionaries({"id": st.integers(min_value=1, max_value=10)}),
@@ -37,7 +37,7 @@ class TestPropertyTaxonomy:
         assert once == twice, "dropDuplicates is not idempotent!"
 
     # CATEGORY 3: Metamorphic — doubling data doubles sum
-    @settings(suppress_health_check=[HealthCheck.too_slow], max_examples=15)
+    @settings(max_examples=15)  # inherits the 'spark' profile's health checks
     @given(
         rows=st.lists(
             st.fixed_dictionaries({

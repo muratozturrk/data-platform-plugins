@@ -134,6 +134,11 @@ class TestCompleteLibraryAPI:
             df_config=spt.DataFrameConfig(
                 min_rows=10, max_rows=100,
                 column_configs={
+                    # the GE suite requires txn_id >= 1 and unique
+                    "txn_id": spt.ColumnConfig(
+                        custom_strategy=st.integers(min_value=1, max_value=2**31 - 1),
+                        unique=True,
+                    ),
                     "amount": spt.ColumnConfig(
                         custom_strategy=st.floats(
                             min_value=0.01, max_value=4999.0,

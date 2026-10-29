@@ -5,7 +5,6 @@ Real production data is NOT uniformly distributed.
 This module provides strategies that mimic realistic distributions:
   - Skewed (a few values dominate → like Pareto/power-law)
   - Edge-case-heavy (boundary values, zero, negatives)
-  - Gaussian (bell curve around a mean)
 """
 
 from hypothesis import strategies as st

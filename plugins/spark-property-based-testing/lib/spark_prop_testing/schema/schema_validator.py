@@ -26,7 +26,7 @@ class SchemaValidator:
 
     Args:
         expected_schema:    The schema you designed/expect
-        strict_types:       If True, COMPATIBLE types raise errors (not warnings)
+        strict_types:       If True, any non-exact type (COMPATIBLE or COERCIBLE) is an error
         allow_extra_cols:   If True, extra columns are INFO not WARNING
         check_column_order: If True, column ordering is validated
         schema_name:        Label for error messages
@@ -80,7 +80,7 @@ class SchemaValidator:
                 result.add_error(
                     column=col_name,
                     message=(
-                        f"Required column '{col_name}' is missing from DataFrame"
+                        f"Column '{col_name}': required column is missing from DataFrame"
                     ),
                     suggestion=(
                         f"Add column '{col_name}' of type "
@@ -100,12 +100,12 @@ class SchemaValidator:
             if self.allow_extra_cols:
                 result.add_info(
                     column=col_name,
-                    message=f"Extra column '{col_name}' not in expected schema",
+                    message=f"Column '{col_name}': extra column not in expected schema",
                 )
             else:
                 result.add_warning(
                     column=col_name,
-                    message=f"Unexpected column '{col_name}' (strict mode)",
+                    message=f"Column '{col_name}': unexpected column (strict mode)",
                     suggestion=f"Remove '{col_name}' or update expected schema",
                 )
 
@@ -133,7 +133,7 @@ class SchemaValidator:
                     result.add_error(
                         column=col_name,
                         message=(
-                            f"Type mismatch (strict mode): "
+                            f"Column '{col_name}': type mismatch (strict mode): "
                             f"got {actual_field.dataType}, "
                             f"expected {expected_field.dataType}. {msg}"
                         ),
@@ -142,18 +142,28 @@ class SchemaValidator:
                     result.add_warning(
                         column=col_name,
                         message=(
-                            f"Compatible but non-exact type: "
+                            f"Column '{col_name}': compatible but non-exact type: "
                             f"got {actual_field.dataType}, "
                             f"expected {expected_field.dataType}. {msg}"
                         ),
                         suggestion=f"Cast to {expected_field.dataType} explicitly",
                     )
 
+            elif compat == Compatibility.COERCIBLE and self.strict_types:
+                result.add_error(
+                    column=col_name,
+                    message=(
+                        f"Column '{col_name}': lossy type conversion (strict mode): "
+                        f"{actual_field.dataType} → {expected_field.dataType}. {msg}"
+                    ),
+                    suggestion="Validate data range before casting",
+                )
+
             elif compat == Compatibility.COERCIBLE:
                 result.add_warning(
                     column=col_name,
                     message=(
-                        f"Lossy type conversion required: "
+                        f"Column '{col_name}': lossy type conversion required: "
                         f"{actual_field.dataType} → {expected_field.dataType}. "
                         f"{msg}"
                     ),
@@ -164,7 +174,7 @@ class SchemaValidator:
                 result.add_error(
                     column=col_name,
                     message=(
-                        f"Incompatible types: "
+                        f"Column '{col_name}': incompatible types: "
                         f"got {actual_field.dataType}, "
                         f"expected {expected_field.dataType}. {msg}"
                     ),
@@ -191,7 +201,7 @@ class SchemaValidator:
                 result.add_warning(
                     column=col_name,
                     message=(
-                        f"Nullable contract weakened: expected NOT NULL, "
+                        f"Column '{col_name}': nullable contract weakened: expected NOT NULL, "
                         f"got NULLABLE"
                     ),
                     suggestion=(
@@ -205,7 +215,7 @@ class SchemaValidator:
                 result.add_info(
                     column=col_name,
                     message=(
-                        f"Column '{col_name}' is stricter than expected "
+                        f"Column '{col_name}': stricter than expected "
                         f"(NOT NULL vs expected NULLABLE)"
                     ),
                 )

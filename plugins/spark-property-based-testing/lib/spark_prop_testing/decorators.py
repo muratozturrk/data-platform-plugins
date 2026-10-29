@@ -18,6 +18,7 @@ After (with decorators):
 
 import functools
 import inspect
+import os
 from typing import Callable, Optional
 
 from hypothesis import given
@@ -94,9 +95,9 @@ def prop(
         def my_transform(df):
             return df.filter(F.col("amount") > 0)
 
-    The decorated function is still the plain transformation. The CLI
-    (``spark-prop-test run``) and ``TransformationPropertyTester.from_prop``
-    read the registered properties and run them.
+    The decorated function is still the plain transformation.
+    ``TransformationPropertyTester.from_prop`` reads the registered properties
+    and runs them (the CLI runs YAML suites only).
     """
     def decorator(transform_fn: Callable) -> Callable:
         transform_fn._prop_properties    = list(standard_properties)
@@ -114,7 +115,7 @@ def _get_or_create_spark() -> SparkSession:
         return active
     return (
         SparkSession.builder
-        .master("local[2]")
+        .master(os.environ.get("SPARK_PROP_MASTER", "local[2]"))
         .config("spark.sql.adaptive.enabled", "false")
         .config("spark.sql.shuffle.partitions", "4")
         .config("spark.ui.enabled", "false")

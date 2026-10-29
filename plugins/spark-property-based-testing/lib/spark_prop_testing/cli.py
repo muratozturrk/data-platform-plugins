@@ -24,6 +24,11 @@ from rich import print as rprint
 console = Console()
 
 
+def _no_shrink():
+    from hypothesis import Phase
+    return (Phase.explicit, Phase.reuse, Phase.generate)
+
+
 @click.group()
 @click.version_option(package_name="spark-prop-testing", prog_name="spark-prop-test")
 def main():
@@ -58,7 +63,12 @@ def main():
     default=None,
     help="Run only this suite (by name)",
 )
-def run(config, max_examples, report, report_path, suite):
+@click.option(
+    "--no-shrink",
+    is_flag=True, default=False,
+    help="Skip shrinking (faster failures, non-minimal examples)",
+)
+def run(config, max_examples, report, report_path, suite, no_shrink):
     """Run property test suites from a YAML config file."""
 
     from .config import ConfigLoader
@@ -89,7 +99,7 @@ def run(config, max_examples, report, report_path, suite):
     console.print("Starting SparkSession...", style="dim")
     spark = (
         SparkSession.builder
-        .master("local[2]")
+        .master(os.environ.get("SPARK_PROP_MASTER", "local[2]"))
         .config("spark.ui.enabled", "false")
         .config("spark.sql.shuffle.partitions", "4")
         .getOrCreate()
@@ -104,8 +114,9 @@ def run(config, max_examples, report, report_path, suite):
 
         if suite_config.schema is None:
             console.print(
-                f"  [yellow]⚠ No schema loaded — skipping[/yellow]"
+                f"  [red]✗ No schema loaded (schema_module/schema_name) — suite not run[/red]"
             )
+            overall_passed = False
             continue
 
         if max_examples is not None:
@@ -118,6 +129,9 @@ def run(config, max_examples, report, report_path, suite):
             ge_suite=suite_config.ge_suite,
             df_config=suite_config.df_config,
             max_examples=suite_config.max_examples,
+            transform=suite_config.transform,
+            input_schema=suite_config.input_schema,
+            phases=_no_shrink() if no_shrink else None,
         )
 
         runner  = DataQualityPropertySuite(spark, quality_config)
@@ -175,7 +189,9 @@ def init(output):
 @click.option("--schema-name",   required=True)
 @click.option("--format", "file_format", default="parquet",
               type=click.Choice(["parquet", "csv", "json"]))
-def validate(file_path, schema_module, schema_name, file_format):
+@click.option("--strict-types", is_flag=True, default=False,
+              help="Treat lossless/lossy type differences as errors too")
+def validate(file_path, schema_module, schema_name, file_format, strict_types):
     """Validate an existing data file against a schema."""
     import importlib
     from .schema.schema_validator import SchemaValidator
@@ -192,7 +208,7 @@ def validate(file_path, schema_module, schema_name, file_format):
         reader = reader.option("header", "true").option("inferSchema", "true")
     df = reader.load(file_path)
 
-    validator = SchemaValidator(schema, schema_name=schema_name)
+    validator = SchemaValidator(schema, strict_types=strict_types, schema_name=schema_name)
     result    = validator.validate(df)
 
     console.print(result.summary())
@@ -238,3 +254,6 @@ def _print_suite_result(result):
     )
 
     console.print(table)
+
+if __name__ == "__main__":
+    main()

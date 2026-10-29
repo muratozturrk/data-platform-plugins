@@ -69,11 +69,17 @@ def check_type_compatibility(
     # ── Nested types: recurse (same class is NOT enough) ──────────────────────
     if isinstance(source, ArrayType) and isinstance(target, ArrayType):
         elem_compat, msg = check_type_compatibility(source.elementType, target.elementType)
+        if source.containsNull and not target.containsNull:
+            elem_compat = _worst(elem_compat, Compatibility.COERCIBLE)
+            msg += " (array elements nullable → NOT NULL)"
         return elem_compat, f"Array element: {msg}"
 
     if isinstance(source, MapType) and isinstance(target, MapType):
         key_c, key_msg = check_type_compatibility(source.keyType, target.keyType)
         val_c, val_msg = check_type_compatibility(source.valueType, target.valueType)
+        if source.valueContainsNull and not target.valueContainsNull:
+            val_c = _worst(val_c, Compatibility.COERCIBLE)
+            val_msg += " (map values nullable → NOT NULL)"
         return _worst(key_c, val_c), f"Map key: {key_msg} | Map value: {val_msg}"
 
     if isinstance(source, StructType) and isinstance(target, StructType):
@@ -128,6 +134,9 @@ def check_type_compatibility(
         if target.precision - target.scale >= src_int:
             return Compatibility.COMPATIBLE, f"{src_name} fits {target.simpleString()}"
         return Compatibility.COERCIBLE, f"{src_name} may overflow {target.simpleString()}"
+
+    if src_flt is not None and isinstance(target, DecimalType):
+        return Compatibility.COERCIBLE, f"{src_name} → {target.simpleString()} (rounding/overflow possible)"
 
     if isinstance(source, DecimalType) and (tgt_int is not None or tgt_flt is not None):
         return Compatibility.COERCIBLE, f"{source.simpleString()} → {tgt_name} (rounding/overflow possible)"

@@ -123,7 +123,9 @@ class SchemaEvolutionChecker:
 
             # Type change — compare full types, so decimal precision and
             # nested element/field changes are seen too.
-            if old_f.dataType.simpleString() != new_f.dataType.simpleString():
+            # DataType equality includes nested nullability (struct fields,
+            # containsNull, valueContainsNull); simpleString() does not.
+            if old_f.dataType != new_f.dataType:
                 compat, msg = check_type_compatibility(
                     old_f.dataType, new_f.dataType
                 )

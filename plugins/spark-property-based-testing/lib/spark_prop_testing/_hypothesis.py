@@ -21,7 +21,8 @@ from typing import Optional
 
 from hypothesis import HealthCheck, settings
 
-SPARK_HEALTH_CHECKS = [HealthCheck.too_slow, HealthCheck.data_too_large]
+# large_base_example: DataFrames with min_rows in the hundreds are legitimate
+SPARK_HEALTH_CHECKS = [HealthCheck.too_slow, HealthCheck.data_too_large, HealthCheck.large_base_example]
 MAX_EXAMPLES_ENV = "SPARK_PROP_MAX_EXAMPLES"
 
 
@@ -48,9 +49,13 @@ def effective_max_examples(requested: Optional[int]) -> int:
     return requested if requested is not None else 20
 
 
-def spark_settings(max_examples: Optional[int] = None) -> settings:
+def spark_settings(max_examples: Optional[int] = None, phases=None) -> settings:
+    kwargs = {}
+    if phases is not None:
+        kwargs["phases"] = phases   # e.g. (Phase.explicit, Phase.generate): no shrinking
     return settings(
         deadline=None,
         suppress_health_check=SPARK_HEALTH_CHECKS,
         max_examples=effective_max_examples(max_examples),
+        **kwargs,
     )

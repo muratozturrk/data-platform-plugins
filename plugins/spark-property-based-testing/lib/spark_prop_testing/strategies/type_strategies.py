@@ -43,11 +43,9 @@ def strategy_for_type(spark_type: DataType) -> st.SearchStrategy:
 
     # ── Floating point ───────────────────────────────────────────────────────
     if isinstance(spark_type, FloatType):
-        return st.floats(
-            min_value=-3.4e38, max_value=3.4e38,
-            allow_nan=False, allow_infinity=False,
-            width=32,
-        )
+        # width=32 without explicit bounds: ±3.4e38 are not exact float32
+        # values, and Hypothesis rejects them as bounds.
+        return st.floats(allow_nan=False, allow_infinity=False, width=32)
 
     if isinstance(spark_type, DoubleType):
         return st.floats(
@@ -59,12 +57,12 @@ def strategy_for_type(spark_type: DataType) -> st.SearchStrategy:
     if isinstance(spark_type, DecimalType):
         precision = spark_type.precision  # total digits
         scale     = spark_type.scale      # digits after decimal point
-        int_digits = precision - scale
-        max_int    = 10 ** int_digits - 1
+        # Largest value the type holds, e.g. decimal(5,2) → 999.99
+        max_value = Decimal(10 ** precision - 1).scaleb(-scale)
 
         return st.decimals(
-            min_value=Decimal(-max_int),
-            max_value=Decimal(max_int),
+            min_value=-max_value,
+            max_value=max_value,
             places=scale,
             allow_nan=False,
             allow_infinity=False,
@@ -94,8 +92,11 @@ def strategy_for_type(spark_type: DataType) -> st.SearchStrategy:
         # time.mktime(), which fails on Windows before 1970 ("mktime argument
         # out of range") and is ambiguous/non-existent around DST changes.
         # Aware values go through calendar.timegm and round-trip exactly.
+        # 1970-01-02 lower bound: PySpark converts collected timestamps with
+        # datetime.fromtimestamp, which raises OSError on Windows for negative
+        # epochs. Use a custom_strategy for pre-1970 data on Linux/macOS.
         return st.datetimes(
-            min_value=datetime(1900, 1, 1),
+            min_value=datetime(1970, 1, 2),
             max_value=datetime(2100, 12, 31),
             timezones=st.just(timezone.utc),
         )

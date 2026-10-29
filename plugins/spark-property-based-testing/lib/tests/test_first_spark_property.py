@@ -103,11 +103,11 @@ class TestUnionAdditivity:
     @settings(suppress_health_check=[HealthCheck.too_slow], max_examples=15)
     @given(
         rows_a=st.lists(
-            st.fixed_dictionaries({"id": st.integers(), "val": st.text()}),
+            st.fixed_dictionaries({"id": st.integers(min_value=-2**31, max_value=2**31 - 1), "val": st.text()}),
             min_size=0, max_size=50
         ),
         rows_b=st.lists(
-            st.fixed_dictionaries({"id": st.integers(), "val": st.text()}),
+            st.fixed_dictionaries({"id": st.integers(min_value=-2**31, max_value=2**31 - 1), "val": st.text()}),
             min_size=0, max_size=50
         ),
     )

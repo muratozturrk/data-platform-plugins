@@ -116,11 +116,12 @@ class TransformationPropertyTester:
         self._properties.append(prop)
         return self
 
-    def run(self, max_examples: Optional[int] = None) -> TransformationTestReport:
+    def run(self, max_examples: Optional[int] = None, phases: Optional[tuple] = None) -> TransformationTestReport:
         """
         Runs all registered properties across Hypothesis-generated inputs.
         Each property is tested independently. Never raises for property
         failures or transformation crashes; call ``report.assert_passed()``.
+        ``phases=(Phase.explicit, Phase.generate)`` skips shrinking.
         """
         report = TransformationTestReport(
             transformation_name=self._name
@@ -129,7 +130,7 @@ class TransformationPropertyTester:
             max_examples = self._default_max_examples
 
         for prop in self._properties:
-            result = self._test_one_property(prop, max_examples)
+            result = self._test_one_property(prop, max_examples, phases)
             report.results.append(result)
 
         return report
@@ -138,12 +139,13 @@ class TransformationPropertyTester:
         self,
         prop:         TransformationProperty,
         max_examples: int,
+        phases:       Optional[tuple] = None,
     ) -> PropertyTestResult:
 
         failures = []   # (message, rows) per failing example, in run order
         name = getattr(prop, "__name__", repr(prop))
 
-        @spark_settings(max_examples)
+        @spark_settings(max_examples, phases=phases)
         @given(
             input_df=spark_dataframes(
                 self._spark, self._schema, self._df_config

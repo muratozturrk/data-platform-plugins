@@ -226,5 +226,6 @@ class HTMLReporter:
             prop_fail_count=len(report.property_failures),
         )
 
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         Path(output_path).write_text(html, encoding="utf-8")
         return output_path

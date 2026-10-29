@@ -1,6 +1,6 @@
 
 """
-Full end-to-end test using all four chapters together.
+Full end-to-end test using all library layers together.
 Tests an e-commerce orders pipeline with:
   - Schema contracts
   - Content contracts (GE)
@@ -110,7 +110,8 @@ def build_orders_df_config():
         max_rows=200,
         column_configs={
             "order_id": ColumnConfig(
-                custom_strategy=st.integers(min_value=1, max_value=999_999)
+                custom_strategy=st.integers(min_value=1, max_value=999_999),
+                unique=True,   # primary key: the suite expects uniqueness
             ),
             "user_id": ColumnConfig(
                 custom_strategy=skewed_integers(

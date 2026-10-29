@@ -18,6 +18,10 @@ from pyspark.sql import SparkSession
 
 from ._hypothesis import MAX_EXAMPLES_ENV, register_spark_profiles
 
+# At import, not in pytest_configure: Hypothesis' own plugin loads
+# --hypothesis-profile before our configure hook runs.
+register_spark_profiles()
+
 
 def pytest_configure(config):
     """Registers the 'spark' / 'spark-ci' Hypothesis profiles and loads 'spark'
@@ -70,9 +74,11 @@ def spark(request) -> SparkSession:
     Auto-configured SparkSession for property testing.
     Injected automatically into all test functions with a 'spark' parameter.
     """
+    # SPARK_PROP_MASTER=local[1] helps on slow machines where parallel Python
+    # worker start-up exceeds Spark's 10 s accept timeout.
     session = (
         SparkSession.builder
-        .master("local[2]")
+        .master(os.environ.get("SPARK_PROP_MASTER", "local[2]"))
         .appName("spark-prop-testing")
         .config("spark.sql.adaptive.enabled", "false")
         .config("spark.sql.shuffle.partitions", "4")

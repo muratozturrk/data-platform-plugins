@@ -45,8 +45,6 @@ def spark():
 
 class TestPipelineCompositionProperties:
 
-    @settings(suppress_health_check=[HealthCheck.too_slow], max_examples=20)
-    @given(df=...)
     def test_pipeline_is_deterministic(self, spark):
         """
         INVARIANT: Running the pipeline twice on the same input

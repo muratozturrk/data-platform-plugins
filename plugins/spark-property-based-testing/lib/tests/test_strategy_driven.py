@@ -46,12 +46,6 @@ class TestRealisticOrderData:
     realistic distributions, null injection, and custom overrides.
     """
 
-    @settings(suppress_health_check=[HealthCheck.too_slow], max_examples=20)
-    @given(df=...)   # filled in setUp pattern below
-    def test_placeholder(self, spark):
-        pass  # replaced by real tests below
-
-
     def test_schema_preserved_after_projection(self, spark):
         """Property: selecting columns preserves column types."""
 
@@ -108,7 +102,7 @@ class TestRealisticOrderData:
 
         strategy = spark_dataframes(spark, ORDER_SCHEMA, config)
 
-        @settings(suppress_health_check=[HealthCheck.too_slow], max_examples=10)
+        @settings(suppress_health_check=[HealthCheck.too_slow, HealthCheck.large_base_example, HealthCheck.data_too_large], max_examples=10)
         @given(df=strategy)
         def inner(df):
             total      = df.count()

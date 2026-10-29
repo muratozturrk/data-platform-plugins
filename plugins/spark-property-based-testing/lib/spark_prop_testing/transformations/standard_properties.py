@@ -9,6 +9,7 @@ and raises AssertionError on violation.
 """
 
 import math
+from collections import Counter
 from typing import Callable, List, Optional
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
@@ -277,8 +278,12 @@ def make_idempotency_property(
             f"idempotency violated: f(f(x)) has {twice.count()} rows, f(x) has {total}"
         )
         common = [c for c in output_df.columns if c in twice.columns]
-        extra = twice.select(*common).exceptAll(output_df.select(*common)).count()
-        missing = output_df.select(*common).exceptAll(twice.select(*common)).count()
+        # ponytail: multiset compare on the driver (exceptAll hits a Spark 3.5
+        # analyzer bug after subset dropDuplicates); fine for test-sized data.
+        once_rows  = Counter(tuple(r) for r in output_df.select(*common).collect())
+        twice_rows = Counter(tuple(r) for r in twice.select(*common).collect())
+        extra   = sum((twice_rows - once_rows).values())
+        missing = sum((once_rows - twice_rows).values())
         assert extra == 0 and missing == 0, (
             f"idempotency violated: f(f(x)) differs from f(x) "
             f"({extra} rows only in f(f(x)), {missing} rows only in f(x))"
