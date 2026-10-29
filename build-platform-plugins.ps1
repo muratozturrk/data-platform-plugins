@@ -338,6 +338,7 @@ $cats["platform-engineering"] = "platform"
 $cats["naming-conventions"] = "engineering"
 $cats["coding-standards"] = "engineering"
 $cats["apache-iceberg"] = "data"
+$cats["apache-polaris"] = "data"
 
 $entries = @()
 foreach ($pdir in Get-ChildItem (Join-Path $Target "plugins") -Directory | Sort-Object Name) {

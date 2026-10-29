@@ -1,0 +1,102 @@
+# Deployment stack. Three Polaris servers side by side:
+#   polaris-quickstart  a typical quickstart setup: image 1.1.0-incubating-SNAPSHOT, root_user/my_secret_id,
+#                       FILE storage enabled, a data volume shared with the engine (here: the runner)
+#   polaris-mem         Polaris 1.8.0 with defaults: in-memory persistence, secure storage types only
+#   polaris-durable     Polaris 1.8.0 with relational-jdbc persistence on PostgreSQL, bootstrapped once by
+#                       polaris-admin-tool (the production path)
+# Run with: docker compose -p polaris-deploy up -d --build   (no container_name / host ports)
+services:
+  runner:
+    build: runner
+    depends_on:
+      polaris-quickstart: {condition: service_healthy}
+      polaris-mem: {condition: service_healthy}
+      polaris-durable: {condition: service_healthy}
+    volumes:
+      - ./:/labs
+      - icebergdata:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      COMPOSE_PROJECT: polaris-deploy
+    networks: [lake_net]
+
+  polaris-quickstart:
+    image: apache/polaris:1.1.0-incubating-SNAPSHOT
+    volumes:
+      - icebergdata:/data
+    environment:
+      AWS_REGION: us-east-1
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root_user,my_secret_id
+      polaris.realm-context.realms: POLARIS
+      quarkus.log.file.enable: "false"
+      quarkus.otel.sdk.disabled: "true"
+      polaris.features."DROP_WITH_PURGE_ENABLED": "true"
+      polaris.features."ALLOW_INSECURE_STORAGE_TYPES": "true"
+      polaris.features."SUPPORTED_CATALOG_STORAGE_TYPES": "[\"FILE\",\"S3\",\"GCS\",\"AZURE\"]"
+      polaris.readiness.ignore-severe-issues: "true"
+      JAVA_OPTS_APPEND: -Xms128m -Xmx384m
+    healthcheck: &health
+      test: ["CMD-SHELL", "curl -sf http://localhost:8182/q/health/ready >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks: [lake_net]
+
+  polaris-mem:
+    image: apache/polaris:latest
+    environment:
+      AWS_REGION: us-east-1
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root,s3cr3t
+      polaris.realm-context.realms: POLARIS
+      quarkus.otel.sdk.disabled: "true"
+      JAVA_OPTS_APPEND: -Xms128m -Xmx384m
+    healthcheck: *health
+    networks: [lake_net]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: polaris
+      POSTGRES_PASSWORD: polaris
+      POSTGRES_DB: polaris
+    volumes:
+      - ./config/postgres-init.sql:/docker-entrypoint-initdb.d/01-polaris-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U polaris"]
+      interval: 3s
+      retries: 30
+    networks: [lake_net]
+
+  polaris-bootstrap:
+    # One-off: create the schema and the root principal for realm POLARIS.
+    image: apache/polaris-admin-tool:latest
+    command: ["bootstrap", "--realm=POLARIS", "--credential=POLARIS,root,s3cr3t"]
+    environment: &durable_env
+      polaris.persistence.type: relational-jdbc
+      quarkus.datasource.db-kind: postgresql
+      quarkus.datasource.jdbc.url: jdbc:postgresql://postgres:5432/polaris
+      quarkus.datasource.username: polaris
+      quarkus.datasource.password: polaris
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: "no"
+    networks: [lake_net]
+
+  polaris-durable:
+    image: apache/polaris:latest
+    environment:
+      <<: *durable_env
+      AWS_REGION: us-east-1
+      polaris.realm-context.realms: POLARIS
+      quarkus.otel.sdk.disabled: "true"
+      JAVA_OPTS_APPEND: -Xms128m -Xmx384m
+    depends_on:
+      polaris-bootstrap: {condition: service_completed_successfully}
+    healthcheck: *health
+    networks: [lake_net]
+
+volumes:
+  icebergdata:
+
+networks:
+  lake_net:

@@ -1,0 +1,98 @@
+# Operating Polaris 1.8.0: metrics, traces, logs and the startup production-readiness checks.
+#   polaris-obs     metrics tags, OTLP traces, MDC fields, and the older JSON-log property name
+#   polaris-hard    hardened server (RSA token broker, rate limit, flags) with the current JSON-log property
+#   otel-collector  receives OTLP spans (debug exporter: spans appear in its log)
+#   prometheus      scrapes polaris-obs on the management port
+# Run with: docker compose -p polaris-ops up -d --build
+x-polaris: &polaris
+  image: apache/polaris:latest   # 1.8.0 on Docker Hub at the time of the test run
+  healthcheck:
+    test: ["CMD-SHELL", "curl -sf http://localhost:8182/q/health/ready >/dev/null"]
+    interval: 5s
+    timeout: 5s
+    retries: 60
+  networks: [lake_net]
+
+services:
+  runner:
+    build: runner
+    image: polaris-ops-runner:latest
+    depends_on:
+      polaris-obs: {condition: service_healthy}
+      polaris-hard: {condition: service_healthy}
+    volumes:
+      - ./:/labs
+      - /var/run/docker.sock:/var/run/docker.sock     # container logs
+    networks: [lake_net]
+
+  keys:
+    image: polaris-ops-runner:latest
+    build: runner
+    command: ["python", "/labs/config/make_keys.py"]
+    volumes:
+      - ./config:/labs/config:ro
+      - secrets:/secrets
+    restart: "no"
+    networks: [lake_net]
+
+  polaris-obs:
+    <<: *polaris
+    environment:
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root,s3cr3t
+      quarkus.otel.sdk.disabled: "false"
+      quarkus.otel.exporter.otlp.traces.endpoint: http://otel-collector:4317
+      quarkus.otel.resource.attributes: service.name=polaris,deployment.environment=prod
+      polaris.metrics.tags.environment: prod
+      polaris.metrics.tags.region: us-west-2
+      polaris.metrics.tags.application: my-polaris-instance
+      polaris.log.mdc.environment: prod
+      polaris.log.mdc.region: us-west-2
+      quarkus.log.console.json: "true"         # older property name: no effect on 1.8.0 (tested)
+      JAVA_OPTS_APPEND: -Xms128m -Xmx384m
+    networks: [lake_net]
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.116.1
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./config/otel-collector.yaml:/etc/otel/config.yaml:ro
+    networks: [lake_net]
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks: [lake_net]
+
+  # Same settings as polaris-hard in the polaris-configuration-and-cli examples.
+  polaris-hard:
+    <<: *polaris
+    depends_on:
+      keys: {condition: service_completed_successfully}
+    volumes:
+      - secrets:/secrets:ro
+    environment:
+      polaris.realm-context.realms: POLARIS,analytics
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root,s3cr3t;analytics,root,s3cr3t
+      polaris.authentication.token-broker.type: rsa-key-pair
+      polaris.authentication.token-broker.rsa-key-pair.public-key-file: /secrets/public.key
+      polaris.authentication.token-broker.rsa-key-pair.private-key-file: /secrets/private.key
+      polaris.rate-limiter.filter.type: default
+      polaris.rate-limiter.token-bucket.requests-per-second: "5"
+      polaris.rate-limiter.token-bucket.window: PT1S
+      polaris.tasks.max-concurrent-tasks: "200"
+      polaris.tasks.max-queued-tasks: "1000"
+      polaris.features.defaults."SUPPORTED_CATALOG_STORAGE_TYPES": '["S3","GCS","AZURE","FILE"]'
+      polaris.features."ALLOW_INSECURE_STORAGE_TYPES": "true"
+      polaris.features.realm-overrides."analytics"."SUPPORTED_CATALOG_STORAGE_TYPES": '["S3"]'
+      polaris.readiness.ignore-severe-issues: "true"
+      quarkus.log.console.json.enabled: "true"   # current JSON-log property
+      polaris.log.mdc.environment: prod
+      quarkus.otel.sdk.disabled: "true"
+      JAVA_OPTS_APPEND: -Xms128m -Xmx384m
+
+volumes:
+  secrets:
+
+networks:
+  lake_net:

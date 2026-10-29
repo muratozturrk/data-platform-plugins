@@ -1,0 +1,51 @@
+# RBAC model for three common use cases:
+#   multi-tenant environments, cross-team collaboration, compliance and sensitive data.
+# Catalog, principal-role and principal names get a run prefix when applied (shared lab server).
+# Catalog roles are local to their catalog. Grants are on namespaces where possible,
+# catalog-level only for admin roles.
+
+read: &read [NAMESPACE_LIST, TABLE_LIST, TABLE_READ_PROPERTIES, TABLE_READ_DATA, VIEW_LIST, VIEW_READ_PROPERTIES]
+write: &write [NAMESPACE_LIST, TABLE_LIST, TABLE_READ_PROPERTIES, TABLE_READ_DATA, TABLE_CREATE,
+               TABLE_WRITE_PROPERTIES, TABLE_WRITE_DATA, VIEW_LIST, VIEW_READ_PROPERTIES]
+
+catalogs:
+  marketing:       {namespaces: [campaigns], sensitive: false}
+  finance:         {namespaces: [ledger], sensitive: false}
+  cross_team_data: {namespaces: [shared], sensitive: false}
+  sensitive_data:  {namespaces: [customers], sensitive: true}
+  public_data:     {namespaces: [reference], sensitive: false}
+
+catalog_roles:
+  marketing:
+    marketing_admin:   [{catalog: [CATALOG_MANAGE_CONTENT]}]
+    marketing_analyst: [{namespace: campaigns, privileges: *read}]
+  finance:
+    finance_admin:     [{catalog: [CATALOG_MANAGE_CONTENT]}]
+    finance_analyst:   [{namespace: ledger, privileges: *read}]
+  cross_team_data:
+    shared_contributor: [{namespace: shared, privileges: *write}]
+    shared_viewer:      [{namespace: shared, privileges: *read}]
+  sensitive_data:
+    sensitive_data_admin:  [{catalog: [CATALOG_MANAGE_CONTENT]}]
+    sensitive_data_viewer: [{namespace: customers, privileges: *read}]
+  public_data:
+    public_viewer:     [{namespace: reference, privileges: *read}]
+
+principal_roles:
+  marketing_data_engineer: {marketing: [marketing_admin], cross_team_data: [shared_contributor], public_data: [public_viewer]}
+  marketing_analyst:       {marketing: [marketing_analyst], cross_team_data: [shared_viewer], public_data: [public_viewer]}
+  finance_data_engineer:   {finance: [finance_admin], cross_team_data: [shared_contributor], public_data: [public_viewer]}
+  finance_analyst:         {finance: [finance_analyst], cross_team_data: [shared_viewer], public_data: [public_viewer]}
+  compliance_officer:      {sensitive_data: [sensitive_data_viewer], public_data: [public_viewer]}
+  privacy_engineer:        {sensitive_data: [sensitive_data_admin]}
+
+principals:   # name -> principal roles (in production: synced from the IdP)
+  mia_mkt_eng:  [marketing_data_engineer]
+  max_mkt_bi:   [marketing_analyst]
+  fay_fin_eng:  [finance_data_engineer]
+  fin_bi_svc:   [finance_analyst]
+  cleo_comp:    [compliance_officer]
+  pia_privacy:  [privacy_engineer]
+
+# Roles allowed to touch catalogs marked sensitive (checked by the audit).
+sensitive_access_roles: [compliance_officer, privacy_engineer]

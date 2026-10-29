@@ -1,0 +1,7 @@
+# Scrape Polaris on the management port 8182 (not 8282).
+scrape_configs:
+  - job_name: 'polaris'
+    metrics_path: '/q/metrics'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['polaris-obs:8182']

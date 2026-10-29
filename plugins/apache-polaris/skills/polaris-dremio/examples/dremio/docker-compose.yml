@@ -1,0 +1,74 @@
+# Dremio + Polaris stack. Dremio needs Enterprise 26+ for the Iceberg REST Catalog and Snowflake
+# Open Catalog sources; the only Dremio image on Docker Hub is Dremio OSS, which lacks them
+# (connecting/). The tests therefore run the Dremio SQL on Dremio OSS against a Nessie
+# catalog on the same S3 bucket, and hand Dremio's tables to Polaris with registerTable.
+# Run with: docker compose -p polaris-dremio up -d --build   (no container_name / host ports)
+services:
+  runner:
+    build: runner
+    depends_on:
+      polaris: {condition: service_healthy}
+      create-buckets: {condition: service_completed_successfully}
+    volumes:
+      - ./:/labs
+    environment:
+      POLARIS_URI: http://polaris:8181
+      POLARIS_ROOT_CLIENT_ID: root
+      POLARIS_ROOT_CLIENT_SECRET: s3cr3t
+      S3_ENDPOINT: http://seaweedfs:8333
+      AWS_REGION: us-east-1
+      DREMIO_URL: http://dremio:9047
+    networks: [lake_net]
+
+  polaris:
+    image: apache/polaris:latest   # 1.8.0 on Docker Hub at the time of the test run
+    environment:
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password
+      AWS_REGION: us-east-1
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root,s3cr3t
+      polaris.realm-context.realms: POLARIS
+      quarkus.otel.sdk.disabled: "true"
+      JAVA_OPTS_APPEND: -Xms128m -Xmx512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8182/q/health/ready >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks: [lake_net]
+
+  nessie:
+    image: projectnessie/nessie:0.76.6   # in-memory version store
+    networks: [lake_net]
+
+  dremio:
+    image: dremio/dremio-oss:26.0.5
+    environment:
+      DREMIO_MAX_HEAP_MEMORY_SIZE_MB: "2048"
+      DREMIO_MAX_DIRECT_MEMORY_SIZE_MB: "2048"
+    networks: [lake_net]
+
+  seaweedfs:
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -s3.iam.config=/etc/seaweedfs/iam.json -dir=/data -volume.max=100 -master.volumeSizeLimitMB=64"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+      - ./config/iam.json:/etc/seaweedfs/iam.json:ro
+    networks: [lake_net]
+
+  create-buckets:
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      for b in warehouse landing; do
+        until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q $$b; do
+          echo \"s3.bucket.create -name $$b\" | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+        done;
+      done; echo buckets ready
+      "
+    networks: [lake_net]
+
+networks:
+  lake_net:

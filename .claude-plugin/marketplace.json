@@ -22,6 +22,18 @@
                         "category":  "data"
                     },
                     {
+                        "name":  "apache-polaris",
+                        "source":  "./plugins/apache-polaris",
+                        "description":  "Apache Polaris (Iceberg REST catalog) skills, agents and runnable Docker labs: catalog fundamentals and credential vending, access control (principals, principal roles, catalog roles, privileges), management and catalog REST APIs, federation with external catalogs and migration, OSS deployment, configuration and the polaris CLI, and engine integrations with Spark, Snowflake and Dremio",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk",
+                                       "url":  "https://github.com/muratozturrk/data-platform-plugins"
+                                   },
+                        "license":  "MIT",
+                        "category":  "data"
+                    },
+                    {
                         "name":  "api-scaffolding",
                         "source":  "./plugins/api-scaffolding",
                         "description":  "REST and GraphQL API scaffolding, framework selection, backend architecture, and API generation",

@@ -1,0 +1,33 @@
+{
+  "sts": {
+    "tokenDuration": "1h",
+    "maxSessionLength": "12h",
+    "issuer": "seaweedfs-sts",
+    "signingKey": "cG9sYXJpcy1sb2NhbC1zdHMtc2lnbmluZy1rZXktMzJjaCE="
+  },
+  "policy": {"defaultEffect": "Deny"},
+  "roles": [
+    {
+      "roleName": "lake-vendor",
+      "roleArn": "arn:aws:iam::000000000000:role/lake-vendor",
+      "trustPolicy": {
+        "Version": "2012-10-17",
+        "Statement": [{"Effect": "Allow", "Principal": {"AWS": "*"}, "Action": ["sts:AssumeRole"]}]
+      },
+      "attachedPolicies": ["WarehouseFullAccess"],
+      "description": "Role the catalog assumes to vend table-scoped credentials"
+    }
+  ],
+  "policies": [
+    {
+      "name": "WarehouseFullAccess",
+      "document": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {"Effect": "Allow", "Action": ["s3:*"], "Resource": ["arn:aws:s3:::warehouse", "arn:aws:s3:::warehouse/*", "arn:aws:s3:::finance-bucket", "arn:aws:s3:::finance-bucket/*"]},
+          {"Effect": "Allow", "Action": ["sts:ValidateSession"], "Resource": ["*"]}
+        ]
+      }
+    }
+  ]
+}

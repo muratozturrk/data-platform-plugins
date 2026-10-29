@@ -1,0 +1,69 @@
+# Polaris REST ecosystem: Polaris 1.8.0 with S3 + STS vending (SeaweedFS), Trino as a second REST
+# engine, and a Python runner (PyIceberg, Polars, DuckDB). Run with: docker compose -p polaris-rest-ecosystem up -d --build
+services:
+  runner:
+    build: runner
+    depends_on:
+      polaris: {condition: service_healthy}
+      create-bucket: {condition: service_completed_successfully}
+      trino: {condition: service_healthy}
+    volumes:
+      - ./:/labs
+    environment:
+      POLARIS_URI: http://polaris:8181
+      POLARIS_ROOT_CLIENT_ID: root
+      POLARIS_ROOT_CLIENT_SECRET: s3cr3t
+      S3_ENDPOINT: http://seaweedfs:8333
+      AWS_REGION: us-east-1
+    networks: [lake_net]
+
+  polaris:
+    image: apache/polaris:latest   # 1.8.0 on Docker Hub at the time of the test run
+    environment:
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password
+      AWS_REGION: us-east-1
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root,s3cr3t
+      polaris.realm-context.realms: POLARIS
+      quarkus.otel.sdk.disabled: "true"
+      JAVA_OPTS_APPEND: -Xms128m -Xmx512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8182/q/health/ready >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks: [lake_net]
+
+  trino:
+    image: trinodb/trino:476
+    volumes:
+      - ./config/trino/lake.properties:/etc/trino/catalog/lake.properties:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/v1/info | grep -q '\"starting\":false'"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    networks: [lake_net]
+
+  seaweedfs:
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -s3.iam.config=/etc/seaweedfs/iam.json -dir=/data -volume.max=100 -master.volumeSizeLimitMB=64"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+      - ./config/iam.json:/etc/seaweedfs/iam.json:ro
+    networks: [lake_net]
+
+  create-bucket:
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q warehouse; do
+        echo 's3.bucket.create -name warehouse' | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+      done; echo bucket ready
+      "
+    networks: [lake_net]
+
+networks:
+  lake_net:

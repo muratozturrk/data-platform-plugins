@@ -1,0 +1,97 @@
+# Spark + Polaris stack: a Polaris 1.1.0-incubating-SNAPSHOT server with FILE storage (service name
+# "polaris", URI http://polaris:8181/api/catalog), Spark 3.5.5, a shared FILE-storage volume and a
+# Polaris 1.8.0 server with S3 storage and STS for the vending track.
+# Run with: docker compose -p polaris-spark up -d --build   (no container_name / host ports)
+services:
+  polaris:
+    image: apache/polaris:1.1.0-incubating-SNAPSHOT
+    volumes:
+      - icebergdata:/data
+    environment:
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root_user,my_secret_id
+      polaris.realm-context.realms: POLARIS
+      quarkus.log.file.enable: "false"
+      quarkus.otel.sdk.disabled: "true"
+      polaris.features."DROP_WITH_PURGE_ENABLED": "true"
+      polaris.features."ALLOW_INSECURE_STORAGE_TYPES": "true"
+      polaris.features."SUPPORTED_CATALOG_STORAGE_TYPES": "[\"FILE\",\"S3\",\"GCS\",\"AZURE\"]"
+      polaris.readiness.ignore-severe-issues: "true"
+      JAVA_OPTS_APPEND: -Xms128m -Xmx512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8182/q/health/ready >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks: [lake_net]
+
+  # Polaris 1.8.0 for the S3 vending track: the 1.1.0 image drops endpoint / stsEndpoint /
+  # pathStyleAccess from the storage config and calls AWS STS, so it cannot vend for SeaweedFS.
+  polaris-latest:
+    image: apache/polaris:latest
+    environment:
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root_user,my_secret_id
+      polaris.realm-context.realms: POLARIS
+      quarkus.otel.sdk.disabled: "true"
+      polaris.readiness.ignore-severe-issues: "true"
+      JAVA_OPTS_APPEND: -Xms128m -Xmx512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8182/q/health/ready >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks: [lake_net]
+
+  spark:
+    build: spark
+    depends_on:
+      polaris: {condition: service_healthy}
+      polaris-latest: {condition: service_healthy}
+      create-bucket: {condition: service_completed_successfully}
+      data-perms: {condition: service_completed_successfully}
+    volumes:
+      - ./:/labs
+      - icebergdata:/data
+    environment:
+      AWS_REGION: us-east-1
+      S3_ENDPOINT: http://seaweedfs:8333
+    networks: [lake_net]
+
+  # A host folder would work too; a named volume starts root-owned, so make it
+  # writable once (the host-folder equivalent) for table_setup.py run by the spark user.
+  data-perms:
+    image: busybox:1.36
+    command: chmod 777 /data
+    volumes:
+      - icebergdata:/data
+
+  seaweedfs:
+    image: chrislusf/seaweedfs
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json -s3.iam.config=/etc/seaweedfs/iam.json -dir=/data -volume.max=100 -master.volumeSizeLimitMB=64"
+    volumes:
+      - ./config/s3.json:/etc/seaweedfs/s3.json:ro
+      - ./config/iam.json:/etc/seaweedfs/iam.json:ro
+    networks: [lake_net]
+
+  create-bucket:
+    image: chrislusf/seaweedfs
+    depends_on: [seaweedfs]
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      until echo 's3.bucket.list' | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q warehouse; do
+        echo 's3.bucket.create -name warehouse' | weed shell -master=seaweedfs:9333 >/dev/null 2>&1; sleep 2;
+      done; echo bucket ready
+      "
+    networks: [lake_net]
+
+volumes:
+  icebergdata:
+
+networks:
+  lake_net:
