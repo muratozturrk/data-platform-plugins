@@ -34,6 +34,18 @@
                         "category":  "data"
                     },
                     {
+                        "name":  "apache-superset",
+                        "source":  "./plugins/apache-superset",
+                        "description":  "Apache Superset (6.x) on the data platform: Kubernetes deployment (Stackable/Helm), Keycloak OIDC + role mapping, RLS and multi-tenant embedding with guest tokens, dashboards-as-code (superset-cli sync, GitOps), dataset/semantic-layer design over Trino/ClickHouse/Iceberg, caching/async performance, dashboard design and lifecycle (Few, Knaflic, Tufte, Wexler, Kirk, Desbarats), chart selection and verified chart-API limits, colour accessibility, privacy compliance, AI layer (governed MCP, NL2SQL), Superset internals, Extensions and MCP",
+                        "version":  "0.2.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk",
+                                       "url":  "https://github.com/muratozturrk/data-platform-plugins"
+                                   },
+                        "license":  "MIT",
+                        "category":  "data"
+                    },
+                    {
                         "name":  "api-scaffolding",
                         "source":  "./plugins/api-scaffolding",
                         "description":  "REST and GraphQL API scaffolding, framework selection, backend architecture, and API generation",

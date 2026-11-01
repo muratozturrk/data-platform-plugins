@@ -1,0 +1,7 @@
+# imported with: superset-cli <url> import-rls policies/rls.yaml  (control-plane generated)
+- name: "{{ tenant }}-tenant-fence"
+  description: Tenant isolation on shared gold datasets
+  filter_type: Regular
+  clause: "tenant_id = '{{ tenant }}'"
+  tables: [gold_sales.fct_orders, gold_sales.dim_customers]
+  roles: ["{{ tenant }}_gamma", "{{ tenant }}_alpha"]

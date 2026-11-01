@@ -1,0 +1,20 @@
+table_name: fct_orders
+uuid: 7a1e5a4c-1b2d-4f3e-8c9a-000000000001
+database_uuid: 2c7f4c4e-9f0a-4e2a-9d9c-{{ tenant | hash12 }}
+schema: gold_sales
+main_dttm_col: order_at
+description: One row per order. Source dbt model fct_orders; refreshed hourly.
+cache_timeout: 3600
+is_managed_externally: true
+external_url: https://openmetadata.platform.example/table/{{ tenant_catalog }}.gold_sales.fct_orders
+columns:
+  - { column_name: order_id, type: VARCHAR, verbose_name: Order ID }
+  - { column_name: customer_id, type: VARCHAR }
+  - { column_name: order_at, type: TIMESTAMP, is_dttm: true, verbose_name: Order time }
+  - { column_name: order_total_amount, type: DECIMAL, verbose_name: Order total }
+  - { column_name: is_cancelled, type: BOOLEAN }
+  - { column_name: tenant_id, type: VARCHAR }
+metrics:
+  - { metric_name: order_count, verbose_name: Orders, expression: COUNT(DISTINCT order_id), d3format: ",d", description: Distinct orders }
+  - { metric_name: revenue_amount, verbose_name: Revenue, expression: SUM(order_total_amount), d3format: ",.0f", description: Sum of order_total_amount }
+  - { metric_name: cancel_rate, verbose_name: Cancel rate, expression: "AVG(CASE WHEN is_cancelled THEN 1.0 ELSE 0.0 END)", d3format: ".1%" }

@@ -4,6 +4,7 @@ Bu repodaki plugin'lerin kullanım kılavuzları. Her plugin için bir dosya var
 
 | Plugin | Kategori | Özet | Doküman |
 | --- | --- | --- | --- |
+| apache-superset | data | Apache Superset 6.x: dağıtım, güvenlik/RLS, gömme, dashboards-as-code, dashboard tasarımı ve yaşam döngüsü, grafik seçimi, doğrulanmış API sınırları, gizlilik, AI katmanı; 16 skill, 4 agent, 7 komut | [apache-superset.md](apache-superset.md) |
 | apache-polaris | data | Apache Polaris REST katalog: erişim kontrolü, REST API, federation, kurulum, CLI, Spark/Snowflake/Dremio entegrasyonu; 9 skill ve Docker lab'ları | [apache-polaris.md](apache-polaris.md) |
 | data-engineering-design-patterns | data | Veri pipeline'ları için 77 tasarım pattern'inin skill, agent ve Spark/Kafka/Airflow örnekleri | [data-engineering-design-patterns.md](data-engineering-design-patterns.md) |
 | spark-code-optimizer | data | sparkopt kural motoruyla PySpark optimizasyonu: offline CLI, 7 skill, kodu yeniden yazan agent | [spark-code-optimizer.md](spark-code-optimizer.md) |

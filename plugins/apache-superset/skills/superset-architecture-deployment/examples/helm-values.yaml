@@ -1,0 +1,39 @@
+---
+image: { repository: registry.example.internal/platform/superset, tag: 6.1.0-platform.3, pullPolicy: IfNotPresent }
+supersetNode:
+  replicaCount: 2
+  connections:
+    redis_host: redis.platform.svc
+    db_host: postgres.platform.svc
+    db_name: superset_t_acme
+  resources: { requests: { cpu: 500m, memory: 1Gi }, limits: { cpu: "2", memory: 4Gi } }
+  command: ["/bin/sh", "-c", ". /app/pythonpath/superset_bootstrap.sh; /usr/bin/run-server.sh"]
+supersetWorker:
+  replicaCount: 2
+  command: ["/bin/sh", "-c", ". /app/pythonpath/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker -Q sql_lab,cache_warmup -c 4"]
+  resources: { requests: { cpu: 500m, memory: 1Gi }, limits: { cpu: "2", memory: 4Gi } }
+supersetCeleryBeat: { enabled: true }
+supersetCeleryFlower: { enabled: false }
+postgresql: { enabled: false }          # managed PostgreSQL
+redis: { enabled: false }               # platform Redis
+extraEnvRaw:
+  - name: SUPERSET_SECRET_KEY
+    valueFrom: { secretKeyRef: { name: t-acme-superset-secrets, key: secret-key } }
+  - name: KEYCLOAK_CLIENT_SECRET
+    valueFrom: { secretKeyRef: { name: t-acme-superset-oidc, key: client-secret } }
+extraConfigs:
+  # mounted into /app/pythonpath; imported by superset_config.py
+  platform_superset_config.py: ""   # rendered from superset_config.py (same folder)
+configOverrides:
+  platform: |
+    from platform_superset_config import *
+init:
+  createAdmin: false
+  loadExamples: false
+  initscript: |
+    superset db upgrade && superset init
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts: [t-acme-bi.platform.example]
+  tls: [{ secretName: t-acme-bi-tls, hosts: [t-acme-bi.platform.example] }]

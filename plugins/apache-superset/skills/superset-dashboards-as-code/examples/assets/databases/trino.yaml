@@ -1,0 +1,11 @@
+database_name: "{{ tenant }}-trino"
+uuid: 2c7f4c4e-9f0a-4e2a-9d9c-{{ tenant | hash12 }}      # stable per tenant; generated once by the control plane
+sqlalchemy_uri: "trino://{{ env.TRINO_SERVICE_USER }}@trino.platform.svc:8443/{{ tenant_catalog }}?protocol=https"
+expose_in_sqllab: {{ expose_sqllab | default(false) }}
+allow_run_async: true
+allow_ctas: false
+allow_cvas: false
+allow_dml: false
+allow_file_upload: false
+impersonate_user: true
+extra: '{"engine_params": {"connect_args": {"http_scheme": "https"}}, "metadata_params": {}, "schemas_allowed_for_file_upload": []}'

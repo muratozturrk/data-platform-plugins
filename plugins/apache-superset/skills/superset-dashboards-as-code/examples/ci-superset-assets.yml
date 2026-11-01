@@ -1,0 +1,59 @@
+name: superset-assets
+on:
+  pull_request: { paths: ["superset-assets/**"] }
+  push: { tags: ["assets-v*"] }
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install "preset-cli>=0.3" pyyaml jsonschema
+      - name: schema, uuid stability, naming, secrets
+        run: python superset-assets/tests/validate_assets.py superset-assets --base origin/main
+  staging:
+    needs: validate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      SUPERSET_URL: https://superset-staging.platform.example
+      SUPERSET_TOKEN: "${{ secrets.SUPERSET_STAGING_TOKEN }}"
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install "preset-cli>=0.3"
+      - name: sync tenant bundle to staging
+        run: |
+          for t in $(ls superset-assets/tenants); do
+            superset-cli --jwt-token "$SUPERSET_TOKEN" "$SUPERSET_URL" sync native superset-assets/tenants/$t \
+              --option tenant=$t --option tenant_catalog=${t//-/_} --disallow-edits --overwrite
+          done
+      - name: smoke-load dashboards as test user
+        run: python superset-assets/tests/smoke_dashboards.py "$SUPERSET_URL"
+  prod:
+    needs: validate
+    if: startsWith(github.ref, 'refs/tags/assets-v')
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SUPERSET_URL: https://superset.platform.example
+      SUPERSET_TOKEN: "${{ secrets.SUPERSET_PROD_TOKEN }}"
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install "preset-cli>=0.3"
+      - run: |
+          for t in $(ls superset-assets/tenants); do
+            superset-cli --jwt-token "$SUPERSET_TOKEN" "$SUPERSET_URL" sync native superset-assets/tenants/$t \
+              --option tenant=$t --option tenant_catalog=${t//-/_} --disallow-edits --overwrite
+            superset-cli --jwt-token "$SUPERSET_TOKEN" "$SUPERSET_URL" import-rls superset-assets/tenants/$t/policies/rls.yaml
+          done
+          superset-cli --jwt-token "$SUPERSET_TOKEN" "$SUPERSET_URL" import-ownership superset-assets/policies/ownership.yaml
+  drift:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install "preset-cli>=0.3"
+      - run: superset-cli --jwt-token "${{ secrets.SUPERSET_PROD_TOKEN }}" https://superset.platform.example export-assets /tmp/live
+      - run: git diff --no-index --stat superset-assets /tmp/live || echo "::warning::manual edits detected in prod"

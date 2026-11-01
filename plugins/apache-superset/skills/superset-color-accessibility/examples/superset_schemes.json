@@ -1,0 +1,1267 @@
+{
+ "black_white": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "black",
+   "white"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "black/white"
+ },
+ "blueToGreen": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#3200A7",
+   "#004CDA",
+   "#0074F1",
+   "#0096EF",
+   "#53BFFF",
+   "#41C8E6",
+   "#30DEDE",
+   "#04D9C7",
+   "#00EAA2",
+   "#A6FF93"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Blue to green"
+ },
+ "blue_white_yellow": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#00d1c1",
+   "white",
+   "#ffb400"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "blue/white/yellow"
+ },
+ "bnbColors": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#29696B",
+   "#5BCACE",
+   "#F4B02A",
+   "#F1826A",
+   "#792EB2",
+   "#C96EC6",
+   "#921E50",
+   "#B27700",
+   "#9C3498",
+   "#9C3498",
+   "#E4679D",
+   "#C32F0E",
+   "#9D63CA"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Airbnb Colors"
+ },
+ "brown_white_green": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#a6611a",
+   "#dfc27d",
+   "#f5f5f5",
+   "#80cdc1",
+   "#018571"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "brown/white/green"
+ },
+ "colorsOfRainbow": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#41ED86",
+   "#2FC096",
+   "#01DFFF",
+   "#153AE0",
+   "#850AD6",
+   "#BD59FF",
+   "#FF4A96",
+   "#C32668",
+   "#F40000",
+   "#FF8901",
+   "#FFBC0A",
+   "#FFEC43"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Colors of rainbow"
+ },
+ "d3Category10": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#1f77b4",
+   "#ff7f0e",
+   "#2ca02c",
+   "#d62728",
+   "#9467bd",
+   "#8c564b",
+   "#e377c2",
+   "#7f7f7f",
+   "#bcbd22",
+   "#17becf"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "D3 Category 10"
+ },
+ "d3Category20": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#1f77b4",
+   "#aec7e8",
+   "#ff7f0e",
+   "#ffbb78",
+   "#2ca02c",
+   "#98df8a",
+   "#d62728",
+   "#ff9896",
+   "#9467bd",
+   "#c5b0d5",
+   "#8c564b",
+   "#c49c94",
+   "#e377c2",
+   "#f7b6d2",
+   "#7f7f7f",
+   "#c7c7c7",
+   "#bcbd22",
+   "#dbdb8d",
+   "#17becf",
+   "#9edae5"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "D3 Category 20"
+ },
+ "d3Category20b": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#393b79",
+   "#5254a3",
+   "#6b6ecf",
+   "#9c9ede",
+   "#637939",
+   "#8ca252",
+   "#b5cf6b",
+   "#cedb9c",
+   "#8c6d31",
+   "#bd9e39",
+   "#e7ba52",
+   "#e7cb94",
+   "#843c39",
+   "#ad494a",
+   "#d6616b",
+   "#e7969c",
+   "#7b4173",
+   "#a55194",
+   "#ce6dbd",
+   "#de9ed6"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "D3 Category 20b"
+ },
+ "d3Category20c": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#3182bd",
+   "#6baed6",
+   "#9ecae1",
+   "#c6dbef",
+   "#e6550d",
+   "#fd8d3c",
+   "#fdae6b",
+   "#fdd0a2",
+   "#31a354",
+   "#74c476",
+   "#a1d99b",
+   "#c7e9c0",
+   "#756bb1",
+   "#9e9ac8",
+   "#bcbddc",
+   "#dadaeb",
+   "#636363",
+   "#969696",
+   "#bdbdbd",
+   "#d9d9d9"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "D3 Category 20c"
+ },
+ "dark_blue": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#EBF5F8",
+   "#6BB1CC",
+   "#357E9B",
+   "#1B4150",
+   "#092935"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "dark blues"
+ },
+ "deck_gl_heatmap_gradient": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#bd0026",
+   "#f03b20",
+   "#fd8d3c",
+   "#feb24c",
+   "#fed976",
+   "#ffffb2"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Deck.gl Heatmap Default"
+ },
+ "echarts4Colors": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#c23531",
+   "#2f4554",
+   "#61a0a8",
+   "#d48265",
+   "#91c7ae",
+   "#749f83",
+   "#ca8622",
+   "#bda29a",
+   "#6e7074",
+   "#546570",
+   "#c4ccd3"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "ECharts v4.x Colors"
+ },
+ "echarts5Colors": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#5470C6",
+   "#91CC75",
+   "#FAC858",
+   "#EE6666",
+   "#73C0DE",
+   "#3BA272",
+   "#FC8452",
+   "#9A60B4",
+   "#EA7CCC"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "ECharts v5.x Colors"
+ },
+ "echarts_gradient": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#f6EFA6",
+   "#D88273",
+   "#BF444C"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "ECharts gradient"
+ },
+ "fire": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "white",
+   "yellow",
+   "red",
+   "black"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "fire"
+ },
+ "googleCategory10c": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#3366cc",
+   "#dc3912",
+   "#ff9900",
+   "#109618",
+   "#990099",
+   "#0099c6",
+   "#dd4477",
+   "#66aa00",
+   "#b82e2e",
+   "#316395"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Google Category 10c"
+ },
+ "googleCategory20c": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#3366cc",
+   "#dc3912",
+   "#ff9900",
+   "#109618",
+   "#990099",
+   "#0099c6",
+   "#dd4477",
+   "#66aa00",
+   "#b82e2e",
+   "#316395",
+   "#994499",
+   "#22aa99",
+   "#aaaa11",
+   "#6633cc",
+   "#e67300",
+   "#8b0707",
+   "#651067",
+   "#329262",
+   "#5574a6",
+   "#3b3eac"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Google Category 20c"
+ },
+ "greens": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#ffffcc",
+   "#78c679",
+   "#006837"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "greens"
+ },
+ "lyftColors": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#EA0B8C",
+   "#6C838E",
+   "#29ABE2",
+   "#33D9C1",
+   "#9DACB9",
+   "#7560AA",
+   "#2D5584",
+   "#831C4A",
+   "#333D47",
+   "#AC2077"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Lyft Colors"
+ },
+ "modernSunset": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#0080F6",
+   "#254081",
+   "#6C4592",
+   "#A94693",
+   "#DC4180",
+   "#F35193",
+   "#FF7582",
+   "#FF4C5D",
+   "#FF824E",
+   "#FFAD2A",
+   "#FFDB04",
+   "#F3F700"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Modern sunset"
+ },
+ "oranges": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#fef0d9",
+   "#fc8d59",
+   "#b30000"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "oranges"
+ },
+ "pink_grey": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#E70B81",
+   "#FAFAFA",
+   "#666666"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "pink/grey"
+ },
+ "presetColors": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#6BD3B3",
+   "#FCC550",
+   "#408184",
+   "#66CBE2",
+   "#EE5960",
+   "#484E5A",
+   "#FF874E",
+   "#03748E",
+   "#C9BBAB",
+   "#B17BAA",
+   "#B5E9D9",
+   "#FDE2A7",
+   "#9FC0C1",
+   "#B2E5F0",
+   "#F6ACAF",
+   "#A4A6AC",
+   "#FFC3A6",
+   "#81B9C6",
+   "#E4DDD5",
+   "#D9BDD5"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Preset Colors"
+ },
+ "preset_div_1": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#B17BAA",
+   "#C59DC0",
+   "#D9BDD5",
+   "#D9BDD5",
+   "#F6F6F7",
+   "#CBEFE5",
+   "#98DECA",
+   "#64D0B0",
+   "#32BE96"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Preset Diverging #1"
+ },
+ "preset_div_2": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#CB5171",
+   "#D87C94",
+   "#E5A8B7",
+   "#F2D3DB",
+   "#F6F6F7",
+   "#CEE8EC",
+   "#9CD1D8",
+   "#6CBAC6",
+   "#3AA3B2"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Preset Diverging #2"
+ },
+ "preset_seq_1": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#F3FAEB",
+   "#DEF2D7",
+   "#CAEAC4",
+   "#98DEBC",
+   "#69D3B5",
+   "#4AA59D",
+   "#287886",
+   "#0D5B6A",
+   "#03273F",
+   "#03273F"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Preset Sequential #1"
+ },
+ "preset_seq_2": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#FEECE8",
+   "#FDE2DA",
+   "#FCCEC2",
+   "#F998AA",
+   "#F76896",
+   "#D13186",
+   "#AC0378",
+   "#790071",
+   "#43026C",
+   "#050415"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Preset Sequential #2"
+ },
+ "purple_white_green": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#7b3294",
+   "#c2a5cf",
+   "#f7f7f7",
+   "#a6dba0",
+   "#008837"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "purple/white/green"
+ },
+ "purples": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#f2f0f7",
+   "#9e9ac8",
+   "#54278f"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "purples"
+ },
+ "redToYellow": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#90042A",
+   "#D60039",
+   "#D1353B",
+   "#E45233",
+   "#F47028",
+   "#FE8E17",
+   "#FFAD00",
+   "#FFCC00",
+   "#FFE601",
+   "#FFF46D"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Red to yellow"
+ },
+ "red_yellow_blue": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#d7191c",
+   "#fdae61",
+   "#ffffbf",
+   "#abd9e9",
+   "#2c7bb6"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "red/yellow/blue"
+ },
+ "schemeBlues": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#b5d4e9",
+   "#93c3df",
+   "#6daed5",
+   "#4b97c9",
+   "#2f7ebc",
+   "#1864aa",
+   "#0a4a90",
+   "#08306b"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "blues"
+ },
+ "schemeBrBG": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#543005",
+   "#8c510a",
+   "#bf812d",
+   "#dfc27d",
+   "#f6e8c3",
+   "#c7eae5",
+   "#80cdc1",
+   "#35978f",
+   "#01665e",
+   "#003c30"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "brown/green"
+ },
+ "schemeBuGn": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#b7e4da",
+   "#8fd3c1",
+   "#68c2a3",
+   "#49b17f",
+   "#2f9959",
+   "#157f3c",
+   "#036429",
+   "#00441b"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "blue/green"
+ },
+ "schemeBuPu": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#b2cae1",
+   "#9cb3d5",
+   "#8f95c6",
+   "#8c74b5",
+   "#8952a5",
+   "#852d8f",
+   "#730f71",
+   "#4d004b"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "blue/purple"
+ },
+ "schemeCool": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#6054c8",
+   "#4c6edb",
+   "#368ce1",
+   "#23abd8",
+   "#1ac7c2",
+   "#1ddfa3",
+   "#30ef82",
+   "#52f667",
+   "#7ff658",
+   "#aff05b"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Cool"
+ },
+ "schemeCubehelixDefault": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#1a1530",
+   "#163d4e",
+   "#1f6642",
+   "#54792f",
+   "#a07949",
+   "#d07e93",
+   "#cf9cda",
+   "#c1caf3",
+   "#d2eeef",
+   "#ffffff"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Cube Helix"
+ },
+ "schemeGnBu": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#bde5bf",
+   "#9ed9bb",
+   "#7bcbc4",
+   "#58b7cd",
+   "#399cc6",
+   "#1d7eb7",
+   "#0b60a1",
+   "#084081"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "green/blue"
+ },
+ "schemeGrays": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#cecece",
+   "#b4b4b4",
+   "#979797",
+   "#7a7a7a",
+   "#5f5f5f",
+   "#404040",
+   "#1e1e1e",
+   "#000000"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "grays"
+ },
+ "schemeGreens": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#b7e2b1",
+   "#97d494",
+   "#73c378",
+   "#4daf62",
+   "#2f984f",
+   "#157f3b",
+   "#036429",
+   "#00441b"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "greens"
+ },
+ "schemeInferno": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#160b39",
+   "#420a68",
+   "#6a176e",
+   "#932667",
+   "#bc3754",
+   "#dd513a",
+   "#f37819",
+   "#fca50a",
+   "#f6d746",
+   "#fcffa4"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Inferno"
+ },
+ "schemeMagma": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#140e36",
+   "#3b0f70",
+   "#641a80",
+   "#8c2981",
+   "#b73779",
+   "#de4968",
+   "#f7705c",
+   "#fe9f6d",
+   "#fecf92",
+   "#fcfdbf"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Magma"
+ },
+ "schemeOrRd": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#fdca94",
+   "#fdb07a",
+   "#fa8e5d",
+   "#f16c49",
+   "#e04530",
+   "#c81d13",
+   "#a70403",
+   "#7f0000"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "orange/red"
+ },
+ "schemeOranges": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#fdc28c",
+   "#fda762",
+   "#fb8d3d",
+   "#f2701d",
+   "#e25609",
+   "#c44103",
+   "#9f3303",
+   "#7f2704"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "oranges"
+ },
+ "schemePRGn": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#40004b",
+   "#762a83",
+   "#9970ab",
+   "#c2a5cf",
+   "#e7d4e8",
+   "#d9f0d3",
+   "#a6dba0",
+   "#5aae61",
+   "#1b7837",
+   "#00441b"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "purple/green"
+ },
+ "schemePiYG": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#8e0152",
+   "#c51b7d",
+   "#de77ae",
+   "#f1b6da",
+   "#fde0ef",
+   "#e6f5d0",
+   "#b8e186",
+   "#7fbc41",
+   "#4d9221",
+   "#276419"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "pink/green"
+ },
+ "schemePuBu": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#bfc9e2",
+   "#9bb9d9",
+   "#72a8cf",
+   "#4394c3",
+   "#1a7db6",
+   "#0667a1",
+   "#045281",
+   "#023858"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "purple/blue"
+ },
+ "schemePuBuGn": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#bec9e2",
+   "#98b9d9",
+   "#69a8cf",
+   "#4096c0",
+   "#19879f",
+   "#037877",
+   "#016353",
+   "#014636"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "purple/blue/green"
+ },
+ "schemePuOr": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#2d004b",
+   "#542788",
+   "#8073ac",
+   "#b2abd2",
+   "#d8daeb",
+   "#fee0b6",
+   "#fdb863",
+   "#e08214",
+   "#b35806",
+   "#7f3b08"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "purple/orange"
+ },
+ "schemePuRd": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#d0aad2",
+   "#d08ac2",
+   "#dd63ae",
+   "#e33890",
+   "#d71c6c",
+   "#b70b4f",
+   "#8f023a",
+   "#67001f"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "purple/red"
+ },
+ "schemePurples": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#cecee5",
+   "#b6b5d8",
+   "#9e9bc9",
+   "#8782bc",
+   "#7363ac",
+   "#61409b",
+   "#501f8c",
+   "#3f007d"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "purples"
+ },
+ "schemeRdBu": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#67001f",
+   "#b2182b",
+   "#d6604d",
+   "#f4a582",
+   "#fddbc7",
+   "#d1e5f0",
+   "#92c5de",
+   "#4393c3",
+   "#2166ac",
+   "#053061"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "red/blue"
+ },
+ "schemeRdGy": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#67001f",
+   "#b2182b",
+   "#d6604d",
+   "#f4a582",
+   "#fddbc7",
+   "#e0e0e0",
+   "#bababa",
+   "#878787",
+   "#4d4d4d",
+   "#1a1a1a"
+  ],
+  "is_diverging": true,
+  "kind": "sequential",
+  "label": "red/gray/black"
+ },
+ "schemeRdPu": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#fbb5bc",
+   "#f993b0",
+   "#f369a3",
+   "#e03e98",
+   "#c01788",
+   "#99037c",
+   "#700174",
+   "#49006a"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "red/purple"
+ },
+ "schemeRdYlBu": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#a50026",
+   "#d73027",
+   "#f46d43",
+   "#fdae61",
+   "#fee090",
+   "#e0f3f8",
+   "#abd9e9",
+   "#74add1",
+   "#4575b4",
+   "#313695",
+   "schemeRdYlGn",
+   "red/yellow/green",
+   "#a50026",
+   "#d73027",
+   "#f46d43",
+   "#fdae61",
+   "#fee08b",
+   "#d9ef8b",
+   "#a6d96a",
+   "#66bd63",
+   "#1a9850",
+   "#006837",
+   "schemeSpectral",
+   "rainbow",
+   "#9e0142",
+   "#d53e4f",
+   "#f46d43",
+   "#fdae61",
+   "#fee08b",
+   "#e6f598",
+   "#abdda4",
+   "#66c2a5",
+   "#3288bd",
+   "#5e4fa2"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "red/yellow/blue"
+ },
+ "schemeReds": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#fcaa8e",
+   "#fc8a6b",
+   "#f9694c",
+   "#ef4533",
+   "#d92723",
+   "#bb151a",
+   "#970b13",
+   "#67000d"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "reds"
+ },
+ "schemeSpectral": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#9e0142",
+   "#d53e4f",
+   "#f46d43",
+   "#fdae61",
+   "#fee08b",
+   "#e6f598",
+   "#abdda4",
+   "#66c2a5",
+   "#3288bd",
+   "#5e4fa2"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "rainbow"
+ },
+ "schemeViridis": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#482475",
+   "#414487",
+   "#355f8d",
+   "#2a788e",
+   "#21918c",
+   "#22a884",
+   "#44bf70",
+   "#7ad151",
+   "#bddf26",
+   "#fde725"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Viridis"
+ },
+ "schemeWarm": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#963db3",
+   "#bf3caf",
+   "#e4419d",
+   "#fe4b83",
+   "#ff5e63",
+   "#ff7847",
+   "#fb9633",
+   "#e2b72f",
+   "#c6d63c",
+   "#aff05b"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Warm"
+ },
+ "schemeYlGn": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#e4f4ac",
+   "#c7e89b",
+   "#a2d88a",
+   "#78c578",
+   "#4eaf63",
+   "#2f944e",
+   "#15793f",
+   "#036034",
+   "#004529"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "yellow/green"
+ },
+ "schemeYlGnBu": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#d5eeb3",
+   "#a9ddb7",
+   "#73c9bd",
+   "#45b4c2",
+   "#2897bf",
+   "#2073b2",
+   "#234ea0",
+   "#1c3185",
+   "#081d58"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "yellow/green/blue"
+ },
+ "schemeYlOrBr": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#feeaa1",
+   "#fed676",
+   "#feba4a",
+   "#fb992c",
+   "#ee7918",
+   "#d85b0a",
+   "#b74304",
+   "#8f3204",
+   "#662506"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "yellow/orange/brown"
+ },
+ "schemeYlOrRd": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#fee087",
+   "#fec965",
+   "#feab4b",
+   "#fd893c",
+   "#fa5c2e",
+   "#ec3023",
+   "#d31121",
+   "#af0225",
+   "#800026"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "yellow/orange/red"
+ },
+ "supersetAndPresetColors": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#004960",
+   "#2893B3",
+   "#20A7C9",
+   "#5CC0DA",
+   "#7DCDE1",
+   "#A9D3E1",
+   "#C6ECE1",
+   "#AAE2D2",
+   "#71CFB4",
+   "#2FC096",
+   "#178F7A",
+   "#067162"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Preset + Superset"
+ },
+ "supersetColors": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#1FA8C9",
+   "#454E7C",
+   "#5AC189",
+   "#FF7F44",
+   "#666666",
+   "#E04355",
+   "#FCC700",
+   "#A868B7",
+   "#3CCCCB",
+   "#A38F79",
+   "#8FD3E4",
+   "#A1A6BD",
+   "#ACE1C4",
+   "#FEC0A1",
+   "#B2B2B2",
+   "#EFA1AA",
+   "#FDE380",
+   "#D3B3DA",
+   "#9EE5E5",
+   "#D1C6BC"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Superset Colors"
+ },
+ "superset_div_1": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#E04355",
+   "#E87180",
+   "#EFA1AA",
+   "#F7D0D4",
+   "#F6F6F7",
+   "#C8E9F1",
+   "#8FD3E4",
+   "#58BDD7",
+   "#1FA8C9"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Superset Diverging #1"
+ },
+ "superset_div_2": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#FF7F44",
+   "#FF9E72",
+   "#FEC0A1",
+   "#FFDFD0",
+   "#F6F6F7",
+   "#C8E9F1",
+   "#8FD3E4",
+   "#58BDD7",
+   "#1FA8C9"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Superset Diverging #2"
+ },
+ "superset_seq_1": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#F4FAD4",
+   "#D7F1AC",
+   "#A9E3AF",
+   "#82CDBB",
+   "#63C1BF",
+   "#1FA8C9",
+   "#2367AC",
+   "#2A2D84",
+   "#251354",
+   "#050415"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Superset Sequential #1"
+ },
+ "superset_seq_2": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#FBF1B4",
+   "#FDD093",
+   "#FEAD71",
+   "#FF7F44",
+   "#E04355",
+   "#C53D6F",
+   "#952B7B",
+   "#4F167B",
+   "#251354",
+   "#050415"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "Superset Sequential #2"
+ },
+ "wavesOfBlue": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "#070061",
+   "#0A0095",
+   "#0054B4",
+   "#006BE7",
+   "#2289FF",
+   "#4A9FFF",
+   "#76B6FF",
+   "#9DCBFF",
+   "#BEDCFF",
+   "#DAEBFF"
+  ],
+  "is_diverging": false,
+  "kind": "categorical",
+  "label": "Waves of blue"
+ },
+ "white_black": {
+  "bundle": "8047.71f3a0d3b99d26af7a0a.entry.js",
+  "colors": [
+   "white",
+   "black"
+  ],
+  "is_diverging": false,
+  "kind": "sequential",
+  "label": "white/black"
+ }
+}

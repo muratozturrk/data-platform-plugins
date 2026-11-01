@@ -1,0 +1,30 @@
+---
+apiVersion: superset.stackable.tech/v1alpha1
+kind: SupersetCluster
+metadata:
+  name: t-acme-superset            # silo: one per tenant; shared instance: platform-superset
+  namespace: t-acme-bi
+  labels: { app.kubernetes.io/part-of: data-platform, platform.example/tenant: t-acme, platform.example/component: superset }
+spec:
+  image:
+    custom: registry.example.internal/platform/superset:6.1.0-platform.3
+    productVersion: 6.1.0
+  clusterConfig:
+    credentialsSecret: t-acme-superset-credentials      # adminUser.*, connections.secretKey, connections.sqlalchemyDatabaseUri
+    listenerClass: cluster-internal
+    authentication:
+      - authenticationClass: keycloak-t-acme             # Stackable AuthenticationClass (OIDC)
+        oidc: { clientCredentialsSecret: t-acme-superset-oidc }
+        userRegistration: true
+        userRegistrationRole: Gamma
+        syncRolesAt: Login
+  nodes:
+    roleGroups:
+      default:
+        replicas: 2
+        config:
+          resources: { cpu: { min: "500m", max: "2" }, memory: { limit: 4Gi } }
+        configOverrides:
+          superset_config.py:
+            # merged with the platform config mounted via extra volume
+            ROW_LIMIT: "10000"

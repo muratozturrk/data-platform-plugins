@@ -1,0 +1,13 @@
+# role matrix generated from Tenant + Policy manifests; applied via /api/v1/security/roles
+- name: "{{ tenant }}_gamma"
+  clone_from: Gamma
+  permissions:
+    - [datasource access, "[{{ tenant }}-trino].[gold_sales].[fct_orders](id:__uuid__)"]
+    - [datasource access, "[{{ tenant }}-trino].[gold_sales].[dim_customers](id:__uuid__)"]
+- name: "{{ tenant }}_alpha"
+  clone_from: Alpha
+  permissions:
+    - [database access, "[{{ tenant }}-trino].(id:__uuid__)"]
+    - [can sql_json, Superset]
+- name: EmbeddedViewer
+  permissions: [[can read, Dashboard], [can read, Chart], [can get_data, Chart], [can read, Dataset]]
