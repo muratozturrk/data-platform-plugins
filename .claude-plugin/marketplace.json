@@ -307,6 +307,18 @@
                         "category":  "operations"
                     },
                     {
+                        "name":  "openmetadata",
+                        "source":  "./plugins/openmetadata",
+                        "description":  "OpenMetadata (1.13.x) as the governance catalog of an on-prem data platform, built from a code-level capability study of 1.13.3 (commit 255f6694): architecture, entity model (JSON Schema), extension points and deployment footprint; connector and lineage coverage for Kafka, Flink, Iceberg, MinIO, ClickHouse, Trino, dbt, Spark, Airflow, NiFi, Great Expectations, Ranger and Vault; a prioritised gap catalog with implementation routes on OpenMetadata's real structures; KVKK (Turkish data protection law 6698) compliance mapping and gaps; a 14-domain / 90-capability governance assessment rubric with evidence discipline and DataHub/Atlas comparison; and new LLM, agentic and ontology capability candidates with novelty checks and a design template",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk",
+                                       "url":  "https://github.com/muratozturrk/data-platform-plugins"
+                                   },
+                        "license":  "MIT",
+                        "category":  "governance"
+                    },
+                    {
                         "name":  "platform-engineering",
                         "source":  "./plugins/platform-engineering",
                         "description":  "Build a data platform as a reusable, productizable product: platform-as-product thinking, config-driven design, microkernel/plugin architecture, multi-tenancy, versioned APIs/SDKs and automated architectural governance (fitness functions)",
