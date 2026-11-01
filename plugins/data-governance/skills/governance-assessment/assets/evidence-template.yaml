@@ -1,0 +1,52 @@
+# Evidence file for ONE product (or one composed platform) against the frozen rubric v1.0.
+# Copy to evidence/<product>.yaml and fill all 90 capabilities (D1.1 ... D14.11).
+#
+# Rules
+#   score          0-4, or null when absence is not proven ("unknown" is not "absent")
+#   evidence_type  K = source code (path:line) | D = official docs (URL) |
+#                  İ = issue/RFC/roadmap (URL)  | B = vendor claim (URL or quote)
+#   evidence       required for every non-null score; prefer K; several items separated by "; "
+#   note           what was seen, which level clause failed, what was not found.
+#                  score 0    -> name TWO different places searched (e.g. code AND docs/issues)
+#                  score null -> note MUST start with "arandı:" (the research validator checks the
+#                                literal prefix; it means "searched:") and list where you looked
+# Header fields are required; pin the released tag and the full commit hash.
+
+product: example-catalog
+version: "1.0.0"                                     # released tag, not a branch
+commit: "0000000000000000000000000000000000000000"   # full 40-char hash of the tag
+inspected_at: "YYYY-MM-DD"
+# Optional context (not checked by the validator):
+edition: oss                                         # oss | commercial | platform
+components: []                                       # for a platform: tools that make up the stack
+
+assessments:
+  - capability: D1.1
+    score: 3
+    evidence_type: K
+    evidence: "spec/entity/table.json:1-40; service/types/TypeResource.java:78-85"
+    note: "Dashboards, ML models, topics and containers modelled; users cannot add new entity types (level 4 clause fails)."
+
+  - capability: D7.2
+    score: 0
+    evidence_type: K
+    evidence: "service/pom.xml:1-200"
+    note: "No workflow engine or approval step in code (searched: dependencies, REST resources for 'approval|review|workflow'); official docs have no approval page (searched: docs site navigation and search)."
+
+  - capability: D8.3
+    score: null
+    evidence_type: D
+    evidence: ""
+    note: "arandı: connector catalogue page, ingestion source directory, issue tracker for 'MDM'; vendor docs mention a partner integration but no installable connector was found."
+
+  - capability: D12.6
+    score: 2
+    evidence_type: D
+    evidence: "https://example.org/releases; SECURITY.md:1-20"
+    note: "Public history, >= 1 release per year; organisation diversity of last-12-month commits not measurable from a shallow clone (level 3 clause unverified)."
+
+  # ... one entry per capability, 90 in total. For a composed platform, name the component
+  # in `evidence` (e.g. "quality-engine: path:line; catalog: path:line") and score the
+  # composed behaviour; level 3+ requires the hand-off between components to be automatic.
+  # Keep organisational practice (is the mechanism actually used?) out of `score`;
+  # record it in a separate practice column or file.

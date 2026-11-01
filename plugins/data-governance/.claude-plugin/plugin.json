@@ -1,7 +1,11 @@
 {
   "name": "data-governance",
-  "version": "0.1.0",
-  "description": "Data governance for the platform: data contracts, catalog & lineage, access control, classification, retention and quality SLAs",
-  "author": { "name": "Murat Öztürk" },
-  "license": "MIT"
+  "version": "0.2.0",
+  "description": "Product-neutral data governance for a data platform, built from an evidence-based study of governance tools (OpenMetadata 1.13.3, DataHub 1.7.0, Apache Atlas 2.5.0 as measured examples): data contracts and data products; catalog selection, lineage and impact analysis; classification, access control and masking; quality SLAs and incidents; KVKK (Turkish data protection law 6698) obligations mapped to platform controls; anonymisation (k-anonymity, l-diversity, t-closeness, differential privacy, re-identification risk, ARX limits, documents); and a 14-domain / 90-capability assessment rubric with evidence discipline",
+  "author": {
+    "name": "Murat Öztürk",
+    "url": "https://github.com/muratozturrk/data-platform-plugins"
+  },
+  "license": "MIT",
+  "keywords": ["data-governance", "data-contracts", "data-catalog", "lineage", "access-control", "data-quality", "kvkk", "gdpr", "privacy", "anonymization", "k-anonymity", "differential-privacy", "governance-assessment", "dmbok"]
 }

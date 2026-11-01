@@ -5,6 +5,7 @@ Bu repodaki plugin'lerin kullanım kılavuzları. Her plugin için bir dosya var
 | Plugin | Kategori | Özet | Doküman |
 | --- | --- | --- | --- |
 | apache-superset | data | Apache Superset 6.x: dağıtım, güvenlik/RLS, gömme, dashboards-as-code, dashboard tasarımı ve yaşam döngüsü, grafik seçimi, doğrulanmış API sınırları, gizlilik, AI katmanı; 16 skill, 4 agent, 7 komut | [apache-superset.md](apache-superset.md) |
+| data-governance | governance | Ürüne bağlı olmayan veri yönetişimi: veri sözleşmeleri, katalog seçimi ve soyağacı, sınıflandırma ve erişim kontrolü, kalite SLA'ları, KVKK yükümlülük eşlemesi, anonimleştirme (k-anonimlik, diferansiyel gizlilik, risk ölçümü), 14 alanlı değerlendirme rubriği; 7 skill, 4 agent, 4 komut | [data-governance.md](data-governance.md) |
 | openmetadata | governance | OpenMetadata 1.13.x yönetişim kataloğu: mimari ve genişleme noktaları, platform bileşenleri için connector/lineage kapsamı, öncelikli boşluk kataloğu, KVKK uyum eşlemesi, 14 alanlı değerlendirme rubriği, yeni yetenek tasarımı; 6 skill, 4 agent, 4 komut | [openmetadata.md](openmetadata.md) |
 | apache-polaris | data | Apache Polaris REST katalog: erişim kontrolü, REST API, federation, kurulum, CLI, Spark/Snowflake/Dremio entegrasyonu; 9 skill ve Docker lab'ları | [apache-polaris.md](apache-polaris.md) |
 | data-engineering-design-patterns | data | Veri pipeline'ları için 77 tasarım pattern'inin skill, agent ve Spark/Kafka/Airflow örnekleri | [data-engineering-design-patterns.md](data-engineering-design-patterns.md) |
