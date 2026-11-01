@@ -317,6 +317,7 @@ echo "naming-conventions:engineering" >> "$CATS_FILE"
 echo "coding-standards:engineering" >> "$CATS_FILE"
 echo "apache-iceberg:data" >> "$CATS_FILE"
 echo "apache-polaris:data" >> "$CATS_FILE"
+echo "apache-superset:data" >> "$CATS_FILE"
 
 
 python3 - "$TARGET" "$MARKET_NAME" "$OWNER_NAME" "$OWNER_URL" "$CATS_FILE" <<'PY'
