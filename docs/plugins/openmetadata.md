@@ -135,7 +135,7 @@ Her skill'de `SKILL.md` özet ve karar tablosunu, `references/` ayrıntıyı ta�
 - **Yalnız kod okunarak doğrulanan yollar.** Kafka'ya özel tüketici sınıfıyla olay yayımlama ve bazı eklenti sınıfları yalnız kod okunarak doğrulandı, çalıştırılarak test edilmedi. Skill'ler bunu açıkça belirtir.
 - **Skorlar araştırma bağlamındadır.** Boşlukların etki puanları belirli bir platform için verildi. Kendi bağlamınızda yeniden puanlayın.
 - **Yeni yetenek skorlaması yapılmadı.** C01–C19 için ağırlıklı skorlama araştırmada yürütülmedi. Skill yöntemi ve boş çalışma sayfasını verir, sıralama uydurmaz.
-- **Kapsam dışı.** Datarul gibi kapalı kaynak ürünler ve kuruma özgü gereksinimler plugin'e alınmadı.
+- **Kapsam dışı.** Kapalı kaynak ürünler ve kuruma özgü gereksinimler plugin'e alınmadı.
 - **KVKK içeriği hukuki görüş değildir.** Madde ve süreler resmî metinlerden doğrulandı. Uygulamayı kurumunuzun hukuk birimiyle teyit edin.
 
 ## 8. Bakım
