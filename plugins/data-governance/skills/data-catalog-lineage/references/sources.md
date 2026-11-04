@@ -77,6 +77,6 @@ All matched the research unless noted.
 - Atlas Kafka topics `ATLAS_HOOK`, `ATLAS_ENTITIES` — `distro/src/conf/atlas-application.properties:109`.
 - Atlas lineage REST parameters `direction`, `depth` — `LineageREST.java:70,100`.
 
-Interpretation note (not a code discrepancy): Atlas D3.3 is scored 3 in the research although
-Atlas has no general SQL parser, which the rubric's level 2 requires; the comparison marks the
-cell with an asterisk.
+Score review (2026-11-04): Atlas D3.3 was lowered from 3 to 1 because Atlas has no general SQL
+parser, which the rubric's level 2 requires (monotonicity rule); the comparison footnote explains
+the cell.

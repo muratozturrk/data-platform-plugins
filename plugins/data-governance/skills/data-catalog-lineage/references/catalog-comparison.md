@@ -32,7 +32,7 @@ root. The open-source editions were scored; paid cloud editions were not.
 | D2.6 | Entity page | 4 | 4 | 2 | Atlas has no quality/usage data to show |
 | D3.1 | Table lineage | 3 | 3 | 3 | All automatic and queryable; **none detects broken chains** |
 | D3.2 | Column lineage | 3 | **4** | 3 | DH stores the transform text and chains to BI fields |
-| D3.3 | Extraction method | 3 | 3 | 3* | OM 25 dialects + runtime, edge `source`; DH sqlglot + agents, `confidenceScore`; *Atlas runtime hooks only, no SQL parser |
+| D3.3 | Extraction method | 3 | 3 | 1* | OM 25 dialects + runtime, edge `source`; DH sqlglot + agents, `confidenceScore`; *Atlas runtime hooks only, no SQL parser |
 | D3.4 | Impact analysis | 3 | 3 | 2 | OM/DH filter + export; Atlas direction/depth only; none has what-if |
 | D3.5 | OpenLineage | 2 | 2 | 0 (İ) | OM/DH official consumers; Atlas none (ATLAS-4550 open); no producer anywhere |
 | D11.1 | Connector breadth | 3 | **4** | 1 | DH 116 registered sources with central support status; OM ~95; Atlas 9 |
@@ -50,12 +50,12 @@ root. The open-source editions were scored; paid cloud editions were not.
 | D12.7 | Upgrades | 2 | 2 (D) | 2 | Migration tooling everywhere; no compatibility guarantee |
 | D12.8 | Backup / DR | 0 | **2** | 1 (D) | DH quickstart `--backup/--restore` + index rebuild; OM has no backup tool (`restore.py` not registered in the CLI) |
 
-\* Atlas D3.3 is recorded as 3 in the research, but the rubric's level 2 requires general SQL
-parsing (≥3 dialects) and level 3 builds on it; Atlas captures lineage only through runtime
-hooks for 7 systems. Read the cell as "runtime-only, automatic" rather than as parity with the
-other two.
+\* Atlas D3.3 was lowered from 3 to 1 in a separate score review (2026-11-04). The rubric's
+level 2 requires the product itself to parse SQL (≥3 dialects) and level 3 builds on it; Atlas
+has no SQL parser and captures lineage only through runtime hooks for 7 specific systems, which
+matches level 1 (tool-specific automatic extraction).
 
-Domain averages: D1 2.7 / 3.3 / 3.0 · D2 3.0 / 3.2 / 1.5 · D3 2.8 / 3.0 / 2.2 ·
+Domain averages: D1 2.7 / 3.3 / 3.0 · D2 3.0 / 3.2 / 1.5 · D3 2.8 / 3.0 / 1.8 ·
 D11 2.8 / 2.7 / 1.5 · D12 1.9 / 1.9 / 1.4 (OM / DH / Atlas). Related: AI-asset lineage (D13.2)
 is DH 4 (training job → model → downstream in one graph, `MLModelLineageInfo.pdl:93-119`),
 OM 2, Atlas 2.

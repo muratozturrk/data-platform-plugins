@@ -60,7 +60,7 @@ recomputed from the evidence files; they match the research table.
 | KA3 | Data Modeling and Design | 5 | D4 | **3.4** | 2.4 | 1.8 |
 | KA4 | Data Storage and Operations | 15 | D6, D10, D11, D12 | 2.2 | 2.2 | 1.2 |
 | KA5 | Data Security | 10 | D6, D9, D12 | **1.9** | 1.6 | 1.3 |
-| KA6 | Data Integration and Interoperability | 17 | D3, D5, D6, D8, D9, D10, D11, D13 | 2.6 | **2.7** | 1.6 |
+| KA6 | Data Integration and Interoperability | 17 | D3, D5, D6, D8, D9, D10, D11, D13 | 2.6 | **2.7** | 1.5 |
 | KA7 | Documents and Content | **0** | none | not covered | not covered | not covered |
 | KA8 | Reference and Master Data | 6 | D4, D8 | 1.8 | 1.7 | 1.3 |
 | KA9 | DW and BI | 2 (thin) | D8, D13 | 1.0 | **1.5** | 0.5 |

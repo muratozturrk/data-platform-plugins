@@ -84,7 +84,7 @@ OpenMetadata `1.13.3-release` (`255f6694913b`), DataHub `v1.7.0` (`7f81ccbfe27b`
 
 | | OpenMetadata | DataHub | Atlas |
 |---|---|---|---|
-| Mean of 90 | 2.33 | 2.22 | 1.38 |
+| Mean of 90 | 2.33 | 2.22 | 1.36 |
 | Count of 0 / 4 | 4 / 6 | 4 / 7 | 21 / 2 |
 | Leads (domain means; D12 tied) | D4-D11 | D1, D2, D3, D13, D14 | none |
 | Widest gaps | D5 quality 2.4/1.4/0.3; D7 processes 2.5/1.8/0.5 | | |

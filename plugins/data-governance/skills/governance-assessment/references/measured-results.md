@@ -20,7 +20,7 @@ All three clones equal the release tag. Released code only; main-branch features
 |---|---|---|---|---|---|---|
 | OpenMetadata | 4 | 13 | 28 | 39 | 6 | 2.33 |
 | DataHub | 4 | 16 | 33 | 30 | 7 | 2.22 |
-| Apache Atlas | 21 | 28 | 29 | 10 | 2 | 1.38 |
+| Apache Atlas | 21 | 29 | 29 | 9 | 2 | 1.36 |
 
 OpenMetadata and DataHub are close overall (0.11 apart) and differ by domain; Atlas sits about a
 full level lower.
@@ -35,7 +35,7 @@ null-heavy fourth product, so its spread column differs for D1, D2, D9, D11, D14
 |---|---|---|---|---|
 | D1 Metadata model | 2.7 | **3.3** | 3.0 | 0.6 |
 | D2 Discovery and search | 3.0 | **3.2** | 1.5 | 1.7 |
-| D3 Lineage | 2.8 | **3.0** | 2.2 | 0.8 |
+| D3 Lineage | 2.8 | **3.0** | 1.8 | 1.2 |
 | D4 Glossary and semantics | **3.4** | 2.4 | 1.8 | 1.6 |
 | D5 Data quality | **2.4** | 1.4 | 0.3 | **2.1** |
 | D6 Security and privacy | **1.8** | 1.6 | 1.2 | 0.6 |
@@ -69,7 +69,7 @@ Each entry is `capability:OM DH Atlas`. Evidence type is K unless listed after t
 |---|---|
 | D1 | 1:3 4 4 · 2:2 4 4 · 3:3 3 2 · 4:3 3 2 · 5:3 3 3 · 6:3 3 3 · 7:2 3 3 |
 | D2 | 1:4 3 2 · 2:3 4 2 · 3:2 2 1 · 4:2 3 1 · 5:3 3 1 · 6:4 4 2 |
-| D3 | 1:3 3 3 · 2:3 4 3 · 3:3 3 3 · 4:3 3 2 · 5:2 2 0 |
+| D3 | 1:3 3 3 · 2:3 4 3 · 3:3 3 1 · 4:3 3 2 · 5:2 2 0 |
 | D4 | 1:3 3 1 · 2:4 3 3 · 3:3 1 0 · 4:4 2 2 · 5:3 3 3 |
 | D5 | 1:3 1 0 · 2:3 3 1 · 3:2 0 0 · 4:2 2 0 · 5:3 1 0 · 6:1 0 0 · 7:3 3 1 |
 | D6 | 1:3 1 0 · 2:4 3 2 · 3:1 1 0 · 4:0 1 1 · 5:2 2 2 · 6:3 3 2 · 7:1 2 3 · 8:0 0 0 |

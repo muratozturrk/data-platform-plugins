@@ -7,9 +7,9 @@ Evidence paths are relative to each product's repository root at the pinned comm
 |---|---|---|---|---|---|
 | OpenMetadata | `1.13.3-release` | `255f6694913b` | 90/90 | 87 K, 3 D, B 0% | 4 / 13 / 28 / 39 / 6 |
 | DataHub | `v1.7.0` | `7f81ccbfe27b` | 90/90 | 86 K, 4 D, B 0% | 4 / 16 / 33 / 30 / 7 |
-| Apache Atlas | `release-2.5.0` | `234608315f29` | 90/90 | 84 K, 3 D, 3 İ, B 0% | 21 / 28 / 29 / 10 / 2 |
+| Apache Atlas | `release-2.5.0` | `234608315f29` | 90/90 | 84 K, 3 D, 3 İ, B 0% | 21 / 29 / 29 / 9 / 2 |
 
-Unweighted mean of all 90 scores: OpenMetadata 2.33, DataHub 2.22, Atlas 1.38. A single overall
+Unweighted mean of all 90 scores: OpenMetadata 2.33, DataHub 2.22, Atlas 1.36. A single overall
 number hides the profile; use the domain table.
 
 ## Domain Means
@@ -21,7 +21,7 @@ means; near 0 means the domain does not separate these products.
 |---|---|---|---|---|
 | D1 Metadata management and model extensibility | 2.7 | **3.3** | 3.0 | 0.6 |
 | D2 Discovery, search and catalog | 3.0 | **3.2** | 1.5 | 1.7 |
-| D3 Lineage and impact analysis | 2.8 | **3.0** | 2.2 | 0.8 |
+| D3 Lineage and impact analysis | 2.8 | **3.0** | 1.8 | 1.2 |
 | D4 Glossary, taxonomy, semantic layer | **3.4** | 2.4 | 1.8 | 1.6 |
 | D5 Data quality | **2.4** | 1.4 | 0.3 | 2.1 |
 | D6 Security, privacy and compliance | **1.8** | 1.6 | 1.2 | 0.5 |
@@ -59,7 +59,7 @@ D6 (no data-path enforcement), D8 (not an MDM system), D12, and D14 (no structur
 | D2.6 | Entity page and navigation | 4 | 4 | 2 |
 | D3.1 | Table lineage | 3 | 3 | 3 |
 | D3.2 | Column lineage | 3 | 4 | 3 |
-| D3.3 | Lineage extraction method | 3 | 3 | 3 |
+| D3.3 | Lineage extraction method | 3 | 3 | 1 |
 | D3.4 | Impact analysis | 3 | 3 | 2 |
 | D3.5 | OpenLineage | 2 | 2 | 0 (İ) |
 | D4.1 | Glossary and term lifecycle | 3 | 3 | 1 |
