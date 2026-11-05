@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| Sürüm | 0.1.0 |
+| Sürüm | 0.1.1 |
 | Kategori | testing |
 | Kaynak | `plugins/qa-test-strategy/` |
 | Kaynak materyal | Ekibin QA notları ve test case yaşam döngüsü diyagramı, proje teknoloji listesi (`HKM_kullaniacak_tum_teknolojiler.xlsx`, 11 katman / ~80 araç), ISTQB Foundation ve ISO/IEC 25010, araç dokümanları ve 2026 veri mühendisliği test pratikleri (plugin `README.md` → Sources) |
@@ -151,11 +151,10 @@ Süreç soruları için `stlc-and-test-case-lifecycle` ve `test-planning-and-str
 ## 7. İpuçları ve sınırlamalar
 
 - **Örnek testler canlı ortamda koşturulmadı.** Python dosyaları ve YAML'lar yalnızca sözdizimi açısından kontrol edildi. `rtm_from_results.py` örnek test case ve sahte JUnit verisiyle denendi ve doğru çalıştı.
-- **`unit/test_compiler_golden.py` yer tutucu bir import kullanır.** `from platform.core.compiler import compile_manifest` satırını kendi derleyicinizin giriş noktasıyla değiştirin. Paket adı `platform` olursa Python'un standart kütüphanesindeki `platform` modülüyle çakışır.
+- **`unit/test_compiler_golden.py` için derleyici modülünü siz belirlersiniz.** `COMPILER_MODULE = "hkm_control_plane.compiler"` satırını kendi derleyicinizin giriş noktasıyla değiştirin; modül bulunamazsa test hata vermek yerine atlanır. Paketinize `platform` adını vermeyin, Python'un standart `platform` modülüyle çakışır. `--update-golden` seçeneğini kullanmak için `conftest.py`'de `parser.addoption("--update-golden", action="store_true")` ile kaydedin.
 - **RTM script'i yalnızca `status: active` olan case'leri sayar.** Test case YAML dosyaları case listesi olmalıdır. JUnit'te test adının içinde `T-...` id'si geçmelidir (ör. `test_x[T-dq-001]`). Eşleşmeyen testler RTM'e girmez.
 - **Platforma bağlı içerik.** Yığın listesi, önem derecesi örnekleri, alan kısaltmaları (`cp`, `dq`, `trino`, `ch`…) ve E2E senaryoları HKM teknoloji listesine göre yazıldı. Başka bir platformda kullanırken `qa-strategist`'teki yığın listesini ve `data-platform-test-inventory`'yi uyarlayın.
 - **Sayısal hedefleri test planı belirler.** Performans ve fonksiyonel olmayan hedefler skill'lerde başlangıç önerisidir; bağlayıcı değerler her release'in test planında yazılmalı.
-- `test-inventory` komutunun ayrıştırma listesinde Polaris geçiyor, oysa platformun kataloğu artık Nessie. Envanter çıkarırken Nessie'yi esas alın (bkz. [project-nessie.md](project-nessie.md)).
 - Integration testlerini paylaşılan staging'de veya üretim verisiyle koşmayın; skill bunu açıkça yasaklar. İki kez flake olan test karantinaya alınır ve 2 haftalık süreyle bir issue açılır.
 
 ## 8. Bakım

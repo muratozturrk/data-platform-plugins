@@ -28,7 +28,7 @@ Rules: no execution without mapping and review; automation decision is taken at 
 
 ## Platform-specific phase notes
 - Requirement analysis sources: `Pipeline`/`Policy`/`Tenant` manifests, data contracts, SLAs, ADRs, security policies, upgrade notes of OSS engines.
-- Environment: Kubernetes namespace per test run with the platform Helm umbrella, tenant fixtures, Keycloak test realm, Vault dev mount, object-storage bucket with lifecycle delete; versions identical to prod.
+- Environment: Kubernetes namespace per test run with the platform Helm umbrella, tenant fixtures, Keycloak test realm, OpenBao dev mount, object-storage bucket with lifecycle delete; versions identical to prod.
 - Tooling decisions are explicit tickets ("new tool needed: k6 for Trino load") so the lifecycle's Environment/Tool branch is visible.
 - Closure includes engine-upgrade regression evidence (monthly) and data-quality SLA attainment.
 
