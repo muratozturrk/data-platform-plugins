@@ -4,4 +4,4 @@ ADF-inspired resource kinds for the control plane. All files omit tenant/environ
 
 - `tenant.crd.yaml` – `Tenant` CRD (what the Tenant controller reconciles across every component)
 - `linkedservice.yaml`, `integrationruntime.yaml`, `trigger.yaml` – the kinds missing from the basic manifests
-- `policy.yaml` – one policy definition compiled to OPA data + engine grants
+- `policy.yaml` – one policy definition compiled to Ranger policies + engine-native rules (retention rules to OPA)

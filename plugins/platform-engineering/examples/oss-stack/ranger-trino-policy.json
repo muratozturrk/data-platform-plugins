@@ -1,0 +1,19 @@
+{
+  "service": "trino-platform",
+  "name": "t-acme-gold-sales",
+  "policyType": 0,
+  "isEnabled": true,
+  "zoneName": "t-acme",
+  "resources": {
+    "catalog": { "values": ["t_acme_lake"] },
+    "schema":  { "values": ["gold_sales"] },
+    "table":   { "values": ["*"] },
+    "column":  { "values": ["*"] }
+  },
+  "policyItems": [
+    { "groups": ["platform_t-acme_analyst"],  "accesses": [{"type": "select", "isAllowed": true}] },
+    { "groups": ["platform_t-acme_engineer"], "accesses": [{"type": "select", "isAllowed": true}, {"type": "insert", "isAllowed": true}, {"type": "delete", "isAllowed": true}, {"type": "alter", "isAllowed": true}] }
+  ],
+  "rowFilterPolicyItems": [],
+  "dataMaskPolicyItems": []
+}

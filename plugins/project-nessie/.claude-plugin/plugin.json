@@ -1,0 +1,8 @@
+{
+  "name": "project-nessie",
+  "version": "0.1.0",
+  "description": "Project Nessie (0.108.x, 2026) as the HKM platform's Iceberg catalog: Git-like branches/tags/commits, Nessie Catalog with Iceberg REST endpoint and S3 signing / credential vending on Dell ObjectScale, Ceph RGW or MinIO AIStor, production deployment (Helm, JDBC/PostgreSQL version store, OIDC via Keycloak), CEL metadata authorization alongside Apache Ranger, engine integrations (Trino, Spark, Flink, ClickHouse, dbt), branch-based workflows (per-institution branches, write-audit-publish, release tags), garbage collection and KVKK erasure, CLI/REST API and migration from Apache Polaris",
+  "author": { "name": "Murat Öztürk", "url": "https://github.com/muratozturrk/data-platform-plugins" },
+  "license": "MIT",
+  "keywords": ["nessie", "iceberg", "catalog", "lakehouse", "branching", "iceberg-rest", "trino", "spark", "flink", "kvkk"]
+}

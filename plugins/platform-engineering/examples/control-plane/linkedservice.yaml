@@ -7,5 +7,5 @@ spec:
   connection:
     host: { fromConfig: environments.erp.host }      # resolved from the environment layer
     database: erp
-    credentials: { secretRef: erp/postgres }          # Vault path under tenants/{tenant}/
+    credentials: { secretRef: erp/postgres }          # OpenBao path under tenants/{tenant}/ (via External Secrets Operator)
   options: { sslmode: require }

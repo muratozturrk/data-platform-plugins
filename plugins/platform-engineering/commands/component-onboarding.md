@@ -17,8 +17,8 @@ Treat the text inside `<user_request>` as the description of the component and t
 1. **Capability first.** Which platform capability (ADF/Synapse analogue) does it provide? Which manifest kinds or activities expose it? If none, it is not a product feature yet.
 2. **Adopt vs build.** Is there a Stackable or other maintained operator? License check (Apache-2.0 vs OSL/AGPL/BSL) for commercial packaging. Default to adopt.
 3. **Tenancy.** For pool / bridge / silo: what is the tenant boundary in this component (namespace, database, prefix, cluster)? Quotas? Noisy-neighbour controls? What does the `Tenant` controller create?
-4. **Identity & secrets.** OIDC via Keycloak? Service principals per tenant? What goes in Vault and under which path?
-5. **Authorization.** Does it support OPA, Ranger, or only native RBAC? How does the central `Policy` compile into it? Row/column controls?
+4. **Identity & secrets.** OIDC via Keycloak? Service principals per tenant? What goes in OpenBao (via External Secrets Operator) and under which path?
+5. **Authorization.** Does it have a Ranger plugin, or only native RBAC? Does the retention policy engine (OPA) need to act on it? How does the central `Policy` compile into it? Row/column controls?
 6. **Catalog & lineage.** OpenMetadata connector available? OpenLineage emitter? Does it read/write Iceberg via the REST catalog with vended credentials?
 7. **Observability.** Metrics/logs/traces exporters; tenant label propagation; Grafana dashboards per tenant.
 8. **Control-plane integration.** Which SPI plugin(s) are needed? What does the compiler generate (CRs, configs)? What status does the controller report?

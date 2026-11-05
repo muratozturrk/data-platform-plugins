@@ -1,0 +1,9 @@
+catalog:
+  nessie:
+    type: rest
+    uri: https://nessie.platform.svc/iceberg/t-acme/
+    warehouse: hkm-lake
+    credential: ${PYICEBERG_CLIENT_ID}:${PYICEBERG_CLIENT_SECRET}
+    oauth2-server-uri: https://keycloak.platform.svc/realms/platform/protocol/openid-connect/token
+    scope: catalog sign
+    s3.endpoint: https://objectscale.hkm.internal

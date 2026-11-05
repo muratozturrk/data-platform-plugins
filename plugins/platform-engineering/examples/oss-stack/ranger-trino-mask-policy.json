@@ -1,0 +1,12 @@
+{
+  "service": "trino-platform",
+  "name": "t-acme-dim-customers-masking",
+  "policyType": 1,
+  "isEnabled": true,
+  "zoneName": "t-acme",
+  "resources": { "catalog": {"values": ["t_acme_lake"]}, "schema": {"values": ["gold_sales"]}, "table": {"values": ["dim_customers"]}, "column": {"values": ["iban"]} },
+  "dataMaskPolicyItems": [
+    { "groups": ["platform_t-acme_pii-reader"], "accesses": [{"type": "select", "isAllowed": true}], "dataMaskInfo": {"dataMaskType": "MASK_NONE"} },
+    { "groups": ["platform_t-acme_analyst"],    "accesses": [{"type": "select", "isAllowed": true}], "dataMaskInfo": {"dataMaskType": "MASK_SHOW_LAST_4"} }
+  ]
+}

@@ -341,6 +341,7 @@ $cats["apache-iceberg"] = "data"
 $cats["apache-polaris"] = "data"
 $cats["apache-superset"] = "data"
 $cats["openmetadata"] = "governance"
+$cats["project-nessie"] = "data"
 
 $entries = @()
 foreach ($pdir in Get-ChildItem (Join-Path $Target "plugins") -Directory | Sort-Object Name) {

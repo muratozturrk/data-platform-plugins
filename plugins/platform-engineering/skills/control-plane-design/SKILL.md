@@ -27,7 +27,7 @@ The control plane is the only part of the platform that is yours. Databricks' co
 | `Dataset` | Dataset | A named, typed reference to data in a LinkedService (table, topic, path, Iceberg table) |
 | `Pipeline` | Pipeline | DAG of activities (copy, transform, quality, notify) over Datasets |
 | `Trigger` | Trigger | Schedule, event (Kafka topic / storage event), tumbling window, manual |
-| `Policy` | Purview policy | Access, masking, retention, classification; compiled to OPA data + engine grants |
+| `Policy` | Purview policy | Access, masking, retention, classification, purpose tags; compiled to Ranger policies + engine-native rules; retention rules to an OPA bundle |
 | `Plugin` | Connector | Registered SPI implementation with version and config schema |
 
 Every kind: `apiVersion`, `kind`, `metadata{name, workspace, labels}`, `spec`, `status`. Tenant and environment come from context, never from the file.
@@ -38,13 +38,13 @@ The control plane compiles manifests into artifacts the engines already understa
 - transform activity with `plugin: spark-sql@v1` → SparkApplication CR for the Spark operator
 - transform activity with `plugin: dbt@v1` → dbt project + profiles + run command
 - copy activity → Kafka Connect connector config or Airbyte connection
-- `Policy` → OPA bundle data + Polaris grants + ClickHouse row policies + Superset RLS
+- `Policy` → Ranger policies (Trino/Spark/Kafka, row filters, column masks, tags) + ClickHouse row policies + Superset RLS + CKAN visibility; retention/lifecycle rules → OPA bundle
 - `Dataset` → OpenMetadata entity + Iceberg table (if managed)
 Compilation is deterministic, dry-runnable (`platform render`), and versioned; the generated artifact carries the manifest hash. Users never edit generated artifacts.
 
 ### Reconciliation
 Model the control plane as controllers over CRDs (or an equivalent reconciler loop):
-- `Tenant` controller → Keycloak org/realm, Vault policy+mount, storage container/prefix + vending config, Polaris catalog/namespace, Kafka prefix ACL + quota (Strimzi `KafkaUser`), Spark namespace + ResourceQuota, Airflow pool, Trino/OPA data, ClickHouse DB/role/quota, Superset workspace, OpenMetadata domain/team, Grafana org — idempotent, with `status.conditions`
+- `Tenant` controller → Keycloak org/realm, OpenBao policy+mount (+ key scope), object-storage bucket/prefix with lifecycle and Object Lock config, Nessie branch/namespace, Kafka prefix ACL + quota (Strimzi `KafkaUser`), Karapace subject prefix, Spark/Flink namespace + ResourceQuota, Airflow pool, Ranger security zone/policies, ClickHouse DB/role/quota, Superset workspace, OpenMetadata domain/team, CKAN organization, Grafana org — idempotent, with `status.conditions`
 - `Workspace` controller → folders, default IR, default LinkedServices, RBAC bindings
 - `Pipeline` controller → compile, validate, publish artifact, register lineage, watch runs
 Crossplane compositions are a reasonable way to express the tenant composition if you prefer not to write a controller.
@@ -75,7 +75,7 @@ Like ADF's self-hosted IR, allow an `IntegrationRuntime` of type `remote` regist
 ## Anti-patterns
 - Control plane embedding engine SDK calls (coupling to one Spark/Airflow version)
 - Manifests that are thin wrappers around raw DAG code
-- Tenant created in the UI but not in Kafka/Vault/catalog
+- Tenant created in the UI but not in Kafka/OpenBao/Nessie/Ranger
 - Usage derived from engine logs after the fact instead of emitted at run time
 - Generated artifacts committed by hand and edited
 

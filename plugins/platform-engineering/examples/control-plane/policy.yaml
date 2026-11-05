@@ -14,5 +14,5 @@ spec:
   retention:
     - dataset: landing/*
       days: 30
-# Compiled to: OPA data bundle (Trino/Airflow/Kafka), Polaris catalog grants, ClickHouse row policies/roles,
+# Compiled to: Ranger policies (Trino/Spark/Kafka: access, row filter, mask, tags), ClickHouse row policies/roles,
 # Superset RLS rules, OpenMetadata tags (PII) — by the Policy controller.

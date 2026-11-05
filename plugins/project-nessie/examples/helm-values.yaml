@@ -1,0 +1,52 @@
+---
+image: { repository: ghcr.io/projectnessie/nessie, tag: "0.108.3" }
+replicaCount: 2
+podDisruptionBudget: { enabled: true, minAvailable: 1 }
+resources: { requests: { cpu: "1", memory: 2Gi }, limits: { cpu: "2", memory: 2Gi } }
+service: { type: ClusterIP, port: 19120 }
+managementService: { port: 9000 }
+ingress:
+  enabled: true
+  className: nginx
+  hosts: [{ host: nessie.platform.example, paths: ["/"] }]
+  tls: [{ secretName: nessie-tls, hosts: [nessie.platform.example] }]
+versionStoreType: JDBC
+jdbc:
+  jdbcUrl: jdbc:postgresql://postgres-nessie.platform.svc:5432/nessie
+  secret: { name: nessie-postgres, username: username, password: password }   # from OpenBao via ExternalSecret
+authentication:
+  enabled: true
+  oidcAuthServerUrl: https://keycloak.platform.svc/realms/platform
+  oidcClientId: nessie
+  oidcClientSecret: { secret: { name: nessie-oidc, key: client-secret } }
+authorization:
+  enabled: true
+  rules: {}            # rendered from examples/authorization-rules.properties by the control plane
+catalog:
+  enabled: true
+  iceberg:
+    defaultWarehouse: hkm-lake
+    warehouses:
+      - name: hkm-lake
+        location: s3://hkm-lake/
+  storage:
+    s3:
+      defaultOptions:
+        region: hkm-dc1
+        endpoint: https://objectscale.hkm.internal
+        pathStyleAccess: true
+        requestSigningEnabled: true
+        accessKeySecret: { name: nessie-s3-lake, awsAccessKeyId: access-key, awsSecretAccessKey: secret-key }
+        stsEndpoint: https://objectscale.hkm.internal/sts        # vended credentials for Trino
+        assumeRole: { roleArn: "arn:aws:iam::000000000000:role/nessie-lake-vending" }
+        clientSessionDuration: PT1H
+advancedConfig:
+  nessie.server.default-branch: main
+  quarkus.datasource.postgresql.jdbc.max-size: "20"
+  quarkus.otel.exporter.otlp.endpoint: http://otel-collector.platform.svc:4317
+  quarkus.log.console.json: "true"
+  nessie.catalog.service.s3.buckets.hkm-lake.name: hkm-lake
+extraEnv:
+  - name: JAVA_OPTS_APPEND
+    value: "-XX:MaxRAMPercentage=50"
+serviceMonitor: { enabled: true }

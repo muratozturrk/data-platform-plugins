@@ -19,10 +19,10 @@ Claude Code plugin for building a data platform that stays **generic, extensible
 | Skill | `multi-tenancy-patterns` | Silo/pool/bridge, tenant context, Snowflake/Databricks/lake specifics |
 | Skill | `api-versioning-sdk` | Versioning the five public contracts, deprecation policy |
 | Skill | `architecture-fitness-functions` | Automated governance of all the above in CI |
-| Skill | `oss-reference-architecture` | Azure → OSS layer map (Kafka, Spark, Iceberg+Polaris, Trino, ClickHouse, Airflow, dbt, Keycloak, Vault, OPA, OpenMetadata, Superset), per-component tenancy, build-vs-adopt (Stackable), install waves |
+| Skill | `oss-reference-architecture` | Azure → OSS layer map for the HKM stack (Kafka/Karapace/Debezium, Flink, Spark, Iceberg+Nessie on Object-Lock storage, Trino+Gateway, ClickHouse, PostgreSQL/PostGIS, Airflow, dbt, Keycloak, Ranger, OpenBao, OPA retention, OpenMetadata, OpenLineage/Marquez, Elementary, Superset, Grafana), per-component tenancy, build-vs-adopt (Stackable), install waves |
 | Skill | `control-plane-design` | ADF-style resource model (Tenant, Workspace, IntegrationRuntime, LinkedService, Dataset, Pipeline, Trigger, Policy), manifest compiler, CRD reconciliation, metering |
 
-`examples/` contains runnable starting points (manifests + JSON Schema, a Python SPI with default plugin and contract test, tenant-aware storage resolver, import-linter rules, forbidden-token scanner, CI job), plus `oss-stack/` (stack map, Strimzi tenant user, OPA tenant-isolation policy, ClickHouse tenant SQL) and `control-plane/` (Tenant CRD, LinkedService, IntegrationRuntime, Trigger, Policy kinds).
+`examples/` contains runnable starting points (manifests + JSON Schema, a Python SPI with default plugin and contract test, tenant-aware storage resolver, import-linter rules, forbidden-token scanner, CI job), plus `oss-stack/` (stack map, Strimzi tenant user, Ranger access/masking policies, OPA retention policy, ClickHouse tenant SQL) and `control-plane/` (Tenant CRD, LinkedService, IntegrationRuntime, Trigger, Policy kinds).
 
 ## Sources this plugin is built on
 
@@ -37,7 +37,7 @@ Claude Code plugin for building a data platform that stays **generic, extensible
 - Config-driven ETL frameworks (Samara, dpone, Drune, factl) as manifest prior art
 - Merced, *Architecting an Apache Iceberg Lakehouse* (Manning, 2026); *Apache Polaris: The Definitive Guide*; *Apache Iceberg: The Definitive Guide*
 - Azure Data Factory concepts (pipeline/dataset/linked service/integration runtime/trigger) and Azure Databricks architecture (control vs compute plane)
-- Stackable Data Platform docs and operators; Apache Polaris, Lakekeeper, Nessie, Unity Catalog OSS; Trino security (OPA/Ranger); Apache Kafka multi-tenancy chapter; Strimzi; Keycloak Organizations; OpenMetadata & OpenLineage; ClickHouse access control; Superset embedded/RLS
+- Stackable Data Platform docs and operators; Project Nessie (chosen), Apache Polaris, Lakekeeper, Unity Catalog OSS (alternatives); Apache Ranger (chosen) and Trino security docs; Apache Kafka multi-tenancy chapter; Strimzi; Keycloak Organizations; OpenMetadata & OpenLineage; ClickHouse access control; Superset embedded/RLS
 
 Each skill's `references/sources.md` lists the specific sources it draws on.
 

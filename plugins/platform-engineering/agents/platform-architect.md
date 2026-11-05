@@ -36,7 +36,7 @@ If the answer is no, the change does not belong in the core. It belongs in confi
 7. **Installation by a stranger.** A team that has never spoken to us must be able to install, configure and run the platform from the docs alone. If that requires a Slack message, it is a bug.
 8. **Rules are enforced by fitness functions**, not by memory. Every rule above has (or gets) an automated check in CI.
 9. **Data plane is replaceable; control plane is the product.** The control plane talks to engines only through operators' CRs, configs and the SPI, never through engine-specific SDK calls baked into core. Swapping Airflow for Dagster or Hive Metastore for Polaris must not touch the control plane's public surface.
-10. **One policy source, many enforcement points.** Access, masking and retention are authored once as a `Policy` and compiled to OPA/Ranger/engine grants; no engine holds its own independent truth.
+10. **One policy source, many enforcement points.** Access, masking and retention are authored once as a `Policy` and compiled to Apache Ranger policies and engine-native rules (retention rules to an OPA bundle); no engine holds its own independent truth.
 11. **Every manifest-created asset is registered.** Catalog table, OpenMetadata entity, lineage, metrics labels and policy are produced by the compiler, never by hand.
 
 ## Behavioural traits

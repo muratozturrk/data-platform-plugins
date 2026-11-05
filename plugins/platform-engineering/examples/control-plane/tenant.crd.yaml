@@ -57,7 +57,7 @@ spec:
                   items:
                     type: object
                     properties:
-                      type: { type: string }      # KeycloakReady, VaultReady, StorageReady, CatalogReady, KafkaReady, SparkReady, AirflowReady, OpaReady, OpenMetadataReady, ClickHouseReady, SupersetReady, GrafanaReady
+                      type: { type: string }      # KeycloakReady, OpenBaoReady, StorageReady, CatalogReady, KafkaReady, SparkReady, AirflowReady, RangerReady, NessieReady, OpenMetadataReady, ClickHouseReady, SupersetReady, GrafanaReady
                       status: { type: string }
                       reason: { type: string }
                       message: { type: string }
