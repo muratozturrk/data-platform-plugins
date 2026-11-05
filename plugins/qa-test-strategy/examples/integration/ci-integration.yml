@@ -1,0 +1,30 @@
+name: integration
+on: [pull_request]
+jobs:
+  fast-band:                       # Testcontainers in the runner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[test]" "testcontainers[postgres,kafka]" trino kafka-python psycopg[binary] httpx schemathesis datacontract-cli
+      - name: contract tests (schemas, OpenAPI, data contracts)
+        run: |
+          python tools/check_schema_compat.py schemas/   # Karapace compat dry-run against Git baseline
+          schemathesis run openapi/control-plane.yaml --base-url http://localhost:8000 --checks all || true
+          datacontract test contracts/*.yaml --server local
+      - name: integration tests
+        run: pytest -m "integration and not k8s" --junitxml=reports/integration.xml -n 4
+      - uses: actions/upload-artifact@v4
+        with: { name: integration-report, path: reports/ }
+  full-band:                       # ephemeral namespace per PR (label 'preview')
+    if: contains(github.event.pull_request.labels.*.name, 'preview')
+    runs-on: ubuntu-latest
+    needs: fast-band
+    steps:
+      - uses: actions/checkout@v4
+      - name: wait for Argo CD sync
+        run: argocd app wait pr-${{ github.event.number }} --health --sync --timeout 1800
+      - name: integration tests on the PR namespace
+        env: { PLATFORM_NS: "pr-${{ github.event.number }}" }
+        run: pytest -m "integration and k8s" --junitxml=reports/k8s.xml

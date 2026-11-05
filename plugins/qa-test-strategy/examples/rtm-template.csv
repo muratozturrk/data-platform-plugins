@@ -1,0 +1,3 @@
+req_id,source,quality_attribute,priority,risk,test_case_ids,suites,last_run,result,open_defects
+REQ-sec-003,Policy manifest / ADR-012,Security,Critical,cross-tenant data exposure,"T-trino-014;T-trino-015;T-ch-001;T-bi-001","security;regression-full",2026-11-04,PASS,
+REQ-dq-012,Data contract fct_orders,Functionality,High,incomplete gold data,"T-dq-001;T-dq-002","data-quality",2026-11-04,FAIL,DEF-231

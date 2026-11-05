@@ -1,0 +1,26 @@
+# E2E-02 scenario definition consumed by the E2E runner (tests/e2e/test_scenarios.py)
+id: E2E-02
+title: Batch pipeline from PostgreSQL fixture to Superset KPI via WAP
+inventory_ids: [T-cp-005, T-dq-004, T-lin-001, T-bi-003]
+institution: "t-e2e-{run_id}"
+fixtures:
+  source_postgres: fixtures/erp_orders_day_2026-11-01.sql     # 1,284 orders, 12 cancelled, 3 duplicates
+  expected: fixtures/expected/erp_orders_day_2026-11-01.json  # oracle computed from the fixture
+steps:
+  - apply_manifest: manifests/tenant.yaml
+  - wait: { condition: tenant_ready, timeout_s: 600 }
+  - apply_manifest: manifests/pipeline-landing-to-silver-orders.yaml
+  - trigger: { pipeline: landing-to-silver-orders }
+  - wait: { condition: airflow_dataset_updated, dataset: "t-{institution}/gold_sales/fct_orders", timeout_s: 1200 }
+assertions:
+  - trino_sql: "SELECT count(*) FROM t_{institution_u}_lake.gold_sales.fct_orders WHERE order_date = DATE '2026-11-01'"
+    equals: "{expected.row_count}"
+  - trino_sql: "SELECT sum(revenue_amount) FROM t_{institution_u}_lake.gold_sales.fct_orders WHERE order_date = DATE '2026-11-01'"
+    equals: "{expected.revenue_amount}"
+  - nessie_main_unchanged_until_publish: true
+  - marquez_lineage_edge: { from: "t-{institution}.landing.orders", to: "t-{institution}.gold_sales.fct_orders" }
+  - elementary_freshness: { table: gold_sales.fct_orders, status: pass }
+  - superset_chart_data: { dashboard: sales-overview, chart: revenue-today, equals: "{expected.revenue_amount}" }
+  - ranger_audit_present: { user: "svc-airflow", resource: "gold_sales.fct_orders", result: allowed }
+cleanup: delete_tenant
+budget_s: 1800

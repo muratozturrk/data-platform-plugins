@@ -1,0 +1,30 @@
+name: e2e-nightly
+on:
+  schedule: [{ cron: "0 1 * * *" }]
+  workflow_dispatch: {}
+jobs:
+  rebuild-env:
+    runs-on: ubuntu-latest
+    steps:
+      - run: argocd app delete e2e --cascade --yes || true
+      - run: argocd app create e2e --repo https://github.com/muratozturrk/hkm-platform --path deploy/umbrella --revision main --dest-namespace e2e --dest-server https://kubernetes.default.svc --values values-e2e.yaml --sync-policy automated --sync-option CreateNamespace=true
+      - run: argocd app wait e2e --health --sync --timeout 2400
+  e2e:
+    needs: rebuild-env
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[e2e]" && npx playwright install --with-deps chromium
+      - name: data journeys
+        env: { PLATFORM_API: https://api.e2e.platform.example, TRINO_GATEWAY: trino-gateway.e2e.platform.example, MARQUEZ: https://marquez.e2e.platform.example, SUPERSET: https://superset.e2e.platform.example, RANGER_AUDIT_OS: https://opensearch.e2e.platform.example, PLATFORM_TOKEN: "${{ secrets.E2E_TOKEN }}" }
+        run: pytest -m e2e tests/e2e --junitxml=reports/e2e.xml --reruns 1 --only-rerun "EnvironmentError"
+      - name: UI journeys (Playwright)
+        run: npx playwright test tests/ui --reporter=junit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: e2e-artifacts, path: [reports/, test-results/] }
+      - name: RTM + report
+        run: python examples/rtm_from_results.py tests/cases reports requirements.yaml > reports/rtm.csv

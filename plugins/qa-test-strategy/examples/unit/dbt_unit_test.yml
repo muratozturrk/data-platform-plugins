@@ -1,0 +1,27 @@
+# models/silver/sales/int_orders__deduplicated.yml  (dbt >= 1.8 unit tests, T-dbt-001)
+unit_tests:
+  - name: dedup_keeps_latest_row_per_order
+    model: int_orders__deduplicated
+    given:
+      - input: ref('stg_erp__orders')
+        rows:
+          - { order_id: o1, order_total_amount: 10.00, _updated_at: "2026-11-01 10:00:00" }
+          - { order_id: o1, order_total_amount: 12.00, _updated_at: "2026-11-01 11:00:00" }
+          - { order_id: o2, order_total_amount: null,  _updated_at: "2026-11-01 09:00:00" }
+    expect:
+      rows:
+        - { order_id: o1, order_total_amount: 12.00 }
+        - { order_id: o2, order_total_amount: null }
+  - name: cancelled_orders_excluded_from_revenue
+    model: fct_orders
+    given:
+      - input: ref('int_orders__deduplicated')
+        rows:
+          - { order_id: o1, is_cancelled: false, order_total_amount: 10.00 }
+          - { order_id: o2, is_cancelled: true,  order_total_amount: 99.00 }
+    overrides:
+      macros: { current_timestamp: "'2026-11-05 00:00:00'" }
+    expect:
+      rows:
+        - { order_id: o1, revenue_amount: 10.00 }
+        - { order_id: o2, revenue_amount: 0.00 }

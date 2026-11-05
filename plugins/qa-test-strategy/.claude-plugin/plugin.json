@@ -1,0 +1,8 @@
+{
+  "name": "qa-test-strategy",
+  "version": "0.1.0",
+  "description": "QA process and test strategy for the data platform: software testing lifecycle, test case lifecycle, test plan/strategy documents, test suite taxonomy, requirement traceability and coverage, defect management (priority x severity), non-functional and performance testing, QA metrics and test reports, and a platform-specific test inventory generator (data, pipelines, engines, infra, security, BI)",
+  "author": { "name": "Murat Öztürk" },
+  "license": "MIT",
+  "keywords": ["qa", "testing", "test-strategy", "test-plan", "stlc", "traceability", "defect-management", "performance-testing", "data-platform"]
+}

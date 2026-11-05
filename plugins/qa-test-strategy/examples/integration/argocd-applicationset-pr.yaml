@@ -1,0 +1,29 @@
+---
+# Full band: one platform namespace per pull request, created/destroyed by Argo CD.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata: { name: platform-pr-envs, namespace: argocd }
+spec:
+  goTemplate: true
+  generators:
+    - pullRequest:
+        github: { owner: muratozturrk, repo: hkm-platform, labels: [preview] }
+        requeueAfterSeconds: 60
+  template:
+    metadata: { name: "pr-{{.number}}", labels: { platform.example/ttl-hours: "24" } }
+    spec:
+      project: platform-previews
+      source:
+        repoURL: https://github.com/muratozturrk/hkm-platform
+        targetRevision: "{{.head_sha}}"
+        path: deploy/umbrella
+        helm:
+          valueFiles: [values-test.yaml]
+          parameters:
+            - { name: global.institutions, value: "t-acme,t-globex" }
+            - { name: global.profile, value: small }
+            - { name: global.objectStorage.endpoint, value: https://ceph-rgw-dev.hkm.internal }
+      destination: { server: https://kubernetes.default.svc, namespace: "pr-{{.number}}" }
+      syncPolicy:
+        automated: { prune: true, selfHeal: true }
+        syncOptions: [CreateNamespace=true]

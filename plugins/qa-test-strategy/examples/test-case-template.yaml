@@ -1,0 +1,82 @@
+# One document per test case; stored under tests/cases/{area}/T-{area}-{nnn}.yaml
+# Structure follows the team's "good test case structure": header + execution-steps table with
+# step-level requirement / defect / automation ids and timestamped tester comments.
+- test_scenario_id: TenantIsolation-1
+  test_case_id: T-trino-014
+  test_title: Trino tenant isolation checking
+  test_case_description: Cross-tenant catalog read - negative test case
+  test_priority: Critical
+  prerequisites: [two tenants provisioned (t-acme, t-globex), OPA bundle current, service JWTs available]
+  post_requisites: none
+  # platform extensions
+  requirement_ids: [REQ-sec-003]
+  suite: [security, regression, api]
+  type: non-functional
+  level: integration
+  method: black-box
+  owner: platform-sec
+  version: 1
+  status: active
+  test_execution_steps:
+    - s_no: 1
+      action: Authenticate to Trino Gateway as t-acme analyst with client tag tenant=t-acme
+      test_data: JWT_T_ACME_ANALYST
+      expected_result: 200 from /v1/info; principal resolved to t-acme analyst group
+      environment_information: staging, Trino 484, Gateway 21, OPA bundle v37
+      test_comments: "[murat 2026-11-05 10:12]: ok"
+      requirement_id: REQ-sec-003
+      defect_id: ""
+      automation: AT-trino-014
+    - s_no: 2
+      action: Run SELECT 1 FROM t_globex_lake.gold_sales.fct_orders LIMIT 1
+      test_data: query above
+      expected_result: AccessDenied error; OPA decision log shows deny; no bytes scanned
+      environment_information: staging, Trino 484
+      test_comments: "[murat 2026-11-05 10:13]: denied as expected"
+      requirement_id: REQ-sec-003
+      defect_id: ""
+      automation: AT-trino-014
+    - s_no: 3
+      action: Run SELECT count(*) FROM t_acme_lake.gold_sales.fct_orders
+      test_data: query above
+      expected_result: query succeeds; count = 1,284 (fixture v3)
+      environment_information: staging, Trino 484
+      test_comments: ""
+      requirement_id: REQ-sec-003
+      defect_id: ""
+      automation: AT-trino-014
+
+- test_scenario_id: GoldCompleteness-1
+  test_case_id: T-dq-001
+  test_title: Gold fct_orders completeness checking
+  test_case_description: Gold row count equals source for one day - positive test case
+  test_priority: High
+  prerequisites: [staging tenant t-acme seeded with erp fixture v3, pipeline landing-to-silver-orders succeeded]
+  post_requisites: none
+  requirement_ids: [REQ-dq-012]
+  suite: [data-quality, regression]
+  type: functional
+  level: integration
+  method: grey-box
+  owner: data-eng
+  version: 2
+  status: active
+  test_execution_steps:
+    - s_no: 1
+      action: Count source rows for order_date = 2026-11-01 in t_acme_erp.public.orders
+      test_data: fixtures/erp_orders_day_2026-11-01.csv
+      expected_result: 1,284 rows
+      environment_information: staging, PostgreSQL 16 via Trino 484
+      test_comments: ""
+      requirement_id: REQ-dq-012
+      defect_id: ""
+      automation: AT-dq-001
+    - s_no: 2
+      action: Count gold rows for order_date = 2026-11-01 in t_acme_lake.gold_sales.fct_orders
+      test_data: query above
+      expected_result: 1,284 rows; difference 0; mismatched order_ids listed when non-zero
+      environment_information: staging, Iceberg v2 via Trino 484
+      test_comments: "[ayse 2026-11-05 09:40]: 1,281 rows - 3 missing"
+      requirement_id: REQ-dq-012
+      defect_id: DEF-231
+      automation: AT-dq-001

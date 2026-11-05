@@ -355,6 +355,17 @@
                         "category":  "data"
                     },
                     {
+                        "name":  "qa-test-strategy",
+                        "source":  "./plugins/qa-test-strategy",
+                        "description":  "QA process and test strategy for the data platform: software testing lifecycle, test case lifecycle, test plan/strategy documents, test suite taxonomy, requirement traceability and coverage, defect management (priority x severity), non-functional and performance testing, QA metrics and test reports, and a platform-specific test inventory generator (data, pipelines, engines, infra, security, BI)",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk"
+                                   },
+                        "license":  "MIT",
+                        "category":  "testing"
+                    },
+                    {
                         "name":  "review-agent-governance",
                         "source":  "./plugins/review-agent-governance",
                         "description":  "Require a human approval signal before an AI agent can post PR reviews, comments, merges, or writes to CI config. Cedar-gated, receipt-signed, designed for the Hermes-style failure mode where a review bot posts without oversight.",

@@ -1,0 +1,132 @@
+apiVersion: platform.example/v1
+kind: TestInventory
+metadata: { name: hkm-platform-v1, version: 2, source: HKM_kullaniacak_tum_teknolojiler.xlsx }
+spec:
+  schedule:
+    pr: [smoke, regression-fast]
+    nightly: [regression-full, data-quality, security]
+    release: [regression-full, performance, security, privacy, upgrade, dr]
+    upgrade: [upgrade, regression-full]
+  tests:
+    # control plane / orchestration
+    - { id: T-cp-001, area: control-plane, title: Manifest/CR schema validation errors include path and hint, level: unit, suites: [regression-fast], automation: pytest, priority: High }
+    - { id: T-cp-002, area: control-plane, title: Compiler golden files stable (Airflow DAG, dbt, Spark CR, Ranger policy, OPA bundle), level: contract, suites: [regression-fast], automation: pytest-golden, priority: High }
+    - { id: T-cp-003, area: control-plane, title: Institution reconciler idempotent (apply twice no change), level: integration, suites: [regression-full], automation: pytest+k8s, priority: Critical }
+    - { id: T-cp-004, area: control-plane, title: Institution delete removes resources in every system (Keycloak, Ranger, OpenBao, Kafka, Nessie, ClickHouse, Superset, CKAN), level: integration, suites: [regression-full, security], automation: pytest+k8s, priority: Critical }
+    - { id: T-cp-005, area: control-plane, title: Onboarding to published dashboard end-to-end, level: e2e, suites: [smoke, regression-full], automation: pytest, priority: Critical }
+    - { id: T-af-001, area: airflow, title: Generated DAGs import without errors, level: unit, suites: [smoke, regression-fast], automation: pytest, priority: High }
+    - { id: T-af-002, area: airflow, title: Dataset readiness marker triggers downstream DAG, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-af-003, area: airflow, title: Quality failure stops the pipeline (fail-stop), level: integration, suites: [regression-full, data-quality], automation: pytest, priority: Critical }
+    - { id: T-af-004, area: airflow, title: Periodic erasure cycle and archive readability job run on schedule, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    # ingestion / cdc / streaming
+    - { id: T-kafka-001, area: kafka, title: Topic outside institution prefix rejected, level: integration, suites: [security], automation: pytest+strimzi, priority: Critical }
+    - { id: T-kafka-002, area: kafka, title: Producer quota throttles institution, level: integration, suites: [security, performance], automation: kafka-perf-test, priority: Medium }
+    - { id: T-kafka-003, area: kafka, title: Poison messages land in DLQ with reason headers, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-kafka-004, area: kafka, title: Replay from offset reproduces identical downstream state, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-kafka-005, area: kafka, title: Broker loss keeps consumer lag within SLO, level: system, suites: [dr, performance], automation: chaos-mesh, priority: High }
+    - { id: T-sr-001, area: karapace, title: Incompatible schema rejected at the gate (BACKWARD/FORWARD/FULL), level: contract, suites: [regression-fast], automation: pytest, priority: High }
+    - { id: T-cdc-001, area: debezium, title: Insert/update/delete/tombstone propagate with before/after images in order, level: integration, suites: [regression-full], automation: pytest+testcontainers, priority: Critical }
+    - { id: T-cdc-002, area: debezium, title: Snapshot to streaming hand-off has no gaps or duplicates, level: integration, suites: [regression-full], automation: pytest, priority: Critical }
+    - { id: T-ing-001, area: connectors, title: New source onboarded by configuration only (Connect/SeaTunnel/dlt/NiFi), level: contract, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-ing-002, area: connectors, title: Incremental and paginated API pulls resume correctly after failure, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-ing-003, area: camel, title: Message translation to canonical model matches golden files, level: unit, suites: [regression-fast], automation: pytest-golden, priority: Medium }
+    - { id: T-mq-001, area: rabbitmq, title: Nack/requeue and DLX routing behave as configured, level: integration, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-flink-001, area: flink, title: Late events handled per watermark policy, level: integration, suites: [regression-full], automation: flink-test-harness, priority: High }
+    - { id: T-flink-002, area: flink, title: Restart from savepoint keeps exactly-once end-to-end, level: system, suites: [regression-full, dr], automation: pytest+chaos, priority: Critical }
+    - { id: T-flink-003, area: flink, title: Throughput and latency within budget at expected load, level: system, suites: [performance], automation: k6+kafka-perf, priority: High }
+    # processing
+    - { id: T-spark-001, area: spark, title: Transform unit tests (chispa), level: unit, suites: [regression-fast], automation: pytest-chispa, priority: High }
+    - { id: T-spark-002, area: spark, title: Property tests on transforms, level: unit, suites: [regression-fast], automation: hypothesis, priority: Medium }
+    - { id: T-spark-003, area: spark, title: Rerun of job is idempotent, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-spark-004, area: spark, title: Parallel JDBC extraction partitions cover all rows exactly once, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-dbt-001, area: dbt, title: dbt parse/compile and tests pass, level: unit, suites: [regression-fast], automation: dbt, priority: High }
+    - { id: T-dbt-002, area: dbt, title: Incremental model idempotent on rerun, level: integration, suites: [regression-full], automation: dbt+trino, priority: High }
+    - { id: T-dbt-003, area: dbt, title: Survivorship rules (golden record) deterministic, level: integration, suites: [regression-full], automation: dbt, priority: Medium }
+    - { id: T-er-001, area: zingg, title: Entity resolution precision/recall on labelled set above threshold, level: system, suites: [regression-full], automation: pytest, priority: Medium }
+    # lakehouse & storage
+    - { id: T-lake-001, area: iceberg, title: Atomic partition overwrite and MERGE idempotent, level: integration, suites: [regression-full], automation: trino-assertion, priority: Critical }
+    - { id: T-lake-002, area: iceberg, title: Concurrent writers keep snapshot isolation, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-lake-003, area: iceberg, title: Copy-on-write purge leaves no readable copy in any snapshot, level: integration, suites: [privacy, security], automation: pytest, priority: Critical }
+    - { id: T-lake-004, area: nessie, title: Branch validate merge workflow and multi-table transaction, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-lake-005, area: iceberg, title: Compaction/expire/VACUUM keep file counts and metadata within budget, level: integration, suites: [regression-full], automation: trino-assertion, priority: Medium }
+    - { id: T-obj-001, area: object-storage, title: S3 API conformance suite passes on primary and alternate backend, level: integration, suites: [regression-full, upgrade], automation: s3-tests, priority: High }
+    - { id: T-obj-002, area: object-storage, title: Object Lock WORM rejects delete/overwrite during retention and honours legal hold, level: integration, suites: [security, privacy], automation: pytest, priority: Critical }
+    - { id: T-obj-003, area: object-storage, title: Lifecycle/tiering rules move and expire objects as configured, level: integration, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-obj-004, area: object-storage, title: Presigned URL expires after TTL and encrypted delivery verified, level: integration, suites: [security], automation: pytest, priority: High }
+    - { id: T-ch-001, area: clickhouse, title: Row policy fences institution on shared tables, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-ch-002, area: clickhouse, title: Incremental materialized views equal batch recomputation, level: integration, suites: [data-quality], automation: pytest, priority: High }
+    - { id: T-ch-003, area: clickhouse, title: Serving latency p95 within budget, level: system, suites: [performance], automation: clickhouse-benchmark, priority: High }
+    - { id: T-ods-001, area: postgres, title: ODS point-query latency and freshness within budget, level: system, suites: [performance], automation: k6, priority: High }
+    - { id: T-ods-002, area: postgres, title: pgBackRest restore drill meets RTO/RPO, level: system, suites: [dr], automation: runbook, priority: High }
+    - { id: T-trino-001, area: trino, title: Cross-institution catalog access denied (Ranger), level: integration, suites: [security, regression-full, api], automation: pytest, priority: Critical }
+    - { id: T-trino-002, area: trino, title: Row filter and column mask identical across CLI, JDBC, Superset and export, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-trino-003, area: trino, title: Resource group queues beyond concurrency limit, level: integration, suites: [performance], automation: pytest, priority: High }
+    - { id: T-trino-004, area: trino, title: Gateway routes by client tags and bypasses unhealthy backend, level: integration, suites: [regression-full, dr], automation: pytest, priority: High }
+    - { id: T-trino-005, area: trino, title: FTE job completes after worker kill, level: system, suites: [dr, regression-full], automation: chaos-mesh, priority: High }
+    - { id: T-trino-006, area: trino, title: TPC-DS subset p95 within budget, level: system, suites: [performance], automation: benchto, priority: High }
+    - { id: T-trino-007, area: trino, title: Upgrade compatibility matrix (Trino, Gateway, Ranger plugin, clients), level: system, suites: [upgrade], automation: regression-tier, priority: High }
+    # data quality & observability
+    - { id: T-dq-001, area: data-quality, title: Each of the 10 rule types has passing and failing fixtures, level: unit, suites: [regression-fast, data-quality], automation: great-expectations+soda+dbt, priority: Critical }
+    - { id: T-dq-002, area: data-quality, title: Failed rows captured with acceptance thresholds applied, level: integration, suites: [data-quality], automation: great-expectations, priority: High }
+    - { id: T-dq-003, area: data-quality, title: Parametric rule templates (dbt macros / GE custom expectations) unit-tested, level: unit, suites: [regression-fast], automation: pytest, priority: High }
+    - { id: T-dq-004, area: data-quality, title: Gold completeness and uniqueness vs source, level: integration, suites: [data-quality, regression-full], automation: trino-assertion, priority: High }
+    - { id: T-dq-005, area: data-quality, title: Quality results land in OpenMetadata and Elementary reports, level: integration, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-dq-006, area: deequ, title: Distributed metrics equal single-node reference within tolerance, level: integration, suites: [data-quality], automation: pytest+spark, priority: Medium }
+    - { id: T-obs-001, area: elementary, title: Schema change in source detected and notified to declaring party, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-obs-002, area: elementary, title: Freshness and volume anomalies alert once per incident, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-obs-003, area: profiling, title: Profile statistics match reference and generated rules are valid, level: integration, suites: [data-quality], automation: pytest, priority: Low }
+    - { id: T-alert-001, area: alert-clustering, title: Lineage+time correlated anomalies merge into one alert; unrelated never merge, level: integration, suites: [regression-full], automation: pytest-golden, priority: High }
+    # catalog, lineage, governance
+    - { id: T-cat-001, area: openmetadata, title: Every manifest asset registered with owner/steward/technical owner and PII tags, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-cat-002, area: openmetadata, title: Column-level custom attributes (access class, basis doc, field inventory) and change history present, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-lin-001, area: openlineage, title: Table and column lineage emitted by Airflow, dbt, Spark, Flink, Trino into Marquez, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-lin-002, area: openlineage, title: Downstream impact set correct for a changed column, level: integration, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-pol-001, area: opa-retention, title: Retention policies unit-tested; most-restrictive-wins golden cases, level: unit, suites: [regression-fast, security], automation: opa-test, priority: Critical }
+    - { id: T-pol-002, area: opa-retention, title: Hot reload applies new policy bundle without restart, level: integration, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-priv-001, area: fides, title: DSR (KVKK art. 7/11) end-to-end request to evidence, level: e2e, suites: [privacy, regression-full], automation: pytest, priority: Critical }
+    - { id: T-priv-002, area: fides, title: Data map inventory complete versus catalog, level: integration, suites: [privacy], automation: pytest, priority: High }
+    - { id: T-wf-001, area: flowable, title: Access-request workflow with conditional approval and audit trail, level: e2e, suites: [regression-full], automation: pytest+bpmn, priority: High }
+    # security & privacy
+    - { id: T-iam-001, area: keycloak, title: Token without mapped group denied everywhere; ABAC attributes present, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-iam-002, area: keycloak, title: Access revoked after user/institution deletion across all services, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-ranger-001, area: ranger, title: Tag-based policies enforce purpose limitation, level: integration, suites: [security, privacy], automation: pytest, priority: High }
+    - { id: T-ranger-002, area: ranger, title: Audit records complete in OpenSearch for allow and deny, level: integration, suites: [security], automation: pytest, priority: High }
+    - { id: T-sec-001, area: openbao, title: Component role reads only its institution path; rotation propagates via ESO, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-sec-002, area: openbao, title: Crypto-shredding renders data unreadable in WORM storage and backups, level: system, suites: [privacy, dr], automation: pytest, priority: Critical }
+    - { id: T-priv-003, area: presidio, title: TR PII detection precision/recall above threshold on labelled corpus, level: unit, suites: [regression-fast, privacy], automation: pytest, priority: High }
+    - { id: T-priv-004, area: presidio, title: Declaration mismatch generated and declaration never auto-changed, level: integration, suites: [privacy], automation: pytest, priority: High }
+    - { id: T-priv-005, area: arx, title: k-anonymity/l-diversity achieved and re-identification risk below threshold, level: system, suites: [privacy], automation: pytest, priority: Critical }
+    - { id: T-priv-006, area: pseudonymisation, title: HMAC tokens consistent within scope, distinct across contexts, internal/external spaces disjoint, level: unit, suites: [regression-fast, privacy], automation: pytest, priority: Critical }
+    - { id: T-priv-007, area: differential-privacy, title: Epsilon budgets enforced and H3 geo-fuzzing resolution applied, level: integration, suites: [privacy], automation: pytest, priority: High }
+    - { id: T-priv-008, area: sharing, title: Unprocessed field blocked from sharing; transformation manifest applied per version, level: integration, suites: [privacy, security], automation: pytest, priority: Critical }
+    - { id: T-audit-001, area: immudb, title: Audit trail cryptographically verifiable; tamper attempt detected, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-audit-002, area: opensearch, title: Access/download/deny records immutable for retention period, level: integration, suites: [security], automation: pytest, priority: High }
+    - { id: T-sec-003, area: security, title: No critical CVEs in images, level: static, suites: [security, regression-fast], automation: trivy, priority: High }
+    - { id: T-sec-004, area: security, title: No secrets in repo, level: static, suites: [regression-fast], automation: gitleaks, priority: Critical }
+    # serving / BI / semantic
+    - { id: T-bi-001, area: superset, title: RLS and masking consistent on screen, export and embedded, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-bi-002, area: superset, title: Assets YAML sync idempotent (UUIDs stable), level: integration, suites: [regression-full], automation: superset-cli, priority: High }
+    - { id: T-bi-003, area: superset, title: Dashboard loads within budget per institution, level: system, suites: [performance, smoke], automation: k6, priority: High }
+    - { id: T-bi-004, area: superset, title: Critical UI journey (Keycloak login, filter, drill, export), level: e2e, suites: [ui, regression-full], automation: playwright, priority: Medium }
+    - { id: T-bi-005, area: superset, title: Scheduled Alerts & Reports delivered and archived with Iceberg snapshot reference, level: integration, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-bi-006, area: grafana, title: Operational dashboards query ODS/ClickHouse within latency budget; threshold alerts fire, level: integration, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-cache-001, area: redis, title: No cross-institution cache hits; TTL respected; Valkey drop-in passes, level: integration, suites: [security], automation: pytest, priority: High }
+    - { id: T-sem-001, area: semantic-layer, title: KPI definitions yield identical results in Superset, Cube/MetricFlow and dbt, level: integration, suites: [data-quality], automation: pytest, priority: High }
+    - { id: T-geo-001, area: spatial, title: Sedona vs PostGIS spatial results match; GeoJSON/Parquet outputs valid, level: integration, suites: [data-quality], automation: pytest, priority: Medium }
+    # portal, API, distribution
+    - { id: T-portal-001, area: ckan, title: Mandatory metadata schemas enforced; draft to publish workflow, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-portal-002, area: ckan, title: Three visibility classes enforced in UI, API and Solr search, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-portal-003, area: ckan, title: DCAT export valid; licence metadata present, level: contract, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-api-001, area: wso2, title: OpenAPI contract tests pass; JSON/CSV negotiation, level: contract, suites: [api, regression-fast], automation: schemathesis, priority: High }
+    - { id: T-api-002, area: wso2, title: Group-based tiered quotas return 429 with policy actions, level: integration, suites: [security, performance], automation: k6, priority: High }
+    - { id: T-api-003, area: wso2, title: Developer portal self-service keys and quota view, level: e2e, suites: [ui], automation: playwright, priority: Low }
+    - { id: T-dist-001, area: distribution, title: Async bulk export produces valid versioned Parquet/GeoJSON with presigned TTL, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-ana-001, area: matomo, title: View/download/call events recorded with institution-time breakdown and IP anonymisation, level: integration, suites: [regression-full, privacy], automation: pytest, priority: Medium }
+    # operations, backup, preservation
+    - { id: T-alert-002, area: alertmanager, title: Routing, grouping, suppression and OnCall escalation per label; Jira/GitLab ticket created, level: integration, suites: [regression-full], automation: pytest, priority: High }
+    - { id: T-alert-003, area: alertmanager, title: Retention-overrun, erasure-failure and archive-test alarms fire on fixtures, level: integration, suites: [regression-full, privacy], automation: pytest, priority: High }
+    - { id: T-bak-001, area: velero, title: 3-2-1 immutable backup and automated restore drill, level: system, suites: [dr], automation: runbook+velero, priority: High }
+    - { id: T-bak-002, area: archivematica, title: OAIS package with BagIt fixity manifests verifies; archived formats readable, level: integration, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-k8s-001, area: kubernetes, title: Manifests pass policy (non-root, limits, labels), level: static, suites: [regression-fast], automation: conftest, priority: High }
+    - { id: T-k8s-002, area: kubernetes, title: Network policies block cross-institution namespaces, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-dr-001, area: dr, title: Platform-wide DR drill meets RTO/RPO, level: system, suites: [dr], automation: manual-runbook, priority: High }

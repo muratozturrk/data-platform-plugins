@@ -320,6 +320,7 @@ echo "apache-polaris:data" >> "$CATS_FILE"
 echo "apache-superset:data" >> "$CATS_FILE"
 echo "openmetadata:governance" >> "$CATS_FILE"
 echo "project-nessie:data" >> "$CATS_FILE"
+echo "qa-test-strategy:testing" >> "$CATS_FILE"
 
 
 python3 - "$TARGET" "$MARKET_NAME" "$OWNER_NAME" "$OWNER_URL" "$CATS_FILE" <<'PY'

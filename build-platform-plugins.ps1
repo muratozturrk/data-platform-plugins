@@ -342,6 +342,7 @@ $cats["apache-polaris"] = "data"
 $cats["apache-superset"] = "data"
 $cats["openmetadata"] = "governance"
 $cats["project-nessie"] = "data"
+$cats["qa-test-strategy"] = "testing"
 
 $entries = @()
 foreach ($pdir in Get-ChildItem (Join-Path $Target "plugins") -Directory | Sort-Object Name) {
