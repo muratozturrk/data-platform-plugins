@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="tr" data-theme="corporate-dark">
+<head>
+<meta charset="utf-8">
+<title>Bölüm kapağı (maske açılışı)</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  /* Codrops tarzı: dairesel clip-path ile bölüm renginin ekrana yayılması */
+  .panel { position: absolute; inset: 0; background: var(--accent); clip-path: circle(0% at 50% 50%); }
+  .content { position: absolute; left: var(--safe); bottom: 180px; color: #fff; }
+  .num { font-size: 260px; font-weight: 800; line-height: 1; letter-spacing: -0.05em; opacity: .25; font-variant-numeric: tabular-nums; }
+  .title { font-size: var(--fs-h1); font-weight: 750; letter-spacing: -0.02em; margin-top: -40px; }
+  .hint { font-size: var(--fs-body); opacity: .85; margin-top: 18px; }
+</style>
+</head>
+<body data-hold="1.5">
+<div class="pm-stage">
+  <div class="panel" id="panel">
+    <div class="content">
+      <div class="num" id="num">00</div>
+      <div class="title" id="title"></div>
+      <div class="hint" id="hint"></div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="pm-data">
+{ "number": 2, "title": "Mimari", "hint": "Kaynaktan rapora veri nasıl akıyor?" }
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="../vendor/gsap/SplitText.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  gsap.registerPlugin(SplitText);
+  const D = PM.data;
+  document.getElementById('title').textContent = D.title;
+  document.getElementById('hint').textContent = D.hint || '';
+  const split = SplitText.create('#title', { type: 'words', mask: 'words' });
+
+  const counter = { v: 0 };
+  const tl = PM.timeline();
+  tl.to('#panel', { clipPath: 'circle(150% at 50% 50%)', duration: 1.2, ease: 'power3.inOut' }, 0)
+    .to(counter, { v: D.number, duration: 0.8, ease: 'power2.out', snap: { v: 1 },
+        onUpdate: () => { document.getElementById('num').textContent = String(counter.v).padStart(2, '0'); } }, 0.5)
+    .from(split.words, { yPercent: 105, duration: 0.8, stagger: 0.08, ease: 'expo.out' }, 0.8)
+    .from('#hint', { opacity: 0, y: 20, duration: 0.6 }, '-=0.3');
+  PM.start();
+</script>
+</body>
+</html>

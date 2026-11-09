@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="tr" data-theme="academic">
+<head>
+<meta charset="utf-8">
+<title>Ablasyonlar</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  .panels { position: absolute; left: 120px; right: 120px; top: 260px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 90px; }
+  .panel h3 { font-size: 36px; font-weight: 700; }
+  .panel p { font-size: 28px; color: var(--ink-2); margin-top: 6px; }
+  svg { width: 100%; height: 500px; overflow: visible; margin-top: 10px; }
+  text { font-family: var(--font-sans); fill: var(--ink); text-anchor: middle; }
+  text.v { font-size: 36px; font-weight: 800; }
+  text.l { font-size: 28px; fill: var(--ink-2); }
+  text.l2 { font-size: 28px; fill: var(--muted); }
+  line.base { stroke: var(--ink); stroke-width: 3; }
+  rect.bar { fill: var(--muted); }
+  rect.me { fill: var(--accent); }
+  .msg { position: absolute; left: 120px; right: 120px; top: 905px; font-size: 32px; color: var(--ink); text-align: center; }
+  .msg b { color: var(--accent); }
+</style>
+</head>
+<body data-hold="3.5">
+<div class="pm-stage">
+  <div class="pm-eyebrow" id="eyebrow"></div>
+  <h2 class="pm-h2" id="title"></h2>
+  <div class="panels" id="panels"></div>
+  <div class="msg" id="msg"></div>
+  <div class="pm-source" id="source"></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Ablasyon",
+  "title": "Başarıyı belirleyen iki tasarım kararı",
+  "metric": "ImageNet-1K, etiketlerin %1 kadarı · doğrusal sınama Top-1 (%)",
+  "panels": [
+    { "title": "Maskeleme stratejisi", "sub": "ViT-B/16 · 300 epoch", "max": 60,
+      "bars": [
+        { "l": "çoklu blok", "l2": "önerilen", "v": 54.2, "me": true },
+        { "l": "rasterize", "l2": "çeyrekler", "v": 15.5 },
+        { "l": "tek blok", "l2": "%60", "v": 20.2 },
+        { "l": "rastgele", "l2": "%60", "v": 17.6 }
+      ]},
+    { "title": "Tahmin hedefi", "sub": "ViT-L/16", "max": 70,
+      "bars": [
+        { "l": "temsil", "l2": "500 epoch", "v": 66.9, "me": true },
+        { "l": "piksel", "l2": "800 epoch", "v": 40.7 }
+      ]}
+  ],
+  "msg": "Büyük hedef bloklar + dağınık bağlam ve <b>temsil uzayında tahmin</b>: ikisi olmadan doğruluk sert düşüyor.",
+  "source": "Metrik: ImageNet-1K, etiketlerin %1 kadarı, doğrusal sınama Top-1 (%). Kaynak: Assran vd. (2023), Tablo 6 ve 7. Çubuklar sıfırdan başlar."
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  for (const k of ["eyebrow", "title", "source"]) document.getElementById(k).textContent = D[k];
+  document.getElementById("msg").innerHTML = D.msg;
+  const wrap = document.getElementById("panels");
+  const H = 340, BASE = 400;
+  D.panels.forEach(p => {
+    const W = p.bars.length === 4 ? 860 : 620;
+    const slot = W / p.bars.length, bw = Math.min(150, slot * 0.6);
+    let s = `<line class="base" x1="0" x2="${W}" y1="${BASE}" y2="${BASE}"/>`;
+    p.bars.forEach((b, i) => {
+      const cx = slot * (i + 0.5), h = b.v / p.max * H;
+      s += `<g class="b"><rect class="bar ${b.me ? "me" : ""}" x="${cx - bw / 2}" y="${BASE - h}" width="${bw}" height="${h}" rx="6"/>
+        <text class="v" x="${cx}" y="${BASE - h - 18}" data-v="${b.v}" ${b.me ? "style=\"fill:#7c2d12\"" : ""}>${PM.fmt(b.v, 1)}</text>
+        <text class="l" x="${cx}" y="${BASE + 42}">${b.l}</text><text class="l2" x="${cx}" y="${BASE + 78}">${b.l2}</text></g>`;
+    });
+    const el = document.createElement("div");
+    el.className = "panel";
+    el.innerHTML = `<h3>${p.title}</h3><p>${p.sub}</p><svg viewBox="0 0 ${W} 500">${s}</svg>`;
+    wrap.appendChild(el);
+  });
+
+  const tl = PM.timeline();
+  tl.from("#eyebrow", { opacity: 0, y: 16, duration: 0.5 })
+    .from("#title", { opacity: 0, y: 30, duration: 0.7 }, "-=0.2");
+  document.querySelectorAll(".panel").forEach((pn, i) => {
+    const at = 1.0 + i * 2.6;
+    tl.from(pn.querySelectorAll("h3, p"), { opacity: 0, y: 16, stagger: 0.15, duration: 0.5 }, at)
+      .from(pn.querySelector("line"), { attr: { x2: 0 }, duration: 0.5 }, at + 0.3)
+      .from(pn.querySelectorAll("text.l, text.l2"), { opacity: 0, duration: 0.4 }, at + 0.5);
+    pn.querySelectorAll("g.b").forEach((g, k) => {
+      const r = g.querySelector("rect"), t = g.querySelector("text.v");
+      const o = { v: 0 };
+      tl.from(r, { attr: { y: BASE, height: 0 }, duration: 0.9, ease: "power3.out" }, at + 0.7 + k * 0.2)
+        .from(t, { attr: { y: BASE - 18 }, opacity: 0, duration: 0.9, ease: "power3.out" }, "<")
+        .to(o, { v: +t.dataset.v, duration: 0.9, ease: "power3.out", onUpdate: () => { t.textContent = PM.fmt(o.v, 1); } }, "<");
+    });
+  });
+  tl.from("#msg", { opacity: 0, y: 20, duration: 0.6 }, "+=0.5")
+    .from("#source", { opacity: 0, duration: 0.5 }, "<");
+  PM.start();
+</script>
+</body>
+</html>

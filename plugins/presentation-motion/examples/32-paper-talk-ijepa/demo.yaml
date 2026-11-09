@@ -1,0 +1,88 @@
+# Makale sunumu örneği: I-JEPA (Assran vd., 2023)
+# Çalıştırma (bu klasörden):  node ../../capture/compose/compose.mjs demo.yaml
+# Hazır şablonlar (title, bullets, section-cover, kpi-counter-row) + özel sahneler (scenes/NN-*.html).
+# Özel sahnelerin verisi her dosyanın pm-data bloğundadır; rakamlar makaleden doğrulanmıştır.
+title: "I-JEPA – Makale Sunumu"
+theme: academic
+output: { profile: pptx, resolution: 1920x1080, fps: 30, max_size_mb: 25 }
+
+segments:
+  # 0 · Açılış
+  - type: html
+    template: title
+    data:
+      eyebrow: "Makale sunumu · Öz-denetimli öğrenme"
+      title: "I-JEPA"
+      subtitle: "Görüntülerden ortak gömme tahmin mimarisiyle öz-denetimli öğrenme"
+      author: "Assran, Duval, Misra, Bojanowski, Vincent, Rabbat, LeCun, Ballas"
+      date: "Meta AI (FAIR) · arXiv:2301.08243 · 2023"
+
+  # 1 · Problem
+  - type: html
+    template: bullets
+    data:
+      eyebrow: "Problem"
+      title: "Mevcut iki yaklaşımın sınırı"
+      items:
+        - { text: "Değişmezlik tabanlı (DINO, iBOT)", detail: "Anlamsal temsil öğrenir ama el yapımı veri artırmaya bağımlıdır" }
+        - { text: "Üretken / maskeli (MAE)", detail: "Artırma gerekmez ama piksel ayrıntısına odaklanır, anlamsal düzey düşer" }
+        - { text: "Soru: artırma olmadan anlamsal temsil?", detail: "Eksik bölgeyi piksel değil, temsil uzayında tahmin et" }
+      highlight: 2
+
+  # 2 · Arka plan: üç mimari
+  - type: html
+    scene: scenes/02-architectures.html
+
+  # 3–5 · Yöntem
+  - type: html
+    scene: scenes/03-masking.html
+  - type: html
+    scene: scenes/04-pipeline.html
+  - type: html
+    scene: scenes/05-loss.html
+
+  # 6 · Bölüm geçişi
+  - type: html
+    template: section-cover
+    data: { number: 2, title: "Bulgular", hint: "Sınıflandırma, aktarım, verimlilik, ablasyon" }
+
+  # 7 · ImageNet
+  - type: html
+    scene: scenes/07-imagenet.html
+
+  # 8 · Verimlilik
+  - type: html
+    template: kpi-counter-row
+    data:
+      eyebrow: "Bulgular · verimlilik"
+      title: "Temsil uzayında tahmin, hesaplamayı azaltıyor"
+      items:
+        - { label: "ViT-H/14 ön-eğitimi (GPU saat)", prefix: "<", from: 0, to: 1200, delta: "16 A100, 72 saatten kısa", tone: "good" }
+        - { label: "iBOT ViT-S/16'ya göre", prefix: ">", from: 0, to: 2.5, digits: 1, unit: "× hızlı", delta: "tek görünüm işler", tone: "good" }
+        - { label: "MAE ViT-H/14'e göre", prefix: ">", from: 0, to: 10, unit: "× verimli", delta: "~5× daha az iterasyon", tone: "good" }
+      source: "Kaynak: Assran vd. (2023), Özet, Bölüm 1 ve 7. İterasyon başına ~%7 ek maliyet, daha hızlı yakınsamayla telafi edilir."
+
+  # 9 · Aktarım
+  - type: html
+    scene: scenes/09-transfer.html
+
+  # 10 · Ablasyon
+  - type: html
+    scene: scenes/10-ablations.html
+
+  # 11 · Çıkarımlar
+  - type: html
+    template: bullets
+    data:
+      eyebrow: "Sonuç"
+      title: "Çıkarımlar ve sınırlılıklar"
+      items:
+        - { text: "Artırmasız anlamsal temsil mümkün", detail: "Temsil uzayında tahmin, gereksiz piksel ayrıntısını eler" }
+        - { text: "Maskeleme stratejisi belirleyici", detail: "Büyük hedef bloklar + bilgilendirici, dağınık bağlam" }
+        - { text: "Daha az hesapla ölçekleniyor", detail: "Daha büyük veri (IN22k) ve model aktarımı iyileştiriyor" }
+        - { text: "Sınırlılık: her görevde birinci değil", detail: "Aktarımda iBOT önde; ViT-G/16 yerel görevlerde fayda sağlamıyor" }
+      highlight: 0
+
+  # 12 · Kaynakça
+  - type: html
+    scene: scenes/12-references.html

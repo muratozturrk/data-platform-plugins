@@ -1,0 +1,9 @@
+title: "I-JEPA – Makale Sunumu"
+audience: academic           # technical | executive | government | academic
+minutes: 2.5
+theme: academic
+language: tr
+source: "Assran vd. (2023), arXiv:2301.08243v3"
+output:
+  profile: pptx
+  max_size_mb: 25

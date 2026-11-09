@@ -1,0 +1,8 @@
+title: "Self-Servis Raporlama – Superset POC"
+audience: executive          # technical | executive | government | academic
+minutes: 2
+theme: corporate-light
+language: tr
+output:
+  profile: pptx
+  max_size_mb: 25

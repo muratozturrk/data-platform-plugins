@@ -1,0 +1,30 @@
+# Diagram-as-data: architecture-layers şablonu bu dosyadan çizilir.
+# Yönetici kitlesi için sade tutuldu: 4 katman, 10 düğüm.
+eyebrow: "Mimari"
+title: "Kaynaktan self-servis rapora"
+layers:
+  - { id: sources, label: "Kaynaklar" }
+  - { id: ingest,  label: "Alım ve dönüşüm" }
+  - { id: dwh,     label: "Veri ambarı" }
+  - { id: serving, label: "Self-servis" }
+nodes:
+  - { id: erp,     label: "ERP",             sub: "satış, stok",            layer: sources }
+  - { id: crm,     label: "CRM",             sub: "müşteri, kampanya",      layer: sources }
+  - { id: targets, label: "Bölge hedefleri", sub: "aylık dosya",            layer: sources }
+  - { id: airflow, label: "Zamanlayıcı",     sub: "Airflow · saatlik",      layer: ingest }
+  - { id: dbt,     label: "Dönüşüm",         sub: "dbt · testli modeller",  layer: ingest }
+  - { id: staging, label: "Ham katman",      sub: "kaynak kopyası",         layer: dwh }
+  - { id: marts,   label: "İş katmanı",      sub: "satış, hedef, müşteri",  layer: dwh }
+  - { id: dash,    label: "Dashboard",       sub: "Superset",               layer: serving }
+  - { id: sqllab,  label: "SQL Lab",         sub: "analist sorguları",      layer: serving }
+  - { id: alerts,  label: "Zamanlı rapor",   sub: "e-posta, uyarı",         layer: serving }
+edges:
+  - { from: erp,     to: airflow, flow: batch }
+  - { from: crm,     to: airflow, flow: batch }
+  - { from: targets, to: airflow, flow: batch }
+  - { from: airflow, to: staging, flow: batch }
+  - { from: staging, to: dbt,     flow: batch }
+  - { from: dbt,     to: marts,   flow: batch }
+  - { from: marts,   to: dash,    flow: stream }
+  - { from: marts,   to: sqllab,  flow: stream }
+  - { from: marts,   to: alerts,  flow: stream }

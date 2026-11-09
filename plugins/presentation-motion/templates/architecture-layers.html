@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="tr" data-theme="corporate-dark">
+<head>
+<meta charset="utf-8">
+<title>Mimari katmanları (veri akışı)</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  /* architecture.yaml → JSON (pm-data) ile sürülen, katman katman açılan mimari */
+  #diagram { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+  .layer-label { font: 600 22px var(--font-sans); letter-spacing: .14em; text-transform: uppercase; fill: var(--muted); }
+  .node rect { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+  .node .lbl { font: 650 28px var(--font-sans); fill: var(--ink); }
+  .node .sub { font: 400 20px var(--font-sans); fill: var(--ink-2); }
+  .node .dot { fill: var(--accent); }
+  .edge { fill: none; stroke: var(--line); stroke-width: 3; }
+  .p { fill: var(--flow); }
+  .p.batch { fill: var(--warn); }
+  .legend { position: absolute; right: var(--safe); top: 140px; display: flex; gap: 36px; font-size: 22px; color: var(--ink-2); }
+  .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 10px; vertical-align: -1px; }
+</style>
+</head>
+<body data-hold="4">
+<div class="pm-stage">
+  <svg id="diagram" viewBox="0 0 1920 1080"></svg>
+  <div class="pm-eyebrow" id="eyebrow"></div>
+  <h2 class="pm-h2" id="title"></h2>
+  <div class="legend" id="legend"><span><i style="background:var(--flow)"></i>Akış (stream)</span><span><i style="background:var(--warn)"></i>Toplu (batch)</span></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Mimari",
+  "title": "Kaynaktan rapora veri akışı",
+  "layers": [
+    { "id": "sources", "label": "Kaynaklar" },
+    { "id": "ingest", "label": "Alım" },
+    { "id": "lakehouse", "label": "Lakehouse" },
+    { "id": "serving", "label": "Sunum" }
+  ],
+  "nodes": [
+    { "id": "erp", "label": "ERP", "sub": "günlük", "layer": "sources" },
+    { "id": "iot", "label": "IoT Sensörleri", "sub": "saniyede 50 bin olay", "layer": "sources" },
+    { "id": "crm", "label": "CRM", "sub": "saatlik", "layer": "sources" },
+    { "id": "stream", "label": "Akış Katmanı", "sub": "olay kuyruğu", "layer": "ingest" },
+    { "id": "batch", "label": "Toplu Alım", "sub": "zamanlanmış işler", "layer": "ingest" },
+    { "id": "bronze", "label": "Bronze", "sub": "ham veri", "layer": "lakehouse" },
+    { "id": "silver", "label": "Silver", "sub": "temiz veri", "layer": "lakehouse" },
+    { "id": "gold", "label": "Gold", "sub": "iş metrikleri", "layer": "lakehouse" },
+    { "id": "bi", "label": "Dashboard", "sub": "Superset", "layer": "serving" },
+    { "id": "api", "label": "Veri API", "sub": "uygulamalar", "layer": "serving" }
+  ],
+  "edges": [
+    { "from": "iot", "to": "stream", "flow": "stream" },
+    { "from": "erp", "to": "batch", "flow": "batch" },
+    { "from": "crm", "to": "batch", "flow": "batch" },
+    { "from": "stream", "to": "bronze", "flow": "stream" },
+    { "from": "batch", "to": "bronze", "flow": "batch" },
+    { "from": "bronze", "to": "silver", "flow": "stream" },
+    { "from": "silver", "to": "gold", "flow": "stream" },
+    { "from": "gold", "to": "bi", "flow": "stream" },
+    { "from": "gold", "to": "api", "flow": "stream" }
+  ],
+  "lakehouseStacked": true
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  document.getElementById('eyebrow').textContent = D.eyebrow || '';
+  document.getElementById('title').textContent = D.title || '';
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('diagram');
+  const mk = (tag, attrs, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+
+  // --- Yerleşim: katmanlar sütun, düğümler sütunda dikey ortalı ---
+  const W = 300, H = 104, topY = 380, bottomY = 1010;
+  const left = 120, right = 1800;
+  const colX = i => left + i * ((right - left - W) / (D.layers.length - 1));
+  const pos = {};
+  D.layers.forEach((L, li) => {
+    const ns = D.nodes.filter(n => n.layer === L.id);
+    const gap = Math.min(70, (bottomY - topY - ns.length * H) / Math.max(1, ns.length - 1));
+    const total = ns.length * H + (ns.length - 1) * gap;
+    const y0 = topY + (bottomY - topY - total) / 2;
+    ns.forEach((n, i) => (pos[n.id] = { x: colX(li), y: y0 + i * (H + gap), li }));
+    mk('text', { x: colX(li), y: topY - 40, class: 'layer-label', 'data-layer': L.id }).textContent = L.label;
+  });
+
+  // --- Kenarlar (bezier) ---
+  const edgesG = mk('g', {});
+  const partsG = mk('g', {});
+  const edges = D.edges.map(e => {
+    const a = pos[e.from], b = pos[e.to];
+    let d;
+    if (a.li === b.li) { // aynı katman (bronze→silver→gold dikey)
+      d = `M ${a.x + W / 2} ${a.y + H} L ${b.x + W / 2} ${b.y}`;
+    } else {
+      const x1 = a.x + W, y1 = a.y + H / 2, x2 = b.x, y2 = b.y + H / 2, mx = (x1 + x2) / 2;
+      d = `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`;
+    }
+    const path = mk('path', { d, class: 'edge' }, edgesG);
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len; path.style.strokeDashoffset = len;
+    // Partiküller: stream = eşit aralıklı sürekli akış, batch = gruplar halinde paket
+    const n = e.flow === 'batch' ? 3 : 5;
+    const ps = Array.from({ length: n }, () => mk('circle', { r: 7, class: 'p ' + (e.flow || ''), opacity: 0 }, partsG));
+    return { ...e, path, len, ps, li: Math.max(a.li, b.li) };
+  });
+
+  // --- Düğümler ---
+  const nodeEls = {};
+  D.nodes.forEach(n => {
+    const p = pos[n.id];
+    const g = mk('g', { class: 'node', transform: `translate(${p.x} ${p.y})` });
+    mk('rect', { width: W, height: H, rx: 16 }, g);
+    mk('circle', { cx: 28, cy: H / 2, r: 8, class: 'dot' }, g);
+    mk('text', { x: 52, y: n.sub ? 46 : 62, class: 'lbl' }, g).textContent = n.label;
+    if (n.sub) mk('text', { x: 52, y: 78, class: 'sub' }, g).textContent = n.sub;
+    nodeEls[n.id] = g;
+  });
+
+  // --- Koreografi: katman katman aç, sonra veriyi akıt ---
+  const tl = PM.timeline();
+  tl.from(['#eyebrow', '#title'], { opacity: 0, y: 24, stagger: 0.12, duration: 0.6 });
+  D.layers.forEach((L, li) => {
+    const at = 0.6 + li * 1.1;
+    tl.from(`[data-layer="${L.id}"]`, { opacity: 0, y: 10, duration: 0.4 }, at);
+    const ns = D.nodes.filter(n => n.layer === L.id).map(n => nodeEls[n.id]);
+    tl.from(ns, { opacity: 0, y: 24, scale: 0.94, transformOrigin: '50% 50%', stagger: 0.1, duration: 0.55 }, at + 0.1);
+    edges.filter(e => e.li === li).forEach((e, k) => tl.to(e.path, { strokeDashoffset: 0, duration: 0.6, ease: 'power2.inOut' }, at + 0.35 + k * 0.05));
+  });
+  tl.from('#legend', { opacity: 0, duration: 0.5 });
+
+  // Akış: tek bir ilerleme değişkeni tüm partikülleri sürer (seek edilebilir, deterministik)
+  const flow = { t: 0 };
+  const FLOW_SEC = 6;
+  tl.set(edges.flatMap(e => e.ps), { opacity: 1 });
+  tl.to(flow, {
+    t: FLOW_SEC, duration: FLOW_SEC, ease: 'none',
+    onUpdate: () => edges.forEach(e => e.ps.forEach((c, i) => {
+      const speed = e.flow === 'batch' ? 0.35 : 0.5;              // tur/sn
+      const off = e.flow === 'batch' ? i * 0.04 : i / e.ps.length; // batch: paket, stream: eşit aralık
+      const u = (flow.t * speed + off) % 1;
+      const pt = e.path.getPointAtLength(u * e.len);
+      c.setAttribute('cx', pt.x); c.setAttribute('cy', pt.y);
+      c.setAttribute('opacity', Math.min(1, u * 8, (1 - u) * 8));
+    })),
+  });
+  PM.start();
+</script>
+</body>
+</html>

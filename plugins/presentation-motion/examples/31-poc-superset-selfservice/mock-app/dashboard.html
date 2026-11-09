@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>Satış Performansı – sahte dashboard</title>
+<!-- Superset dashboard görünümünü taklit eden yerel sayfa. Logo/marka yok; tüm veriler sentetik. -->
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Inter,sans-serif;background:#f7f7f7;color:#1f2937}
+.topbar{height:56px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;padding:0 24px;gap:28px;font-size:15px}
+.topbar b{font-size:17px}.topbar nav span{margin-right:22px;color:#6b7280}
+.user-email{margin-left:auto;color:#6b7280}
+.wrap{display:flex;height:calc(100vh - 56px)}
+.filter-bar{width:280px;background:#fff;border-right:1px solid #e5e7eb;padding:20px}
+.filter-bar h4{margin:0 0 18px;font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:#6b7280}
+.filter-bar label{display:block;font-size:14px;margin:16px 0 6px;color:#374151;font-weight:600}
+.filter-bar select{width:100%;font-size:16px;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;background:#fff}
+#apply{margin-top:24px;width:100%;padding:10px;font-size:16px;font-weight:600;color:#fff;background:#20a7c9;border:0;border-radius:4px}
+main{flex:1;padding:20px 28px;overflow:hidden}
+.dash-title{font-size:26px;font-weight:700;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:200px 330px;gap:18px}
+.chart-slice{background:#fff;border:1px solid #e5e7eb;border-radius:4px;padding:16px 20px;position:relative}
+.header-title{font-size:16px;font-weight:600;margin-bottom:10px}
+.big{font-size:64px;font-weight:700;line-height:1.1}.sub{color:#6b7280;font-size:15px}
+.good{color:#059669}.warn{color:#d97706}
+.row{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:15px}
+.row span{width:90px}.bar{height:26px;background:#20a7c9;border-radius:2px;transition:width .6s}
+.wide{grid-column:span 2}
+svg{width:100%;height:250px}
+table{width:100%;border-collapse:collapse;font-size:15px}td,th{padding:7px 4px;border-bottom:1px solid #f0f0f0;text-align:left}
+</style></head><body>
+<div class="topbar"><b>Veri Portalı</b><nav><span>Dashboard'lar</span><span>Grafikler</span><span>SQL Lab</span></nav>
+<span class="user-email">demo.kullanici@ornek.com</span></div>
+<div class="wrap">
+  <aside class="filter-bar">
+    <h4>Filtreler</h4>
+    <label for="region">Bölge</label>
+    <select id="region"><option>Tümü</option><option>Marmara</option><option>Ege</option><option>İç Anadolu</option></select>
+    <label for="period">Dönem</label>
+    <select id="period"><option>Son 12 ay</option><option>Bu çeyrek</option></select>
+    <button id="apply">Filtreleri uygula</button>
+  </aside>
+  <main>
+    <h1 class="dash-title">Satış Performansı</h1>
+    <div class="grid">
+      <div class="chart-slice" id="kpi-target"><div class="header-title">Hedef gerçekleşme</div>
+        <div class="big good" id="target">%94,2</div><div class="sub">aylık hedefe göre</div></div>
+      <div class="chart-slice" id="kpi-revenue"><div class="header-title">Ciro (bu ay)</div>
+        <div class="big" id="revenue">48,6 mn ₺</div><div class="sub">geçen aya göre <span class="good" id="rev-delta">+%6,1</span></div></div>
+      <div class="chart-slice" id="kpi-customers"><div class="header-title">Aktif müşteri</div>
+        <div class="big" id="customers">12.480</div><div class="sub">son 30 gün</div></div>
+      <div class="chart-slice wide" id="trend"><div class="header-title">Aylık ciro trendi (mn ₺)</div>
+        <svg viewBox="0 0 800 250" preserveAspectRatio="none"><polyline id="line" fill="none" stroke="#20a7c9" stroke-width="4"
+          points="0,200 73,190 145,175 218,182 291,160 364,150 436,140 509,128 582,120 655,105 727,96 800,80"/></svg></div>
+      <div class="chart-slice" id="regions"><div class="header-title">Bölge satışları</div>
+        <div class="row"><span>Marmara</span><div class="bar" style="width:80%"></div></div>
+        <div class="row"><span>Ege</span><div class="bar" style="width:55%"></div></div>
+        <div class="row"><span>İç Anadolu</span><div class="bar" style="width:42%"></div></div>
+        <div class="row"><span>Akdeniz</span><div class="bar" style="width:30%"></div></div></div>
+    </div>
+  </main>
+</div>
+<script>
+const V={
+  'Tümü':{t:'%94,2',r:'48,6 mn ₺',c:'12.480',d:'+%6,1',b:[80,55,42,30],p:'0,200 73,190 145,175 218,182 291,160 364,150 436,140 509,128 582,120 655,105 727,96 800,80'},
+  'Marmara':{t:'%103,5',r:'21,3 mn ₺',c:'5.912',d:'+%9,4',b:[95,20,15,10],p:'0,210 73,195 145,170 218,165 291,140 364,120 436,118 509,98 582,85 655,70 727,52 800,35'},
+  'Ege':{t:'%88,7',r:'11,2 mn ₺',c:'2.840',d:'+%2,3',b:[15,90,12,8],p:'0,180 73,182 145,176 218,178 291,170 364,165 436,168 509,160 582,158 655,150 727,149 800,140'},
+  'İç Anadolu':{t:'%91,0',r:'9,1 mn ₺',c:'2.206',d:'+%4,0',b:[12,10,88,9],p:'0,190 73,188 145,180 218,176 291,170 364,160 436,158 509,150 582,146 655,138 727,132 800,124'}};
+document.getElementById('apply').onclick=()=>{const v=V[document.getElementById('region').value];
+  document.getElementById('target').textContent=v.t;document.getElementById('revenue').textContent=v.r;
+  document.getElementById('customers').textContent=v.c;document.getElementById('rev-delta').textContent=v.d;
+  document.getElementById('line').setAttribute('points',v.p);
+  document.querySelectorAll('#regions .bar').forEach((b,i)=>b.style.width=v.b[i]+'%');};
+</script></body></html>

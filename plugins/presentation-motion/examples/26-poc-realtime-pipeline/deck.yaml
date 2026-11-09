@@ -1,0 +1,8 @@
+title: "Gerçek Zamanlı Satış Analitiği – POC"
+audience: executive          # technical | executive | government | academic
+minutes: 1
+theme: corporate-dark
+language: tr
+output:
+  profile: pptx
+  max_size_mb: 25

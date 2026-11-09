@@ -1,0 +1,53 @@
+# Yönetici brifingi (BLUF) — iskelet. Hazır şablonlarla çalışır; 📝 sahneler eklenince genişletin.
+#   node ../../capture/compose/compose.mjs demo.yaml
+title: "Veri Platformu Yatırım Brifingi"
+theme: corporate-light
+output: { profile: pptx, resolution: 1920x1080, fps: 30, max_size_mb: 25 }
+
+segments:
+  # 1. Karar/istek + tek sayı (ilk 30 sn)
+  - type: html
+    template: bluf-headline
+    data:
+      kicker: "Talep"
+      headline: "Veri platformunun üretime alınması için 1,2 milyon ₺ onayı"
+      number: 7
+      suffix: " ay"
+      label: "yatırımın geri dönüş süresi (tahmini, 6–9 ay aralığı)"
+      source: "Finans ve POC ölçümleri, Ekim 2026"
+
+  # 2. Neden şimdi
+  - type: html
+    template: bullets
+    data:
+      eyebrow: "Neden şimdi?"
+      title: "Bugünkü yapının iş maliyeti"
+      items:
+        - { text: "Kararlar dünün verisiyle alınıyor", detail: "Raporlar 24 saat gecikmeli" }
+        - { text: "Aynı rakam üç farklı raporda", detail: "Tek doğru kaynak yok" }
+        - { text: "Altyapı maliyeti her yıl %30 artıyor", detail: "Kullanılmayan kapasite için ödeme" }
+      highlight: 0
+
+  # 3. Üç kanıt
+  - type: html
+    template: kpi-counter-row
+    data:
+      eyebrow: "Kanıt"
+      title: "POC'de ölçülen etki"
+      items:
+        - { label: "Rapor gecikmesi", from: 1440, to: 5, unit: "dk", delta: "−%99,7", tone: good }
+        - { label: "Yıllık tasarruf (tahmini)", from: 0, to: 2.1, digits: 1, unit: "milyon ₺", delta: "altyapı + iş gücü", tone: good }
+        - { label: "Veri kalite skoru", from: 0, to: 97.4, digits: 1, prefix: "%", delta: "+21 puan", tone: good }
+      source: "POC ortamı, Ağustos–Ekim 2026"
+
+  # 4. Risk / 5. Yol haritası → risk-matrix ve roadmap-gantt şablonları 📝
+
+  # 6. İstek tekrar
+  - type: html
+    template: decision-ask
+    data:
+      eyebrow: "Karar"
+      title: "Sizden beklenen onay"
+      ask: "Üretime geçiş: 1,2 milyon ₺ ve 3 kişilik ekip, 6 ay"
+      items: ["Mevcut sistem paralel çalışır, geri dönüş planı hazır", "Aşamalı geçiş: önce satış, sonra finans", "Başarı ölçütü: rapor gecikmesi < 10 dk", "Aylık yönetim raporu"]
+      deadline: "Karar tarihi: 30 Kasım 2026"

@@ -1,0 +1,29 @@
+# Diagram-as-data: architecture-layers şablonu bu dosyadan çizilir.
+eyebrow: "Mimari"
+title: "Kaynaktan rapora veri akışı"
+layers:
+  - { id: sources,   label: "Kaynaklar" }
+  - { id: ingest,    label: "Alım" }
+  - { id: lakehouse, label: "Lakehouse" }
+  - { id: serving,   label: "Sunum" }
+nodes:
+  - { id: erp,    label: "ERP",            sub: "günlük",               layer: sources }
+  - { id: pos,    label: "Mağaza POS",     sub: "saniyede 2 bin işlem", layer: sources }
+  - { id: crm,    label: "CRM",            sub: "saatlik",              layer: sources }
+  - { id: stream, label: "Akış Katmanı",   sub: "olay kuyruğu",         layer: ingest }
+  - { id: batch,  label: "Toplu Alım",     sub: "zamanlanmış işler",    layer: ingest }
+  - { id: bronze, label: "Bronze",         sub: "ham veri",             layer: lakehouse }
+  - { id: silver, label: "Silver",         sub: "temiz veri",           layer: lakehouse }
+  - { id: gold,   label: "Gold",           sub: "iş metrikleri",        layer: lakehouse }
+  - { id: bi,     label: "Dashboard",      sub: "Superset",             layer: serving }
+  - { id: api,    label: "Veri API",       sub: "uygulamalar",          layer: serving }
+edges:
+  - { from: pos,    to: stream, flow: stream }
+  - { from: erp,    to: batch,  flow: batch }
+  - { from: crm,    to: batch,  flow: batch }
+  - { from: stream, to: bronze, flow: stream }
+  - { from: batch,  to: bronze, flow: batch }
+  - { from: bronze, to: silver, flow: stream }
+  - { from: silver, to: gold,   flow: stream }
+  - { from: gold,   to: bi,     flow: stream }
+  - { from: gold,   to: api,    flow: stream }

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>Sahte dashboard</title>
+<style>
+body{margin:0;font-family:Segoe UI,sans-serif;background:#f1f5f9;color:#0f172a}
+header{background:#fff;padding:20px 40px;display:flex;gap:20px;align-items:center;border-bottom:1px solid #e2e8f0}
+select,button{font-size:20px;padding:8px 14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding:40px}
+.chart-container{background:#fff;border-radius:12px;padding:24px;height:300px}
+.bar{height:28px;background:#2563eb;margin:12px 0;border-radius:4px;transition:width .6s}
+.user-email{margin-left:auto}
+</style></head><body>
+<header><b>Satış Dashboard</b>
+<select id="region"><option>Tümü</option><option>Marmara</option><option>Ege</option></select>
+<button id="apply">Uygula</button><span class="user-email">demo.kullanici@ornek.com</span></header>
+<div class="grid">
+  <div class="chart-container" id="c1"><h3>Bölge satışları</h3><div class="bar" style="width:80%"></div><div class="bar" style="width:55%"></div><div class="bar" style="width:30%"></div></div>
+  <div class="chart-container" id="c2"><h3>Günlük gelir</h3><div class="bar" style="width:60%"></div></div>
+  <div class="chart-container" id="c3"><h3>Müşteri sayısı</h3><div style="font-size:72px;font-weight:800" id="kpi">12.480</div></div>
+</div>
+<script>
+document.getElementById('apply').onclick=()=>{const r=document.getElementById('region').value;
+document.querySelectorAll('#c1 .bar').forEach((b,i)=>b.style.width=(r==='Marmara'?[95,40,20]:[80,55,30])[i]+'%');
+document.getElementById('kpi').textContent=r==='Marmara'?'5.912':'12.480';};
+</script></body></html>

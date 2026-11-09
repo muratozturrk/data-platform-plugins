@@ -1,0 +1,57 @@
+# Gerçek Superset ile aynı demo.
+# Hazırlık (bir kez):
+#   set SUPERSET_USER=demo & set SUPERSET_PASS=...      (Windows)  /  export ...  (Linux/macOS)
+#   node ../../capture/playwright/recorder.mjs --login superset --base-url http://localhost:8088 --save .auth/superset.json
+# Çalıştırma:
+#   node ../../capture/compose/compose.mjs demo.superset.yaml
+# Not: Seçicileri (data-test değerleri, grafik başlıkları) kendi Superset sürümünüzde doğrulayın.
+title: "Gerçek Zamanlı Satış Analitiği – POC (Superset)"
+theme: corporate-dark
+baseUrl: http://localhost:8088
+output: { profile: pptx, resolution: 1920x1080, fps: 30, max_size_mb: 25 }
+
+segments:
+  - type: html
+    template: bluf-headline
+
+  - type: html
+    template: architecture-layers
+    source: architecture.yaml
+
+  - type: browser
+    app: superset
+    url: "/superset/dashboard/sales/?standalone=1"
+    auth: .auth/superset.json
+    scale: 2
+    mask: ["[data-pii]"]
+    steps:
+      - wait: ready
+      - caption: "Bölge filtresi seçiliyor"
+      - click: '[data-test="filter-control-name"]:has-text("Bölge")'
+      - select: { option: "Marmara" }
+      - click: '[data-test="filter-bar__apply-button"]'
+      - wait: ready
+      - caption: "Tüm grafikler 5 dakikalık veriyle güncellendi"
+      - zoom: { selector: '.chart-slice:has(.header-title:has-text("Bölge Satışları"))', scale: 1.5 }
+      - hold: 2
+      - zoom: false
+      - caption: null
+
+  - type: browser
+    app: superset
+    url: "/sqllab/"
+    auth: .auth/superset.json
+    steps:
+      - wait: ready
+      - caption: "SQL Lab: analist aynı veriye doğrudan erişiyor"
+      - type: { selector: ".ace_text-input", text: "SELECT region, SUM(amount) AS ciro FROM gold.daily_sales GROUP BY 1 ORDER BY 2 DESC" }
+      - click: '[data-test="run-query-action"]'
+      - wait: { selector: '[data-test="table-container"]' }
+      - spotlight: { selector: '[data-test="table-container"]', hold: 2 }
+      - caption: null
+
+  - type: html
+    template: kpi-counter-row
+
+  - type: html
+    template: decision-ask

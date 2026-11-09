@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="tr" data-theme="corporate-light">
+<head>
+<meta charset="utf-8">
+<title>Karar / istek sahnesi</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  .box { position: relative; margin-top: 64px; padding: 64px 72px; border-radius: 28px; background: var(--surface); }
+  .box svg.frame { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .box svg.frame rect { fill: none; stroke: var(--accent); stroke-width: 4; }
+  .ask { font-size: 64px; font-weight: 750; line-height: 1.12; letter-spacing: -0.02em; max-width: 1400px; }
+  .items { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 64px; }
+  .it { display: flex; gap: 22px; align-items: center; font-size: var(--fs-body); color: var(--ink-2); }
+  .it svg { flex: none; width: 44px; height: 44px; }
+  .it circle { fill: color-mix(in srgb, var(--good) 14%, transparent); }
+  .it path { fill: none; stroke: var(--good); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .deadline { margin-top: 48px; font-size: var(--fs-small); color: var(--muted); }
+</style>
+</head>
+<body data-hold="3">
+<div class="pm-stage">
+  <div class="pm-eyebrow" id="eyebrow"></div>
+  <h2 class="pm-h1" id="title"></h2>
+  <div class="box" id="box">
+    <svg class="frame"><rect x="2" y="2" rx="28" ry="28"/></svg>
+    <div class="ask" id="ask"></div>
+    <div class="items" id="items"></div>
+    <div class="deadline" id="deadline"></div>
+  </div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Karar",
+  "title": "Sizden beklenen onay",
+  "ask": "Pilot için 3 aylık üretim ortamı ve 2 kişilik ekip",
+  "items": ["Bütçe: 1,2 milyon ₺ (onaylı bütçe içinde)", "Risk: düşük — mevcut sistem paralel çalışır", "Ölçüt: rapor gecikmesi < 10 dk", "Geri dönüş: 7 ay"],
+  "deadline": "Karar tarihi: 30 Kasım 2026"
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  for (const k of ['eyebrow', 'title', 'ask', 'deadline']) document.getElementById(k).textContent = D[k] || '';
+  const items = document.getElementById('items');
+  D.items.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'it';
+    el.innerHTML = `<svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="22"/><path d="M13 23 l6 6 l12 -13"/></svg><span></span>`;
+    el.querySelector('span').textContent = t;
+    items.appendChild(el);
+  });
+
+  // SVG rect'in gerçek çevresi: kutu boyutundan hesaplanır
+  const rect = document.querySelector('.frame rect');
+  const box = document.getElementById('box');
+  rect.setAttribute('width', box.offsetWidth - 4);
+  rect.setAttribute('height', box.offsetHeight - 4);
+  const per = rect.getTotalLength();
+  gsap.set(rect, { strokeDasharray: per, strokeDashoffset: per });
+  document.querySelectorAll('.it path').forEach(p => { const l = p.getTotalLength(); gsap.set(p, { strokeDasharray: l, strokeDashoffset: l }); });
+
+  const tl = PM.timeline();
+  tl.from(['#eyebrow', '#title'], { opacity: 0, y: 24, stagger: 0.12, duration: 0.6 })
+    .to(rect, { strokeDashoffset: 0, duration: 1.4, ease: 'power2.inOut' }, 0.5)
+    .from('#ask', { opacity: 0, y: 30, duration: 0.8 }, 0.8);
+  document.querySelectorAll('.it').forEach((el, i) => {
+    tl.from(el, { opacity: 0, x: -20, duration: 0.5 }, 1.8 + i * 0.35)
+      .to(el.querySelector('path'), { strokeDashoffset: 0, duration: 0.4, ease: 'power2.out' }, '<0.15');
+  });
+  tl.from('#deadline', { opacity: 0, duration: 0.5 }, '+=0.2');
+  PM.start();
+</script>
+</body>
+</html>

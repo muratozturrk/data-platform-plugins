@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="tr" data-theme="corporate-light">
+<head>
+<meta charset="utf-8">
+<title>BLUF (önce sonuç) — yönetici sahnesi</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  /* Yönetici kuralı: tek cümle + tek sayı. Hareket az ve sakin. */
+  .grid { position: absolute; inset: var(--safe); display: grid; grid-template-columns: 1.25fr 1fr; gap: 100px; align-items: center; }
+  .headline { font-size: 92px; line-height: 1.08; font-weight: 750; letter-spacing: -0.025em; }
+  .big { font-size: 300px; font-weight: 800; line-height: .9; letter-spacing: -0.05em; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .big-label { font-size: var(--fs-body); color: var(--ink-2); margin-top: 24px; max-width: 560px; }
+</style>
+</head>
+<body data-hold="3">
+<div class="pm-stage">
+  <div class="grid">
+    <div>
+      <div class="pm-eyebrow" id="kicker"></div>
+      <div class="headline" id="headline" style="margin-top:28px"></div>
+    </div>
+    <div>
+      <div class="big"><span id="num"></span><span id="suffix"></span></div>
+      <div class="big-label" id="label"></div>
+    </div>
+  </div>
+  <div class="pm-source" id="source"></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "kicker": "Özet",
+  "headline": "Raporlar artık 24 saat yerine 5 dakikada hazır",
+  "number": 288,
+  "suffix": "×",
+  "label": "daha hızlı karar verisi — ek donanım yatırımı olmadan",
+  "source": "POC ölçümleri, Ekim 2026"
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="../vendor/gsap/SplitText.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  gsap.registerPlugin(SplitText);
+  const D = PM.data;
+  for (const k of ['kicker', 'headline', 'suffix', 'label', 'source']) document.getElementById(k).textContent = D[k] || '';
+  const num = document.getElementById('num');
+  const o = { v: 0 };
+  num.textContent = PM.fmt(0);
+  const words = SplitText.create('#headline', { type: 'words', mask: 'words' }).words;
+
+  const tl = PM.timeline();
+  tl.from('#kicker', { opacity: 0, duration: 0.5 })
+    .from(words, { yPercent: 100, duration: 0.7, stagger: 0.05, ease: 'power3.out' }, 0.2)
+    .to(o, { v: D.number, duration: 1.6, ease: 'power2.out', onUpdate: () => (num.textContent = PM.fmt(o.v)) }, 0.9)
+    .from('#suffix', { opacity: 0, duration: 0.4 }, '-=0.5')
+    .from('#label', { opacity: 0, y: 16, duration: 0.6 }, '-=0.3')
+    .from('#source', { opacity: 0, duration: 0.5 }, '-=0.2');
+  PM.start();
+</script>
+</body>
+</html>

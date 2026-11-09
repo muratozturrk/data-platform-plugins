@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="tr" data-theme="academic">
+<head>
+<meta charset="utf-8">
+<title>Kayıp fonksiyonu</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  /* Formül KaTeX yerine HTML ile dizildi (vendor'da KaTeX fontları yok). */
+  .eqwrap { position: absolute; left: 120px; right: 120px; top: 300px; display: flex; justify-content: center; align-items: center; }
+  .eq { display: inline-flex; align-items: center; gap: 22px; font-family: "Cambria Math", "Cambria", "Times New Roman", serif; font-size: 84px; color: var(--ink); }
+  .eq i { font-style: italic; }
+  .frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1; font-size: 64px; }
+  .frac .bar { width: 64px; height: 4px; background: currentColor; margin: 6px 0; }
+  .sum { display: inline-flex; flex-direction: column; align-items: center; line-height: 1; }
+  .sum .s { font-size: 120px; line-height: .95; }
+  .sum .lim { font-size: 34px; }
+  .sub { font-size: 44px; vertical-align: -0.35em; }
+  .sup { font-size: 44px; vertical-align: 0.7em; }
+  .term { padding: 4px 10px; border-radius: 12px; }
+  .eqno { position: absolute; right: 0; font-size: 40px; color: var(--muted); font-family: var(--font-sans); }
+  .notes { position: absolute; left: 120px; right: 120px; top: 560px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+  .n { background: var(--surface); border-top: 8px solid var(--accent); border-radius: 10px; padding: 22px 24px; font-size: 30px; line-height: 1.3; color: var(--ink-2); }
+  .n b { display: block; font-size: 34px; color: var(--ink); margin-bottom: 6px; font-family: "Cambria Math", "Cambria", serif; }
+  .ema { position: absolute; left: 120px; right: 120px; top: 830px; font-size: 32px; color: var(--ink-2); text-align: center; }
+  .ema span { font-family: "Cambria Math", "Cambria", serif; font-size: 40px; color: var(--ink); }
+</style>
+</head>
+<body data-hold="3">
+<div class="pm-stage">
+  <div class="pm-eyebrow" id="eyebrow"></div>
+  <h2 class="pm-h2" id="title"></h2>
+
+  <div class="eqwrap">
+    <div class="eq" id="eq">
+      <span class="term" id="t0"><i>ℒ</i> =</span>
+      <span class="term" id="t1"><span class="frac"><span>1</span><span class="bar"></span><i>M</i></span></span>
+      <span class="term" id="t2"><span class="sum"><span class="lim"><i>M</i></span><span class="s">∑</span><span class="lim"><i>i</i>=1</span></span></span>
+      <span class="term" id="t3"><span class="sum"><span class="lim">&nbsp;</span><span class="s">∑</span><span class="lim"><i>j</i> ∈ <i>B</i><sub style="font-size:24px"><i>i</i></sub></span></span></span>
+      <span>‖</span>
+      <span class="term" id="t4"><i>ŝ</i><span class="sub"><i>y</i><sub style="font-size:28px"><i>j</i></sub></span></span>
+      <span>−</span>
+      <span class="term" id="t5"><i>s</i><span class="sub"><i>y</i><sub style="font-size:28px"><i>j</i></sub></span></span>
+      <span>‖<span class="sup">2</span><span class="sub" style="margin-left:-22px">2</span></span>
+    </div>
+    <div class="eqno">(1)</div>
+  </div>
+
+  <div class="notes" id="notes"></div>
+  <div class="ema" id="ema"></div>
+  <div class="pm-source" id="source"></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Yöntem · 3/3",
+  "title": "Kayıp: temsil uzayında ortalama L2 uzaklığı",
+  "notes": [
+    { "term": "t1", "head": "1 / M", "text": "M = 4 hedef blok üzerinden ortalama" },
+    { "term": "t3", "head": "j ∈ Bᵢ", "text": "i. hedef bloğundaki yamalar" },
+    { "term": "t4", "head": "ŝ", "text": "Tahmincinin bağlamdan ürettiği temsil" },
+    { "term": "t5", "head": "s", "text": "Hedef kodlayıcının çıktısı (gradyan akmaz)" }
+  ],
+  "ema": "Hedef kodlayıcı: <span>θ̄ ← m·θ̄ + (1 − m)·θ</span> &nbsp;·&nbsp; m: 0,996 → 1,0 &nbsp;·&nbsp; yalnız f<sub>θ</sub> ve g<sub>φ</sub> AdamW ile eğitilir",
+  "source": "Kaynak: Assran vd. (2023), Bölüm 3 (kayıp) ve Ek A (optimizasyon). EMA gösterimi standart biçimdedir."
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  for (const k of ['eyebrow', 'title', 'source']) document.getElementById(k).textContent = D[k];
+  document.getElementById('ema').innerHTML = D.ema;
+  const notes = document.getElementById('notes');
+  D.notes.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'n';
+    el.innerHTML = `<b>${n.head}</b>${n.text}`;
+    notes.appendChild(el);
+  });
+
+  const tl = PM.timeline();
+  tl.from('#eyebrow', { opacity: 0, y: 16, duration: 0.5 })
+    .from('#title', { opacity: 0, y: 30, duration: 0.7 }, '-=0.2')
+    .from('#eq > *', { opacity: 0, y: 30, stagger: 0.12, duration: 0.6 }, 1.0)
+    .from('.eqno', { opacity: 0, duration: 0.4 }, '-=0.2');
+
+  // Her not açılırken ilgili terim vurgulanır, sonra vurgu sönümlenir
+  [...document.querySelectorAll('.n')].forEach((el, i) => {
+    const term = '#' + D.notes[i].term;
+    const at = 3.0 + i * 1.3;
+    tl.from(el, { opacity: 0, y: 30, duration: 0.5 }, at)
+      .fromTo(term, { backgroundColor: 'rgba(231,229,228,0)' }, { backgroundColor: 'rgba(231,229,228,1)', duration: 0.35 }, at)
+      .to(term, { backgroundColor: 'rgba(231,229,228,0)', duration: 0.5 }, at + 1.0);
+  });
+  tl.from('#ema', { opacity: 0, y: 20, duration: 0.6 }, '+=0.3')
+    .from('#source', { opacity: 0, duration: 0.5 }, '<');
+  PM.start();
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+# Superset self-servis POC demo videosu — çalıştırma:
+#   node ../../capture/compose/compose.mjs demo.yaml
+# Superset yerine mock-app/dashboard.html kullanır (her makinede çalışsın diye).
+# Gerçek Superset için: demo.superset.yaml
+# [VERİ GEREKLİ] işaretli tüm rakamlar örnektir; gerçek POC ölçümleriyle değiştirin (bkz. storyboard.md).
+title: "Self-Servis Raporlama – Superset POC"
+theme: corporate-light
+output: { profile: pptx, resolution: 1920x1080, fps: 30, max_size_mb: 25 }
+
+segments:
+  - type: html
+    template: title
+    data:
+      eyebrow: "POC Sonuç Sunumu · Kasım 2026"
+      title: "Self-servis raporlama"
+      subtitle: "Bölge müdürlerinin rapor için BI ekibini beklemediği veri portalı"
+      author: "Veri Mühendisliği Ekibi"
+      date: "Kasım 2026"
+
+  # 1 · Problem / özet
+  - type: html
+    template: bluf-headline
+    data:
+      kicker: "Özet"
+      headline: "Bölge müdürleri raporlarını 3 gün beklemeden kendileri alıyor"
+      number: 72                       # [VERİ GEREKLİ] 72 saat → 1 saat
+      suffix: "×"
+      label: "daha hızlı rapor: 3 gün yerine 1 saat, ek lisans maliyeti yok"
+      source: "Örnek değerler · [VERİ GEREKLİ] POC ölçümleri"
+
+  # 2 · Mimari
+  - type: html
+    template: architecture-layers
+    source: data/architecture.yaml
+
+  # 3 · Pipeline çalışıyor
+  - type: html
+    template: terminal
+    data:
+      eyebrow: "Pipeline"
+      title: "Modeller testlerle birlikte, tek komutla güncelleniyor"
+      window: "~/veri-portali"
+      prompt: "$ "
+      lines:
+        - { cmd: "dbt build --select marts.sales" }
+        - { out: "1 of 6 OK created model marts.fct_sales ......... [OK in 3.84s]", cls: ok }
+        - { out: "2 of 6 OK created model marts.dim_region ........ [OK in 0.92s]", cls: ok }
+        - { out: "3 of 6 OK created model marts.fct_target ........ [OK in 1.47s]", cls: ok }
+        - { out: "4 of 6 PASS not_null_fct_sales_amount ........... [PASS in 0.31s]", cls: ok }
+        - { out: "5 of 6 PASS unique_dim_region_id ................ [PASS in 0.22s]", cls: ok }
+        - { out: "6 of 6 PASS relationships_fct_sales_region ...... [PASS in 0.40s]", cls: ok }
+        - { out: "Completed successfully. PASS=6 WARN=0 ERROR=0", cls: ok }
+        - { cmd: "superset import-dashboards -p satis_performansi.zip" }
+        - { out: "Dashboard 'Satış Performansı' imported (5 charts)", cls: ok }
+
+  # 4 · Canlı sonuç
+  - type: browser
+    app: generic
+    url: "mock-app/dashboard.html"      # deck klasörüne göre
+    scale: 2
+    mask: [".user-email"]
+    steps:
+      - caption: "Bölge müdürü kendi filtresini seçiyor"
+      - select: { selector: "#region", option: "Marmara" }
+      - click: "#apply"
+      - caption: "Tüm grafikler aynı anda güncellendi"
+      - zoom: { selector: "#kpi-target", scale: 1.6 }
+      - hold: 1.5
+      - zoom: false
+      - caption: null
+      - spotlight: { selector: "#trend", hold: 2 }
+
+  # 5 · Metrikler
+  - type: html
+    template: kpi-counter-row
+    data:
+      eyebrow: "Etki"
+      title: "POC'nin 6 haftalık sonuçları"
+      items:
+        - { label: "Rapor hazırlama süresi", from: 72, to: 1, unit: "saat", delta: "3 gün → 1 saat", tone: "good" }
+        - { label: "BI ekibine aylık rapor talebi", from: 120, to: 18, delta: "−%85", tone: "good" }
+        - { label: "Self-servis kullanıcı", from: 0, to: 85, delta: "5 bölgeden", tone: "good" }
+      source: "Örnek değerler · [VERİ GEREKLİ] POC ölçümleri"
+
+  # 6 · Karar
+  - type: html
+    template: decision-ask
+    data:
+      eyebrow: "Karar"
+      title: "Sonraki adım"
+      ask: "Tüm bölgelere yaygınlaştırma için 2 aylık pilot onayı"
+      items:
+        - "Üretim ortamı: 2 sunucu [VERİ GEREKLİ: maliyet]"
+        - "SSO entegrasyonu ve satır bazlı yetki"
+        - "10 raporun taşınması ve 3 eğitim oturumu"
+      deadline: "Karar tarihi: [VERİ GEREKLİ]"

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="tr" data-theme="academic">
+<head>
+<meta charset="utf-8">
+<title>Üç mimari</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  .head { margin-bottom: 44px; }
+  .cards { display: flex; gap: 60px; }
+  .card { position: relative; width: 520px; height: 690px; background: var(--surface); border: 3px solid var(--line); border-radius: var(--radius); }
+  .card h3 { position: absolute; top: 26px; left: 0; right: 0; text-align: center; font-size: 34px; font-weight: 700; }
+  .card svg { position: absolute; left: 0; top: 0; width: 520px; height: 690px; overflow: visible; }
+  .note { position: absolute; left: 28px; right: 28px; bottom: 26px; font-size: 28px; line-height: 1.3; color: var(--ink-2); text-align: center; }
+  .note b { color: var(--ink); }
+  .win .note b { color: var(--accent); }
+  rect.net { fill: var(--bg); stroke: var(--ink-2); stroke-width: 2.5; }
+  rect.pred { fill: var(--bg); stroke: var(--accent); stroke-width: 3; }
+  rect.d { fill: var(--accent); stroke: none; }
+  circle.in { fill: var(--surface); stroke: var(--ink); stroke-width: 2.5; }
+  circle.z { fill: var(--surface); stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 6 5; }
+  text { font-family: var(--font-sans); font-size: 30px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+  text.d { fill: var(--surface); font-weight: 700; }
+  text.it { font-style: italic; }
+  text.lbl { font-size: 28px; fill: var(--ink-2); font-style: italic; }
+  path.arr { fill: none; stroke: var(--ink-2); stroke-width: 3; marker-end: url(#ah); }
+</style>
+</head>
+<body data-hold="3">
+<svg width="0" height="0" style="position:absolute">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker></defs>
+</svg>
+<div class="pm-stage">
+  <div class="head">
+    <div class="pm-eyebrow" id="eyebrow"></div>
+    <h2 class="pm-h2" id="title"></h2>
+  </div>
+  <div class="cards" id="cards"></div>
+  <div class="pm-source" id="source"></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Arka plan",
+  "title": "Öz-denetimli öğrenmede üç mimari ailesi",
+  "source": "Kaynak: Assran vd. (2023), Şekil 2'den yeniden çizilmiştir.",
+  "cards": [
+    { "kind": "jea", "title": "(a) Ortak gömme",
+      "note": "İki görünüm benzer gömmelere<br><b>el yapımı veri artırma gerekir</b>" },
+    { "kind": "gen", "title": "(b) Üretken",
+      "note": "Eksik pikselleri yeniden kurar<br><b>kayıp piksel uzayında</b>" },
+    { "kind": "jepa", "title": "(c) JEPA",
+      "note": "Eksik bölgenin temsilini tahmin eder<br><b>kayıp temsil uzayında</b>" }
+  ],
+  "winner": 2
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  document.getElementById('eyebrow').textContent = D.eyebrow;
+  document.getElementById('title').textContent = D.title;
+  document.getElementById('source').textContent = D.source;
+
+  // Diyagram parçaları (kart içi koordinatlar, 520×690). Girdiler altta, enerji D üstte.
+  const rect = (x, y, w, h, label, cls = 'net', tcls = '') =>
+    `<g class="part"><rect class="${cls}" x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="12"/><text class="${tcls}" x="${x}" y="${y}">${label}</text></g>`;
+  const circ = (x, y, label, cls = 'in') =>
+    `<g class="part"><circle class="${cls}" cx="${x}" cy="${y}" r="32"/><text class="it" x="${x}" y="${y - 2}">${label}</text></g>`;
+  const arr = d => `<path class="arr" d="${d}"/>`;
+  const lbl = (x, y, t) => `<text class="lbl part" x="${x}" y="${y}">${t}</text>`;
+
+  const SPEC = {
+    jea: [
+      circ(130, 560, 'x'), circ(390, 560, 'y'),
+      rect(130, 440, 200, 70, 'x-kodlayıcı'), rect(390, 440, 200, 70, 'y-kodlayıcı'),
+      arr('M130 526 L130 478'), arr('M390 526 L390 478'),
+      rect(260, 190, 250, 76, 'D(sₓ, s<tspan font-size="22" dy="6">y</tspan>)', 'd', 'd'),
+      arr('M150 404 L235 232'), arr('M370 404 L285 232'),
+      lbl(160, 320, 'sₓ'), lbl(362, 320, 'sᵧ'),
+    ],
+    gen: [
+      circ(130, 560, 'x'), circ(390, 560, 'y'),
+      rect(130, 440, 200, 70, 'x-kodlayıcı'),
+      rect(130, 320, 200, 70, 'çözücü'), circ(330, 320, 'z', 'z'),
+      arr('M130 526 L130 478'), arr('M130 404 L130 358'), arr('M296 320 L234 320'),
+      rect(260, 160, 250, 76, 'D(ŷ, y)', 'd', 'd'),
+      arr('M150 284 L225 202'), arr('M390 526 L300 202'),
+      lbl(162, 246, 'ŷ'),
+    ],
+    jepa: [
+      circ(130, 560, 'x'), circ(390, 560, 'y'),
+      rect(130, 440, 200, 70, 'x-kodlayıcı'), rect(390, 440, 200, 70, 'y-kodlayıcı'),
+      rect(130, 320, 200, 70, 'tahminci', 'pred'), circ(300, 320, 'z', 'z'),
+      arr('M130 526 L130 478'), arr('M390 526 L390 478'), arr('M130 404 L130 358'), arr('M266 320 L234 320'),
+      rect(260, 160, 250, 76, 'D(ŝᵧ, sᵧ)', 'd', 'd'),
+      arr('M150 284 L225 202'), arr('M390 404 L300 202'),
+      lbl(162, 246, 'ŝᵧ'), lbl(380, 300, 'sᵧ'),
+    ],
+  };
+
+  const wrap = document.getElementById('cards');
+  D.cards.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `<svg viewBox="0 40 520 690">${SPEC[c.kind].join('')}</svg><h3>${c.title}</h3><div class="note">${c.note}</div>`;
+    wrap.appendChild(el);
+  });
+
+  const tl = PM.timeline();
+  tl.from('#eyebrow', { opacity: 0, y: 16, duration: 0.5 })
+    .from('#title', { opacity: 0, y: 30, duration: 0.7 }, '-=0.2');
+
+  document.querySelectorAll('.card').forEach((card, i) => {
+    const at = 0.9 + i * 2.1;
+    tl.from(card, { opacity: 0, y: 50, duration: 0.7 }, at)
+      .from(card.querySelector('h3'), { opacity: 0, duration: 0.4 }, at + 0.2);
+    const parts = [...card.querySelectorAll('.part')];
+    tl.from(parts, { opacity: 0, scale: 0.85, transformOrigin: '50% 50%', stagger: 0.07, duration: 0.4 }, at + 0.4);
+    card.querySelectorAll('path.arr').forEach((p, k) => {
+      const len = p.getTotalLength();
+      gsap.set(p, { strokeDasharray: len, strokeDashoffset: len });
+      tl.to(p, { strokeDashoffset: 0, duration: 0.45, ease: 'power2.inOut' }, at + 0.7 + k * 0.08);
+    });
+    tl.from(card.querySelector('.note'), { opacity: 0, y: 14, duration: 0.5 }, at + 1.3);
+  });
+
+  // Vurgu: JEPA kartı öne çıkar, diğerleri soluklaşır
+  const cards = [...document.querySelectorAll('.card')];
+  const win = cards[D.winner];
+  tl.to(cards.filter((_, i) => i !== D.winner), { opacity: 0.45, duration: 0.6 }, '+=0.6')
+    .to(win, { borderColor: '#7c2d12', y: -10, duration: 0.6 }, '<')
+    .to(win.querySelector('.note b'), { color: '#7c2d12', duration: 0.4 }, '<0.2');
+  tl.from('#source', { opacity: 0, duration: 0.5 }, '<');
+  PM.start();
+</script>
+</body>
+</html>

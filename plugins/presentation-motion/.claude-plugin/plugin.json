@@ -1,0 +1,8 @@
+{
+  "name": "presentation-motion",
+  "version": "0.1.0",
+  "description": "HTML/CSS/GSAP ile animasyonlu sunum ve demo videoları üretir: storyboard, sahne şablonları, Playwright ile UI kaydı (Superset, POC/MVP), deterministik MP4 render, kalite ve gizlilik denetimi.",
+  "author": { "name": "Murat Öztürk", "email": "muratozturrk@gmail.com" },
+  "keywords": ["presentation", "animation", "gsap", "video", "playwright", "superset", "data-engineering"],
+  "license": "MIT"
+}

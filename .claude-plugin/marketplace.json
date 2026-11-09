@@ -331,6 +331,18 @@
                         "category":  "platform"
                     },
                     {
+                        "name":  "presentation-motion",
+                        "source":  "./plugins/presentation-motion",
+                        "description":  "HTML/CSS/GSAP ile animasyonlu sunum ve demo videoları üretir: storyboard, sahne şablonları, Playwright ile UI kaydı (Superset, POC/MVP), deterministik MP4 render, kalite ve gizlilik denetimi.",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk",
+                                       "email":  "muratozturrk@gmail.com"
+                                   },
+                        "license":  "MIT",
+                        "category":  "presentation"
+                    },
+                    {
                         "name":  "project-nessie",
                         "source":  "./plugins/project-nessie",
                         "description":  "Project Nessie (0.108.x, 2026) as the HKM platform's Iceberg catalog: Git-like branches/tags/commits, Nessie Catalog with Iceberg REST endpoint and S3 signing / credential vending on Dell ObjectScale, Ceph RGW or MinIO AIStor, production deployment (Helm, JDBC/PostgreSQL version store, OIDC via Keycloak), CEL metadata authorization alongside Apache Ranger, engine integrations (Trino, Spark, Flink, ClickHouse, dbt), branch-based workflows (per-institution branches, write-audit-publish, release tags), garbage collection and KVKK erasure, CLI/REST API and migration from Apache Polaris",

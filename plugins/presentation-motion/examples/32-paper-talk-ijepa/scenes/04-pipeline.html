@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="tr" data-theme="academic">
+<head>
+<meta charset="utf-8">
+<title>I-JEPA akışı</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  svg.dia { position: absolute; left: 120px; top: 250px; width: 1680px; height: 740px; overflow: visible; }
+  text { font-family: var(--font-sans); font-size: 32px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+  text.sub { font-size: 28px; fill: var(--ink-2); }
+  text.lbl { font-size: 28px; fill: var(--ink-2); font-style: italic; }
+  text.small { font-size: 28px; fill: var(--muted); }
+  text.white { fill: var(--surface); font-weight: 700; }
+  rect.net { fill: var(--surface); stroke: var(--ink-2); stroke-width: 3; }
+  rect.pred { fill: var(--surface); stroke: var(--accent); stroke-width: 4; }
+  rect.loss { fill: var(--accent); }
+  rect.cell { fill: var(--ink); }
+  path.arr { fill: none; stroke: var(--ink-2); stroke-width: 3.5; marker-end: url(#ah); }
+  path.ema { fill: none; stroke: var(--accent-2); stroke-width: 3.5; stroke-dasharray: 10 8; marker-end: url(#ah2); }
+  text.ema { fill: var(--accent-2); font-weight: 600; font-size: 28px; }
+</style>
+</head>
+<body data-hold="3">
+<div class="pm-stage">
+  <div class="pm-eyebrow" id="eyebrow"></div>
+  <h2 class="pm-h2" id="title"></h2>
+  <svg class="dia" id="dia" viewBox="0 0 1680 740">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker>
+      <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent-2)"/></marker>
+    </defs>
+  </svg>
+  <div class="pm-source" id="source"></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Yöntem · 2/3",
+  "title": "Bağlamdan, hedef blokların temsilini tahmin et",
+  "source": "Kaynak: Assran vd. (2023), Şekil 3, Bölüm 3 ve Ek A."
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  for (const k of ['eyebrow', 'title', 'source']) document.getElementById(k).textContent = D[k];
+  const svg = document.getElementById('dia');
+  const NS = 'http://www.w3.org/2000/svg';
+  const add = (html, id) => { const g = document.createElementNS(NS, 'g'); if (id) g.id = id; g.innerHTML = html; svg.appendChild(g); return g; };
+  const COLORS = ['var(--accent)', 'var(--accent-2)', 'var(--good)', 'var(--bad)'];
+
+  // Küçük yama ızgarası simgesi: 5×5; "keep" verilirse yalnız o hücreler görünür
+  const icon = (x, y, keep) => {
+    let s = '';
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+      const on = !keep || keep(r, c);
+      const tone = 0.15 + 0.5 * Math.exp(-(((c - 2) / 1.6) ** 2 + ((r - 2) / 1.4) ** 2));
+      s += `<rect class="cell" x="${x + c * 30}" y="${y + r * 30}" width="27" height="27" rx="3" opacity="${on ? tone.toFixed(2) : 0.04}"/>`;
+    }
+    return s;
+  };
+  const box = (cx, cy, w, h, l1, l2, cls = 'net') =>
+    `<rect class="${cls}" x="${cx - w / 2}" y="${cy - h / 2}" width="${w}" height="${h}" rx="16"/>
+     <text x="${cx}" y="${cy - (l2 ? 20 : 0)}" font-weight="700">${l1}</text>${l2 ? `<text class="sub" x="${cx}" y="${cy + 24}">${l2}</text>` : ''}`;
+  const bars = (x, y, filled) => COLORS.map((c, i) =>
+    `<rect x="${x}" y="${y + i * 40}" width="110" height="28" rx="6" fill="${filled ? c : 'none'}" stroke="${c}" stroke-width="4"/>`).join('');
+
+  const TOP = 170, BOT = 560;
+  // Üst satır: bağlam yolu
+  const gCtx = add(icon(0, TOP - 75, (r, c) => (r === 0 || c === 0 || (r === 4 && c > 2)) ) + `<text class="small" x="75" y="${TOP + 110}">bağlam</text>`);
+  const gEnc = add(box(420, TOP, 300, 130, 'Bağlam kodlayıcı', 'f<tspan font-size="20" dy="6">θ</tspan><tspan dy="-6"> · ViT</tspan>'));
+  const gPred = add(box(860, TOP, 300, 130, 'Tahminci', 'g<tspan font-size="20" dy="6">φ</tspan><tspan dy="-6"> · dar ViT</tspan>', 'pred'));
+  const gTok = add(COLORS.map((c, i) => `<rect x="${790 + i * 38}" y="0" width="28" height="28" rx="5" fill="${c}"/>`).join('') +
+    `<text class="small" x="960" y="14" style="text-anchor:start">konum maske belirteçleri</text>`);
+  const gHat = add(bars(1110, TOP - 75, false) + `<text class="lbl" x="1165" y="${TOP + 110}">ŝᵧ(1…4)</text>`);
+  // Alt satır: hedef yolu
+  const gImg = add(icon(0, BOT - 75) + `<text class="small" x="75" y="${BOT + 110}">tüm görüntü</text>`);
+  const gTgt = add(box(420, BOT, 300, 130, 'Hedef kodlayıcı', 'f<tspan font-size="20" dy="6">θ̄</tspan><tspan dy="-6"> · ViT</tspan>'));
+  const gOut = add(bars(1110, BOT - 75, true) + `<text class="lbl" x="1165" y="${BOT + 110}">sᵧ(1…4)</text>` +
+    `<text class="small" x="860" y="${BOT - 40}">çıktı hedef bloklarla maskelenir</text>`);
+  // Kayıp
+  const gLoss = add(`<rect class="loss" x="1420" y="${(TOP + BOT) / 2 - 50}" width="250" height="100" rx="16"/>
+    <text class="white" x="1545" y="${(TOP + BOT) / 2}">L2 kaybı</text>`);
+
+  // Oklar
+  const A = [
+    ['M160 ' + TOP + ' L262 ' + TOP, 'a1'],
+    ['M572 ' + TOP + ' L702 ' + TOP, 'a2'],
+    ['M860 36 L860 98', 'a3'],
+    ['M1012 ' + TOP + ' L1100 ' + TOP, 'a4'],
+    ['M160 ' + BOT + ' L262 ' + BOT, 'b1'],
+    ['M572 ' + BOT + ' L1100 ' + BOT, 'b2'],
+    ['M1230 ' + TOP + ' C 1330 ' + TOP + ', 1330 ' + ((TOP + BOT) / 2 - 30) + ', 1412 ' + ((TOP + BOT) / 2 - 30), 'l1'],
+    ['M1230 ' + BOT + ' C 1330 ' + BOT + ', 1330 ' + ((TOP + BOT) / 2 + 30) + ', 1412 ' + ((TOP + BOT) / 2 + 30), 'l2'],
+  ];
+  const paths = {};
+  A.forEach(([d, id]) => { paths[id] = add(`<path class="arr" d="${d}"/>`).firstChild; });
+  const ema = add(`<path class="ema" d="M420 ${TOP + 70} L420 ${BOT - 72}"/>
+    <text class="ema" x="440" y="${(TOP + BOT) / 2 - 22}" style="text-anchor:start">EMA ile güncellenir</text>
+    <text class="ema" x="440" y="${(TOP + BOT) / 2 + 20}" style="text-anchor:start">momentum 0,996 → 1,0 · gradyan yok</text>`);
+  const emaPath = ema.querySelector('path');
+
+  const tl = PM.timeline();
+  const draw = (p, at, dur = 0.5) => {
+    const len = p.getTotalLength();
+    gsap.set(p, { strokeDasharray: len, strokeDashoffset: len });
+    tl.to(p, { strokeDashoffset: 0, duration: dur, ease: 'power2.inOut' }, at);
+  };
+  tl.from('#eyebrow', { opacity: 0, y: 16, duration: 0.5 })
+    .from('#title', { opacity: 0, y: 30, duration: 0.7 }, '-=0.2');
+
+  // Bağlam yolu
+  tl.from(gCtx, { opacity: 0, x: -30, duration: 0.6 }, 1.0);
+  draw(paths.a1, 1.5);
+  tl.from(gEnc, { opacity: 0, scale: 0.9, svgOrigin: '420 170', duration: 0.5 }, 1.8);
+  draw(paths.a2, 2.4);
+  tl.from(gPred, { opacity: 0, scale: 0.9, svgOrigin: '860 170', duration: 0.5 }, 2.7)
+    .from(gTok.querySelectorAll('rect'), { y: -40, opacity: 0, stagger: 0.1, duration: 0.4 }, 3.1)
+    .from(gTok.querySelector('text'), { opacity: 0, duration: 0.4 }, 3.3);
+  draw(paths.a3, 3.5, 0.35);
+  draw(paths.a4, 3.9);
+  tl.from(gHat.querySelectorAll('rect'), { scaleX: 0, transformOrigin: 'left center', stagger: 0.1, duration: 0.4 }, 4.2)
+    .from(gHat.querySelector('text'), { opacity: 0, duration: 0.4 }, 4.5);
+
+  // Hedef yolu
+  tl.from(gImg, { opacity: 0, x: -30, duration: 0.6 }, 5.3);
+  draw(paths.b1, 5.8);
+  tl.from(gTgt, { opacity: 0, scale: 0.9, svgOrigin: '420 560', duration: 0.5 }, 6.1);
+  draw(paths.b2, 6.6, 0.8);
+  tl.from(gOut.querySelectorAll('rect'), { scaleX: 0, transformOrigin: 'left center', stagger: 0.1, duration: 0.4 }, 7.3)
+    .from(gOut.querySelectorAll('text'), { opacity: 0, duration: 0.4 }, 7.5);
+
+  // EMA bağı ve kayıp
+  draw(emaPath, 8.3, 0.7);
+  tl.from(ema.querySelectorAll('text'), { opacity: 0, x: -10, stagger: 0.15, duration: 0.4 }, 8.7);
+  draw(paths.l1, 9.6); draw(paths.l2, 9.6);
+  tl.from(gLoss, { opacity: 0, scale: 0.8, svgOrigin: '1545 365', duration: 0.5 }, 10.0)
+    .from('#source', { opacity: 0, duration: 0.5 }, 10.2);
+  PM.start();
+</script>
+</body>
+</html>

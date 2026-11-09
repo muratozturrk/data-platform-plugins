@@ -1,0 +1,16 @@
+/* Kayıtta gizlilik ve görsel gürültü temizliği. recorder.mjs her sayfaya enjekte eder.
+   Ek seçiciler demo.yaml → segments[].mask ile eklenir. */
+
+/* Kişisel / hassas veri alanları */
+[data-pii], .pm-mask, input[type="email"], input[type="password"] {
+  filter: blur(9px) !important;
+}
+
+/* Bildirim, çerez bandı, "yeni sürüm" uyarıları */
+.ant-notification, .ant-message, [data-test="toast-container"], .toast-container,
+#onetrust-banner-sdk, .cookie-banner, [aria-label="cookie consent"] {
+  display: none !important;
+}
+
+/* Yanıp sönen metin imleci ve odak halkaları kayıtta dikkat dağıtır */
+input, textarea, [contenteditable] { caret-color: auto; }

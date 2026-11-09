@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="tr" data-theme="academic">
+<head>
+<meta charset="utf-8">
+<title>Kaynakça</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  .refs { margin-top: 56px; display: flex; flex-direction: column; gap: 30px; max-width: 1640px; }
+  .ref { font-size: 30px; line-height: 1.4; color: var(--ink-2); padding-left: 60px; text-indent: -60px; }
+  .ref i { color: var(--ink); }
+  .ref.main { color: var(--ink); font-size: 34px; }
+  .thanks { position: absolute; left: var(--safe); bottom: 130px; font-size: var(--fs-h2); font-weight: 700; }
+  .thanks small { display: block; font-size: 30px; font-weight: 400; color: var(--ink-2); margin-top: 10px; }
+</style>
+</head>
+<body data-hold="4">
+<div class="pm-stage">
+  <div class="pm-eyebrow" id="eyebrow"></div>
+  <h2 class="pm-h2" id="title"></h2>
+  <div class="refs" id="refs"></div>
+  <div class="thanks" id="thanks"></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Kaynakça",
+  "title": "Kaynaklar (APA 7)",
+  "refs": [
+    { "main": true, "html": "Assran, M., Duval, Q., Misra, I., Bojanowski, P., Vincent, P., Rabbat, M., LeCun, Y., &amp; Ballas, N. (2023). <i>Self-supervised learning from images with a joint-embedding predictive architecture</i> (arXiv:2301.08243v3). arXiv. https://doi.org/10.48550/arXiv.2301.08243" },
+    { "html": "He, K., Chen, X., Xie, S., Li, Y., Dollár, P., &amp; Girshick, R. (2022). Masked autoencoders are scalable vision learners. <i>IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</i>." },
+    { "html": "LeCun, Y. (2022). <i>A path towards autonomous machine intelligence</i> (Version 0.9.2)." },
+    { "html": "Zhou, J., Wei, C., Wang, H., Shen, W., Xie, C., Yuille, A., &amp; Kong, T. (2022). iBOT: Image BERT pre-training with online tokenizer. <i>International Conference on Learning Representations (ICLR)</i>." }
+  ],
+  "thanks": "Teşekkürler",
+  "thanksSub": "Sorular ve tartışma"
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  for (const k of ["eyebrow", "title"]) document.getElementById(k).textContent = D[k];
+  document.getElementById("refs").innerHTML = D.refs.map(r => `<div class="ref${r.main ? " main" : ""}">${r.html}</div>`).join("");
+  document.getElementById("thanks").innerHTML = `${D.thanks}<small>${D.thanksSub}</small>`;
+  const tl = PM.timeline();
+  tl.from("#eyebrow", { opacity: 0, y: 16, duration: 0.5 })
+    .from("#title", { opacity: 0, y: 30, duration: 0.7 }, "-=0.2")
+    .from(".ref", { opacity: 0, y: 24, stagger: 0.35, duration: 0.6 }, 1.0)
+    .from("#thanks", { opacity: 0, y: 24, duration: 0.7 }, "+=0.4");
+  PM.start();
+</script>
+</body>
+</html>

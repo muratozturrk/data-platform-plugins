@@ -1,0 +1,17 @@
+{
+  "name": "presentation-motion-runtime",
+  "private": true,
+  "type": "module",
+  "description": "presentation-motion plugin script'lerinin bağımlılıkları",
+  "scripts": {
+    "vendor": "node scripts/fetch-vendor.mjs",
+    "lint": "node scripts/lint-determinism.mjs",
+    "budget": "node scripts/size-budget.mjs",
+    "render": "node scripts/render-scene.mjs",
+    "demo": "node capture/compose/compose.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.59.0",
+    "yaml": "^2.6.0"
+  }
+}

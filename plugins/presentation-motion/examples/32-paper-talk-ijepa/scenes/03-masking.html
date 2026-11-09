@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="tr" data-theme="academic">
+<head>
+<meta charset="utf-8">
+<title>Çoklu blok maskeleme</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  .grid { position: absolute; left: 120px; top: 270px; width: 644px; height: 644px; }
+  .p { position: absolute; width: 44px; height: 44px; border-radius: 4px; background: var(--ink); }
+  .box { position: absolute; border: 6px solid; border-radius: 8px; pointer-events: none; }
+  .box.ctx { border-color: var(--ink); border-style: dashed; border-width: 5px; }
+  .box.ctx .tag { top: auto; bottom: -22px; left: auto; right: 10px; }
+  .tag { position: absolute; font-size: 28px; font-weight: 700; color: var(--surface); padding: 2px 10px; border-radius: 6px; top: -22px; left: 10px; }
+  .steps { position: absolute; left: 860px; top: 280px; width: 940px; display: flex; flex-direction: column; gap: 34px; }
+  .step { display: flex; gap: 28px; align-items: flex-start; }
+  .num { flex: none; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: var(--surface); font-size: 30px; font-weight: 700; display: grid; place-items: center; }
+  .step .t { font-size: 38px; font-weight: 650; line-height: 1.2; }
+  .step .t small { display: block; font-size: 30px; font-weight: 400; color: var(--ink-2); margin-top: 6px; }
+  .key { position: absolute; left: 860px; top: 846px; width: 940px; font-size: 32px; line-height: 1.3; padding: 18px 26px; border-left: 8px solid var(--accent); background: var(--surface); }
+</style>
+</head>
+<body data-hold="3">
+<div class="pm-stage">
+  <div class="pm-eyebrow" id="eyebrow"></div>
+  <h2 class="pm-h2" id="title"></h2>
+  <div class="grid" id="grid"></div>
+  <div class="steps" id="steps"></div>
+  <div class="key" id="key"></div>
+  <div class="pm-source" id="source"></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Yöntem · 1/3",
+  "title": "Çoklu blok maskeleme: ne tahmin edilecek?",
+  "n": 14,
+  "targets": [
+    { "c": 1, "r": 1, "w": 6, "h": 6 },
+    { "c": 8, "r": 1, "w": 5, "h": 7 },
+    { "c": 2, "r": 8, "w": 6, "h": 5 },
+    { "c": 7, "r": 8, "w": 6, "h": 5 }
+  ],
+  "context": { "c": 1, "r": 1, "w": 13, "h": 13 },
+  "steps": [
+    { "t": "Görüntü yamalara bölünür", "d": "ör. ViT-B/16, 224 px → 14 × 14 yama" },
+    { "t": "4 hedef blok örneklenir", "d": "ölçek 0,15–0,2 · en-boy oranı 0,75–1,5" },
+    { "t": "1 bağlam bloğu örneklenir", "d": "ölçek 0,85–1,0 · kare" },
+    { "t": "Çakışan yamalar bağlamdan çıkarılır", "d": "tahmin görevi önemsiz hale gelmesin diye" }
+  ],
+  "key": "Hedefler girdide değil, <b>hedef kodlayıcının çıktısında</b> maskelenir.",
+  "source": "Kaynak: Assran vd. (2023), Bölüm 3 ve Şekil 4."
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  for (const k of ['eyebrow', 'title', 'source']) document.getElementById(k).textContent = D[k];
+  document.getElementById('key').innerHTML = D.key;
+
+  const grid = document.getElementById('grid');
+  const P = 46; // yama adımı (44 px + 2 px boşluk)
+  // Görüntü yerine gri tonlu soyut bir "nesne": merkeze yakın yamalar koyu
+  const cells = [];
+  for (let r = 0; r < D.n; r++) for (let c = 0; c < D.n; c++) {
+    const dx = (c - 7.2) / 4.2, dy = (r - 6.4) / 3.4;
+    const obj = Math.exp(-(dx * dx + dy * dy));
+    const tone = 0.08 + 0.42 * obj + 0.05 * ((r * 7 + c * 3) % 5) / 4;
+    const el = document.createElement('div');
+    el.className = 'p';
+    el.style.left = c * P + 'px'; el.style.top = r * P + 'px';
+    el.style.opacity = tone.toFixed(3);
+    el.dataset.tone = tone;
+    grid.appendChild(el);
+    cells.push({ el, r, c });
+  }
+  const inside = (b, r, c) => c >= b.c && c < b.c + b.w && r >= b.r && r < b.r + b.h;
+
+  const COLORS = ['var(--accent)', 'var(--accent-2)', 'var(--good)', 'var(--bad)'];
+  const mkBox = (b, cls, color, tag) => {
+    const el = document.createElement('div');
+    el.className = 'box ' + cls;
+    Object.assign(el.style, { left: b.c * P - 4 + 'px', top: b.r * P - 4 + 'px', width: b.w * P + 6 + 'px', height: b.h * P + 6 + 'px' });
+    if (color) el.style.borderColor = color;
+    if (tag) el.innerHTML = `<span class="tag" style="background:${color || 'var(--ink)'}">${tag}</span>`;
+    grid.appendChild(el);
+    return el;
+  };
+  const tBoxes = D.targets.map((b, i) => mkBox(b, 'tgt', COLORS[i], 'H' + (i + 1)));
+  const cBox = mkBox(D.context, 'ctx', null, 'bağlam');
+
+  const stepsEl = document.getElementById('steps');
+  D.steps.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'step';
+    el.innerHTML = `<div class="num">${i + 1}</div><div class="t">${s.t}<small>${s.d}</small></div>`;
+    stepsEl.appendChild(el);
+  });
+  const steps = [...document.querySelectorAll('.step')];
+
+  const tl = PM.timeline();
+  tl.from('#eyebrow', { opacity: 0, y: 16, duration: 0.5 })
+    .from('#title', { opacity: 0, y: 30, duration: 0.7 }, '-=0.2');
+
+  // 1) yamalar
+  tl.from(steps[0], { opacity: 0, x: 40, duration: 0.6 }, 1)
+    .from(cells.map(o => o.el), { scale: 0, duration: 0.5, stagger: { each: 0.004, from: 'start' } }, 1);
+  // 2) hedef bloklar
+  tl.from(steps[1], { opacity: 0, x: 40, duration: 0.6 }, '+=0.4');
+  tBoxes.forEach((b, i) => tl.from(b, { opacity: 0, scale: 1.15, duration: 0.45 }, '>-0.15'));
+  // 3) bağlam bloğu
+  tl.from(steps[2], { opacity: 0, x: 40, duration: 0.6 }, '+=0.5')
+    .from(cBox, { opacity: 0, scale: 0.9, duration: 0.6 }, '<');
+  // 4) çakışan yamaları bağlamdan çıkar: hedeflerin içindeki ve bağlam dışındaki yamalar solar
+  const removed = cells.filter(o => !inside(D.context, o.r, o.c) || D.targets.some(t => inside(t, o.r, o.c))).map(o => o.el);
+  tl.from(steps[3], { opacity: 0, x: 40, duration: 0.6 }, '+=0.6')
+    .to(removed, { opacity: 0.04, duration: 0.8, stagger: { each: 0.004 } }, '<0.2')
+    .to(steps.slice(0, 3), { opacity: 0.5, duration: 0.5 }, '<');
+  tl.from('#key', { opacity: 0, y: 20, duration: 0.6 }, '+=0.4')
+    .from('#source', { opacity: 0, duration: 0.5 }, '<');
+  PM.start();
+</script>
+</body>
+</html>

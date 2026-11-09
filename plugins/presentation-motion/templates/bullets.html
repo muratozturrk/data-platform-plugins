@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="tr" data-theme="corporate-dark">
+<head>
+<meta charset="utf-8">
+<title>Madde listesi</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  .head { margin-bottom: 72px; }
+  .list { display: flex; flex-direction: column; gap: 40px; }
+  .item { display: flex; align-items: flex-start; gap: 36px; }
+  .bar { flex: none; width: 10px; height: 64px; border-radius: 5px; background: var(--accent); transform-origin: top; }
+  .text { font-size: var(--fs-h2); font-weight: 600; line-height: 1.15; position: relative; }
+  .text small { display: block; font-size: var(--fs-body); font-weight: 400; color: var(--ink-2); margin-top: 8px; }
+  .underline { position: absolute; left: 0; bottom: -14px; width: 100%; height: 24px; overflow: visible; }
+  .underline path { fill: none; stroke: var(--warn); stroke-width: 6; stroke-linecap: round; }
+  .dim { opacity: .35; }
+</style>
+</head>
+<body data-hold="2.5">
+<div class="pm-stage">
+  <div class="head">
+    <div class="pm-eyebrow" id="eyebrow"></div>
+    <h2 class="pm-h1" id="title"></h2>
+  </div>
+  <div class="list" id="list"></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Neden şimdi?",
+  "title": "Mevcut durumun üç sorunu",
+  "items": [
+    { "text": "Raporlar 24 saat gecikmeli", "detail": "Gece çalışan batch işleri, sabah eskimiş veri" },
+    { "text": "Veri kalitesi görünmez", "detail": "Hatalar ancak yönetici raporunda fark ediliyor" },
+    { "text": "Altyapı maliyeti her yıl %30 artıyor", "detail": "Kullanılmayan kapasite için ödeme" }
+  ],
+  "highlight": 2
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  document.getElementById('eyebrow').textContent = D.eyebrow || '';
+  document.getElementById('title').textContent = D.title;
+  const list = document.getElementById('list');
+  D.items.forEach((it, i) => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `<div class="bar"></div><div class="pm-mask"><div class="text">${it.text}<small>${it.detail || ''}</small>
+      ${i === D.highlight ? '<svg class="underline" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M1 6 C 25 2, 55 9, 99 4"/></svg>' : ''}</div></div>`;
+    list.appendChild(el);
+  });
+
+  const tl = PM.timeline();
+  tl.from('#eyebrow', { opacity: 0, y: 16, duration: 0.5 })
+    .from('#title', { opacity: 0, y: 40, duration: 0.8 }, '-=0.25');
+  document.querySelectorAll('.item').forEach((el, i) => {
+    tl.from(el.querySelector('.bar'), { scaleY: 0, duration: 0.5, ease: 'power3.inOut' }, 1 + i * 0.9)
+      .from(el.querySelector('.text'), { yPercent: 100, duration: 0.8, ease: 'expo.out' }, '<0.15');
+  });
+  // Vurgu: diğer maddeler soluklaşır, seçili madde el çizimi çizgiyle altı çizilir
+  const hl = document.querySelector('.underline path');
+  if (hl) {
+    const len = hl.getTotalLength();
+    gsap.set(hl, { strokeDasharray: len, strokeDashoffset: len });
+    tl.to([...document.querySelectorAll('.item')].filter((_, i) => i !== D.highlight), { opacity: 0.35, duration: 0.6 }, '+=0.8')
+      .to(hl, { strokeDashoffset: 0, duration: 0.7, ease: 'power2.inOut' }, '<');
+  }
+  PM.start();
+</script>
+</body>
+</html>

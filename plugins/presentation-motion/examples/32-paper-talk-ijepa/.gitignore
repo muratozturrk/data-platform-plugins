@@ -1,0 +1,4 @@
+out/
+scenes/_gen-*
+scenes/_base/
+vendor/

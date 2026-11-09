@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "presentation-motion demo.yaml",
+  "type": "object",
+  "required": ["segments"],
+  "properties": {
+    "title": { "type": "string" },
+    "theme": { "enum": ["corporate-light", "corporate-dark", "academic", "projection", "government"] },
+    "baseUrl": { "type": "string", "description": "browser segmentleri için varsayılan uygulama adresi" },
+    "output": {
+      "type": "object",
+      "properties": {
+        "profile": { "enum": ["pptx", "web", "4k", "alpha"] },
+        "resolution": { "type": "string", "pattern": "^\\d+x\\d+$" },
+        "fps": { "type": "number" },
+        "max_size_mb": { "type": "number" }
+      }
+    },
+    "narration": {
+      "type": "object",
+      "properties": { "subtitles": { "type": "boolean" }, "tts": { "type": "string" }, "voice": { "type": "string" } }
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": { "enum": ["html", "browser", "terminal", "video"] },
+          "speed": { "type": "number", "minimum": 0.25 },
+          "trim": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+          "narration": { "type": "string", "description": "bu segmentin seslendirme metni" },
+          "template": { "type": "string" },
+          "data": { "type": "object" },
+          "source": { "type": "string", "description": "veriyi YAML dosyasından al (ör. architecture.yaml)" },
+          "scene": { "type": "string" },
+          "app": { "enum": ["generic", "superset", "airflow", "jupyter"] },
+          "url": { "type": "string" },
+          "auth": { "type": "string" },
+          "scale": { "type": "number" },
+          "mask": { "type": "array", "items": { "type": "string" } },
+          "hide": { "type": "array", "items": { "type": "string" } },
+          "steps": { "type": "array", "items": { "type": "object", "minProperties": 1, "maxProperties": 1 } },
+          "tape": { "type": "string" },
+          "file": { "type": "string" }
+        }
+      }
+    }
+  }
+}

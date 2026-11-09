@@ -1,0 +1,6 @@
+node_modules/
+out/
+.auth/
+**/scenes/_gen-*
+examples/*/scenes/_base/
+examples/*/vendor/

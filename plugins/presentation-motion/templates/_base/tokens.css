@@ -1,0 +1,99 @@
+/*
+ * presentation-motion tasarım token'ları
+ * Tema seçimi: <html data-theme="corporate-light | corporate-dark | academic | projection | government">
+ * Kurum teması için /presentation-motion:theme bu dosyanın bir kopyasını üretir.
+ * Kural: sahnelerde ham renk/font yazılmaz, yalnızca bu değişkenler kullanılır.
+ */
+:root,
+[data-theme="corporate-light"] {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --ink-2: #475569;
+  --muted: #94a3b8;
+  --line: #e2e8f0;
+  --accent: #2563eb;
+  --accent-2: #0ea5e9;
+  --good: #16a34a;
+  --warn: #d97706;
+  --bad: #dc2626;
+  --flow: #2563eb;
+}
+
+[data-theme="corporate-dark"] {
+  --bg: #0b1020;
+  --surface: #121a2f;
+  --ink: #f1f5f9;
+  --ink-2: #cbd5e1;
+  --muted: #64748b;
+  --line: #1e293b;
+  --accent: #60a5fa;
+  --accent-2: #22d3ee;
+  --good: #4ade80;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --flow: #22d3ee;
+}
+
+[data-theme="academic"] {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --ink: #1c1917;
+  --ink-2: #57534e;
+  --muted: #a8a29e;
+  --line: #e7e5e4;
+  --accent: #7c2d12;
+  --accent-2: #b45309;
+  --good: #15803d;
+  --warn: #b45309;
+  --bad: #b91c1c;
+  --flow: #7c2d12;
+  --font-sans: "Source Serif 4", "Georgia", serif;
+}
+
+/* Projektör: yüksek kontrast, büyük font */
+[data-theme="projection"] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --ink: #000000;
+  --ink-2: #1f2937;
+  --muted: #4b5563;
+  --line: #9ca3af;
+  --accent: #1d4ed8;
+  --accent-2: #0369a1;
+  --good: #15803d;
+  --warn: #b45309;
+  --bad: #b91c1c;
+  --flow: #1d4ed8;
+  --scale: 1.12;
+}
+
+/* Kamu: sade, resmi, lacivert + kırmızı vurgu */
+[data-theme="government"] {
+  --bg: #ffffff;
+  --surface: #f8fafc;
+  --ink: #0b1f3a;
+  --ink-2: #334155;
+  --muted: #64748b;
+  --line: #cbd5e1;
+  --accent: #c8102e;
+  --accent-2: #0b3d91;
+  --good: #166534;
+  --warn: #a16207;
+  --bad: #c8102e;
+  --flow: #0b3d91;
+}
+
+:root {
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --scale: 1;
+  /* 1080p tipografi ölçeği (min 28px kuralı) */
+  --fs-hero: calc(120px * var(--scale));
+  --fs-h1: calc(84px * var(--scale));
+  --fs-h2: calc(56px * var(--scale));
+  --fs-body: calc(36px * var(--scale));
+  --fs-small: calc(28px * var(--scale));
+  --radius: 18px;
+  --safe: 120px; /* güvenli kenar boşluğu */
+}

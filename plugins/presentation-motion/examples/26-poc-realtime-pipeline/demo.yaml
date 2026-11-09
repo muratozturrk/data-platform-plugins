@@ -1,0 +1,66 @@
+# POC demo videosu — çalıştırma:
+#   node ../../capture/compose/compose.mjs demo.yaml
+# Superset yerine mock-app/dashboard.html kullanır (her makinede çalışsın diye).
+# Gerçek Superset için: demo.superset.yaml
+title: "Gerçek Zamanlı Satış Analitiği – POC"
+theme: corporate-dark
+output: { profile: pptx, resolution: 1920x1080, fps: 30, max_size_mb: 25 }
+
+segments:
+  - type: html
+    template: title
+    data:
+      eyebrow: "POC Sonuç Sunumu · Kasım 2026"
+      title: "Gerçek zamanlı satış analitiği"
+      subtitle: "24 saatlik rapor gecikmesini 5 dakikaya indiren veri platformu"
+      author: "Veri Mühendisliği Ekibi"
+      date: "Kasım 2026"
+
+  - type: html
+    template: bluf-headline
+    data:
+      kicker: "Özet"
+      headline: "Raporlar artık 24 saat yerine 5 dakikada hazır"
+      number: 288
+      suffix: "×"
+      label: "daha hızlı karar verisi — ek donanım yatırımı olmadan"
+      source: "POC ölçümleri, Ağustos–Ekim 2026"
+
+  - type: html
+    template: architecture-layers
+    source: architecture.yaml
+
+  - type: html
+    template: terminal
+    data:
+      eyebrow: "Pipeline"
+      title: "Dönüşümler tek komutla çalışıyor"
+      window: "~/platform — dbt"
+      prompt: "$ "
+      lines:
+        - { cmd: "dbt run --select tag:sales" }
+        - { out: "1 of 3 OK created model silver.orders ........ [OK in 2.41s]", cls: ok }
+        - { out: "2 of 3 OK created model silver.customers ..... [OK in 1.87s]", cls: ok }
+        - { out: "3 of 3 OK created model gold.daily_sales ..... [OK in 3.12s]", cls: ok }
+        - { out: "Completed successfully. PASS=3 WARN=0 ERROR=0", cls: ok }
+
+  - type: browser
+    app: generic
+    url: "mock-app/dashboard.html"      # deck klasörüne göre
+    scale: 2
+    mask: [".user-email"]
+    steps:
+      - caption: "Bölge filtresi: Marmara"
+      - select: { selector: "#region", option: "Marmara" }
+      - click: "#apply"
+      - caption: null
+      - zoom: { selector: "#c1", scale: 1.5 }
+      - hold: 1.5
+      - zoom: false
+      - spotlight: { selector: "#c3", hold: 1.8 }
+
+  - type: html
+    template: kpi-counter-row
+
+  - type: html
+    template: decision-ask

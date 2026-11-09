@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="tr" data-theme="academic">
+<head>
+<meta charset="utf-8">
+<title>Aktarım sonuçları</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  table { position: absolute; left: 120px; top: 250px; width: 1680px; border-collapse: collapse; font-size: 32px; }
+  th, td { padding: 8px 18px; text-align: right; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  thead th { font-size: 28px; color: var(--ink-2); font-weight: 600; border-bottom: 3px solid var(--ink); }
+  thead tr.grp th { border-bottom: 2px solid var(--line); color: var(--accent); font-style: italic; text-align: center; }
+  td { border-bottom: 2px solid var(--line); font-variant-numeric: tabular-nums; }
+  td.arch { color: var(--ink-2); font-size: 28px; }
+  tr.sep td { font-size: 28px; color: var(--accent); font-style: italic; text-align: left; padding-top: 12px; }
+  tr.me td { background: var(--surface); font-weight: 700; }
+  tr.me td:first-child { box-shadow: inset 8px 0 0 var(--accent); }
+  .div { border-left: 3px solid var(--line); }
+  .notes { position: absolute; left: 120px; right: 120px; top: 840px; display: flex; gap: 60px; font-size: 28px; color: var(--ink-2); }
+  .notes div { flex: 1; border-left: 6px solid var(--accent); padding-left: 20px; line-height: 1.3; }
+</style>
+</head>
+<body data-hold="3.5">
+<div class="pm-stage">
+  <div class="pm-eyebrow" id="eyebrow"></div>
+  <h2 class="pm-h2" id="title"></h2>
+  <table id="tbl"></table>
+  <div class="notes" id="notes"></div>
+  <div class="pm-source" id="source"></div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Bulgular · aktarım",
+  "title": "Hem anlamsal hem düşük seviye görevlerde güçlü",
+  "groups": [
+    { "name": "Anlamsal sınıflandırma", "cols": ["CIFAR100", "Places205", "iNat18"] },
+    { "name": "Düşük seviye", "cols": ["Clevr/Sayma", "Clevr/Uzaklık"] }
+  ],
+  "sections": [
+    { "name": "Veri artırma kullanmayanlar", "rows": [
+      { "m": "data2vec", "a": "ViT-L/16", "v": [81.6, 54.6, 28.1, 85.3, 71.3] },
+      { "m": "MAE", "a": "ViT-H/14", "v": [77.3, 55.0, 32.9, 90.5, 72.4] },
+      { "m": "I-JEPA", "a": "ViT-H/14", "v": [87.5, 58.4, 47.6, 86.7, 72.4], "me": true }
+    ]},
+    { "name": "Veri artırma kullananlar", "rows": [
+      { "m": "DINO", "a": "ViT-B/8", "v": [84.9, 57.9, 55.9, 86.6, 53.4] },
+      { "m": "iBOT", "a": "ViT-L/16", "v": [88.3, 60.4, 57.3, 85.7, 62.8] }
+    ]}
+  ],
+  "notes": [
+    "Artırma kullanmayanlar arasında anlamsal görevlerin hepsinde birinci; CIFAR100 ve Places205'te DINO'yu da geçiyor.",
+    "Uzaklık tahmininde artırma kullananlardan çok önde: 72,4 (DINO 53,4 · iBOT 62,8)."
+  ],
+  "source": "Kaynak: Assran vd. (2023), Tablo 3 ve 4. Doğrusal sınama (dondurulmuş kodlayıcı); her sütunun en iyi değeri vurgulu."
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  for (const k of ['eyebrow', 'title', 'source']) document.getElementById(k).textContent = D[k];
+  const cols = D.groups.flatMap(g => g.cols);
+  const nSem = D.groups[0].cols.length;
+  const divCls = j => (j === nSem ? ' class="div"' : '');
+
+  let h = `<thead><tr class="grp"><th></th><th></th>${D.groups.map((g, gi) => `<th colspan="${g.cols.length}"${gi ? ' class="div"' : ''}>${g.name}</th>`).join('')}</tr>
+    <tr><th>Yöntem</th><th>Mimari</th>${cols.map((c, j) => `<th${divCls(j)}>${c}</th>`).join('')}</tr></thead><tbody>`;
+  const all = D.sections.flatMap(s => s.rows);
+  const best = cols.map((_, j) => Math.max(...all.map(r => r.v[j])));
+  D.sections.forEach(s => {
+    h += `<tr class="sep"><td colspan="${cols.length + 2}">${s.name}</td></tr>`;
+    s.rows.forEach(r => {
+      h += `<tr class="row${r.me ? ' me' : ''}"><td>${r.m}</td><td class="arch">${r.a}</td>${r.v.map((v, j) =>
+        `<td data-best="${v === best[j] ? 1 : 0}"${divCls(j)}>${PM.fmt(v, 1)}</td>`).join('')}</tr>`;
+    });
+  });
+  document.getElementById('tbl').innerHTML = h + '</tbody>';
+  document.getElementById('notes').innerHTML = D.notes.map(n => `<div>${n}</div>`).join('');
+
+  const tl = PM.timeline();
+  tl.from('#eyebrow', { opacity: 0, y: 16, duration: 0.5 })
+    .from('#title', { opacity: 0, y: 30, duration: 0.7 }, '-=0.2')
+    .from('thead tr', { opacity: 0, y: -14, stagger: 0.15, duration: 0.5 }, 1.0)
+    .from('tbody tr', { opacity: 0, x: -30, stagger: 0.18, duration: 0.5 }, 1.5);
+  // Sütun en iyileri vurgulanır, sonra I-JEPA satırı öne çıkar
+  tl.to('td[data-best="1"]', { color: '#7c2d12', fontWeight: 800, duration: 0.4, stagger: 0.12 }, '+=0.5')
+    .to('tbody tr.row:not(.me)', { opacity: 0.55, duration: 0.5 }, '+=0.4')
+    .from('#notes > div', { opacity: 0, y: 20, stagger: 0.6, duration: 0.6 }, '<0.2')
+    .from('#source', { opacity: 0, duration: 0.5 }, '<');
+  PM.start();
+</script>
+</body>
+</html>

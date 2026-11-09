@@ -1,0 +1,26 @@
+/* 1920×1080 sahne iskeleti — tüm şablonlar bunu yükler */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+body { font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+.pm-stage {
+  position: absolute; top: 0; left: 0;
+  width: 1920px; height: 1080px;
+  transform-origin: 0 0;
+  overflow: hidden;
+  background: var(--bg);
+  padding: var(--safe);
+}
+
+/* render modunda kaydırma çubuğu, imleç ve seçim yok */
+.pm-render, .pm-render * { cursor: none !important; scrollbar-width: none; user-select: none; }
+
+/* Yardımcı sınıflar */
+.pm-eyebrow { font-size: var(--fs-small); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.pm-h1 { font-size: var(--fs-h1); line-height: 1.05; font-weight: 750; letter-spacing: -0.02em; }
+.pm-h2 { font-size: var(--fs-h2); line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; }
+.pm-body { font-size: var(--fs-body); line-height: 1.4; color: var(--ink-2); }
+.pm-small { font-size: var(--fs-small); color: var(--muted); }
+.pm-mask { overflow: hidden; display: block; }   /* maske ile alttan açılma */
+.pm-num { font-variant-numeric: tabular-nums; }
+.pm-source { position: absolute; left: var(--safe); bottom: 48px; font-size: 22px; color: var(--muted); }

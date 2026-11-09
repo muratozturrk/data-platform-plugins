@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="tr" data-theme="corporate-dark">
+<head>
+<meta charset="utf-8">
+<title>Terminal (komut + çıktı)</title>
+<link rel="stylesheet" href="_base/tokens.css">
+<link rel="stylesheet" href="_base/stage.css">
+<style>
+  .win { margin-top: 56px; background: #0a0e17; border: 1px solid #1f2937; border-radius: 20px; overflow: hidden; box-shadow: 0 40px 80px -30px rgba(0,0,0,.6); }
+  .bar { height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 24px; background: #111827; }
+  .bar i { width: 16px; height: 16px; border-radius: 50%; background: #374151; }
+  .bar span { margin-left: 16px; font: 500 22px var(--font-mono); color: #9ca3af; }
+  .body { padding: 36px 44px; height: 660px; font: 400 30px/1.55 var(--font-mono); color: #e5e7eb; white-space: pre; }
+  .prompt { color: #34d399; }
+  .ok { color: #34d399; } .warn { color: #fbbf24; } .err { color: #f87171; } .dim { color: #6b7280; }
+  .caret { display: inline-block; width: 16px; height: 34px; background: #e5e7eb; vertical-align: -6px; margin-left: 2px; }
+</style>
+</head>
+<body data-hold="2.5">
+<div class="pm-stage">
+  <div class="pm-eyebrow" id="eyebrow"></div>
+  <h2 class="pm-h2" id="title"></h2>
+  <div class="win">
+    <div class="bar"><i></i><i></i><i></i><span id="wtitle"></span></div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+
+<script type="application/json" id="pm-data">
+{
+  "eyebrow": "Pipeline",
+  "title": "Dönüşümler tek komutla çalışıyor",
+  "window": "~/platform — dbt",
+  "prompt": "$ ",
+  "lines": [
+    { "cmd": "dbt run --select tag:sales" },
+    { "out": "Running with dbt=1.9.0", "cls": "dim" },
+    { "out": "1 of 3 OK created model silver.orders ........ [OK in 2.41s]", "cls": "ok" },
+    { "out": "2 of 3 OK created model silver.customers ..... [OK in 1.87s]", "cls": "ok" },
+    { "out": "3 of 3 OK created model gold.daily_sales ..... [OK in 3.12s]", "cls": "ok" },
+    { "out": "Completed successfully. PASS=3 WARN=0 ERROR=0", "cls": "ok" },
+    { "cmd": "dbt test --select gold.daily_sales" },
+    { "out": "PASS=12 WARN=0 ERROR=0", "cls": "ok" }
+  ],
+  "typeSpeed": 18
+}
+</script>
+<script src="../vendor/gsap/gsap.min.js"></script>
+<script src="_base/timeline-runtime.js"></script>
+<script>
+  const D = PM.data;
+  document.getElementById('eyebrow').textContent = D.eyebrow || '';
+  document.getElementById('title').textContent = D.title || '';
+  document.getElementById('wtitle').textContent = D.window || '';
+  const body = document.getElementById('body');
+  const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+  // Durum: her satır için görünen karakter sayısı; render() durumdan ekranı yeniden çizer (seek güvenli)
+  const state = D.lines.map(() => ({ shown: 0 }));
+  let active = 0;
+  function render() {
+    let html = '';
+    D.lines.forEach((l, i) => {
+      const s = state[i];
+      if (s.shown <= 0 && !(l.cmd && i === active)) return;
+      if (l.cmd) html += `<span class="prompt">${esc(D.prompt)}</span>${esc(l.cmd.slice(0, Math.round(s.shown)))}`;
+      else html += `<span class="${l.cls || ''}">${esc(l.out)}</span>`;
+      html += (i === active ? '<span class="caret" id="caret"></span>' : '') + '\n';
+    });
+    body.innerHTML = html;
+    const caret = document.getElementById('caret');
+    if (caret) caret.style.opacity = Math.floor(PM.time() * 2) % 2 ? 0.2 : 1; // yanıp sönme timeline zamanına bağlı
+  }
+
+  const tl = PM.timeline({ onUpdate: render });
+  tl.from(['#eyebrow', '#title', '.win'], { opacity: 0, y: 30, stagger: 0.12, duration: 0.6 });
+  let t = 1;
+  D.lines.forEach((l, i) => {
+    if (l.cmd) {
+      const dur = l.cmd.length / (D.typeSpeed || 18);
+      tl.call(() => { active = i; }, null, t);
+      tl.to(state[i], { shown: l.cmd.length, duration: dur, ease: 'none' }, t);
+      t += dur + 0.6;
+    } else {
+      tl.set(state[i], { shown: 1 }, t);
+      tl.call(() => { active = i; }, null, t);
+      t += 0.35;
+    }
+  });
+  tl.to({}, { duration: 0.5 }, t);
+  // Geri sarmada aktif satırı doğru hesapla
+  tl.eventCallback('onUpdate', () => {
+    active = 0;
+    state.forEach((s, i) => { if (s.shown > 0) active = i; });
+    render();
+  });
+  render();
+  PM.start();
+</script>
+</body>
+</html>

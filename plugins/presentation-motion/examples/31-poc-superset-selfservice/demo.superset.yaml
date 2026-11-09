@@ -1,0 +1,81 @@
+# Gerçek Superset ile aynı demo (canlı sonuç segmenti gerçek uygulamadan).
+# Hazırlık (bir kez):
+#   set SUPERSET_USER=demo & set SUPERSET_PASS=...      (Windows)  /  export ...  (Linux/macOS)
+#   node ../../capture/playwright/recorder.mjs --login superset --base-url http://localhost:8088 --save .auth/superset.json
+# Çalıştırma:
+#   node ../../capture/compose/compose.mjs demo.superset.yaml
+# Not: Dashboard slug'ı, data-test değerleri ve grafik başlıklarını kendi Superset sürümünüzde doğrulayın.
+title: "Self-Servis Raporlama – Superset POC (Superset)"
+theme: corporate-light
+baseUrl: http://localhost:8088
+output: { profile: pptx, resolution: 1920x1080, fps: 30, max_size_mb: 25 }
+
+segments:
+  - type: html
+    template: bluf-headline
+    data:
+      kicker: "Özet"
+      headline: "Bölge müdürleri raporlarını 3 gün beklemeden kendileri alıyor"
+      number: 72
+      suffix: "×"
+      label: "daha hızlı rapor: 3 gün yerine 1 saat, ek lisans maliyeti yok"
+      source: "Örnek değerler · [VERİ GEREKLİ] POC ölçümleri"
+
+  - type: html
+    template: architecture-layers
+    source: data/architecture.yaml
+
+  - type: browser
+    app: superset
+    url: "/superset/dashboard/satis-performansi/?standalone=1"
+    auth: .auth/superset.json
+    scale: 2
+    mask: ["[data-pii]"]
+    steps:
+      - wait: ready
+      - caption: "Bölge müdürü kendi filtresini seçiyor"
+      - click: '[data-test="filter-control-name"]:has-text("Bölge")'
+      - select: { option: "Marmara" }
+      - click: '[data-test="filter-bar__apply-button"]'
+      - wait: ready
+      - caption: "Tüm grafikler aynı anda güncellendi"
+      - zoom: { selector: '.chart-slice:has(.header-title:has-text("Hedef gerçekleşme"))', scale: 1.6 }
+      - hold: 1.5
+      - zoom: false
+      - caption: null
+
+  - type: browser
+    app: superset
+    url: "/sqllab/"
+    auth: .auth/superset.json
+    steps:
+      - wait: ready
+      - caption: "SQL Lab: analist aynı veriye doğrudan erişiyor"
+      - type: { selector: ".ace_text-input", text: "SELECT region, SUM(amount) AS ciro FROM marts.fct_sales GROUP BY 1 ORDER BY 2 DESC" }
+      - click: '[data-test="run-query-action"]'
+      - wait: { selector: '[data-test="table-container"]' }
+      - spotlight: { selector: '[data-test="table-container"]', hold: 2 }
+      - caption: null
+
+  - type: html
+    template: kpi-counter-row
+    data:
+      eyebrow: "Etki"
+      title: "POC'nin 6 haftalık sonuçları"
+      items:
+        - { label: "Rapor hazırlama süresi", from: 72, to: 1, unit: "saat", delta: "3 gün → 1 saat", tone: "good" }
+        - { label: "BI ekibine aylık rapor talebi", from: 120, to: 18, delta: "−%85", tone: "good" }
+        - { label: "Self-servis kullanıcı", from: 0, to: 85, delta: "5 bölgeden", tone: "good" }
+      source: "Örnek değerler · [VERİ GEREKLİ] POC ölçümleri"
+
+  - type: html
+    template: decision-ask
+    data:
+      eyebrow: "Karar"
+      title: "Sonraki adım"
+      ask: "Tüm bölgelere yaygınlaştırma için 2 aylık pilot onayı"
+      items:
+        - "Üretim ortamı: 2 sunucu [VERİ GEREKLİ: maliyet]"
+        - "SSO entegrasyonu ve satır bazlı yetki"
+        - "10 raporun taşınması ve 3 eğitim oturumu"
+      deadline: "Karar tarihi: [VERİ GEREKLİ]"
