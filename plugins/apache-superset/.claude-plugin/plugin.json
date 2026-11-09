@@ -1,11 +1,30 @@
 {
   "name": "apache-superset",
-  "version": "0.2.0",
-  "description": "Apache Superset (6.x) on the data platform: Kubernetes deployment (Stackable/Helm), Keycloak OIDC + role mapping, RLS and multi-tenant embedding with guest tokens, dashboards-as-code (superset-cli sync, GitOps), dataset/semantic-layer design over Trino/ClickHouse/Iceberg, caching/async performance, dashboard design and lifecycle (Few, Knaflic, Tufte, Wexler, Kirk, Desbarats), chart selection and verified chart-API limits, colour accessibility, privacy compliance, AI layer (governed MCP, NL2SQL), Superset internals, Extensions and MCP",
+  "version": "0.3.0",
+  "description": "Apache Superset (6.x) on the data platform: Kubernetes deployment (Stackable/Helm), Keycloak OIDC + role mapping, RLS and multi-tenant embedding with guest tokens, dashboards-as-code (superset-cli sync, GitOps), dataset/semantic-layer design over Trino/ClickHouse/Iceberg, caching/async performance, dashboard design and lifecycle (Few, Knaflic, Tufte, Wexler, Kirk, Desbarats), chart selection and verified chart-API limits, colour accessibility, privacy compliance, AI layer (governed MCP, NL2SQL), Superset internals, Extensions and MCP; v0.3 adds the testing layer: Superset-as-component test strategy (static/unit/contract/integration/E2E/performance/visual/security/upgrade mapped to qa-test-strategy ids), a disposable test harness (compose/Testcontainers with Trino, Keycloak, Mailpit; API client, seeding, guest-token minting) and upgrade regression",
   "author": {
     "name": "Murat Öztürk",
     "url": "https://github.com/muratozturrk/data-platform-plugins"
   },
   "license": "MIT",
-  "keywords": ["superset", "bi", "dashboards", "embedded-analytics", "rls", "keycloak", "kubernetes", "dashboards-as-code", "mcp", "chart-selection", "privacy", "nl2sql"]
+  "keywords": [
+    "bi",
+    "chart-selection",
+    "dashboards",
+    "dashboards-as-code",
+    "embedded-analytics",
+    "k6",
+    "keycloak",
+    "kubernetes",
+    "mcp",
+    "nl2sql",
+    "playwright",
+    "privacy",
+    "rls",
+    "schemathesis",
+    "superset",
+    "testcontainers",
+    "testing",
+    "upgrade"
+  ]
 }

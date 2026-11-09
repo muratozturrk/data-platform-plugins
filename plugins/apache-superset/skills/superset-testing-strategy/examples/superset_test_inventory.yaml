@@ -1,0 +1,19 @@
+apiVersion: platform.example/v1
+kind: TestInventory
+metadata: { name: superset-component, version: 1, extends: hkm-platform-v1 }
+spec:
+  tests:
+    - { id: T-bi-001, area: superset, title: RLS and masking consistent on screen/export/embedded (role path), level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-bi-002, area: superset, title: Assets YAML sync idempotent (UUIDs stable), level: integration, suites: [regression-full], automation: superset-cli, priority: High }
+    - { id: T-bi-003, area: superset, title: Dashboard chart-data load within budget per institution, level: system, suites: [performance, smoke], automation: k6, priority: High }
+    - { id: T-bi-004, area: superset, title: Critical UI journey (Keycloak login, filter, cross-filter, drill, masked export), level: e2e, suites: [ui, regression-full], automation: playwright, priority: Medium }
+    - { id: T-bi-005, area: superset, title: Scheduled Alerts & Reports delivered and archived with Iceberg snapshot reference, level: integration, suites: [regression-full], automation: pytest, priority: Medium }
+    - { id: T-bi-010, area: superset, title: REST API contract matches pinned OpenAPI; chart-data response contract, level: contract, suites: [api, regression-fast], automation: schemathesis+pytest, priority: High }
+    - { id: T-bi-011, area: superset, title: Visual regression of production dashboards (light/dark, 3 viewports), level: system, suites: [regression-full], automation: playwright-screenshots, priority: Medium }
+    - { id: T-bi-012, area: superset, title: Upgrade regression (UPDATING.md triage, flag diff, DB migration rehearsal, parity), level: system, suites: [upgrade], automation: upgrade_check+full-tier, priority: High }
+    - { id: T-bi-013, area: superset, title: Security headers and auth guards (CSP frame-ancestors, cookies, CSRF, public role, guest-token permission), level: integration, suites: [security, regression-fast], automation: pytest, priority: Critical }
+    - { id: T-bi-014, area: superset, title: Guest token scoped to embed UUID; expiry; token RLS cannot widen role RLS, level: integration, suites: [security], automation: pytest, priority: Critical }
+    - { id: T-bi-015, area: superset, title: Mask/filter equality across chart-data JSON, CSV export and embedded guest token, level: integration, suites: [security, privacy], automation: pytest, priority: Critical }
+    - { id: T-bi-016, area: superset, title: Static assets validation in CI (schema, UUID stability, credentials, RLS presence, naming), level: static, suites: [regression-fast], automation: assets_validate.py, priority: High }
+    - { id: T-bi-017, area: superset, title: superset_config lint (prod flags, Talisman, secrets via env, public role), level: static, suites: [regression-fast], automation: pytest, priority: High }
+    - { id: T-bi-018, area: superset, title: Cache key prefix per institution; no cross-institution cache hits; TTL respected, level: integration, suites: [security], automation: pytest, priority: High }

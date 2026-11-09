@@ -1,0 +1,55 @@
+---
+name: superset-harness
+services:
+  postgres:
+    image: postgres:16
+    environment: { POSTGRES_USER: superset, POSTGRES_PASSWORD: superset, POSTGRES_DB: superset }
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U superset"], interval: 3s, retries: 20 }
+  redis:
+    image: redis:7
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 3s, retries: 20 }
+  trino:
+    image: trinodb/trino:484
+    volumes: [./trino-etc:/etc/trino]        # catalogs: memory, erp (postgres), lake (iceberg rest) ; file access control mirroring Ranger decisions
+    healthcheck: { test: ["CMD-SHELL", "curl -sf localhost:8080/v1/info | grep -q '\"starting\":false'"], interval: 5s, retries: 40 }
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    command: ["start-dev", "--import-realm", "--health-enabled=true"]
+    environment: { KC_BOOTSTRAP_ADMIN_USERNAME: admin, KC_BOOTSTRAP_ADMIN_PASSWORD: admin }
+    volumes: [./keycloak/platform-realm.json:/opt/keycloak/data/import/platform-realm.json]
+    healthcheck: { test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && grep -q UP <&3"], interval: 5s, retries: 40 }
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports: ["8025"]
+  superset: &superset
+    image: ${SUPERSET_IMAGE:-registry.hkm.internal/platform/superset:6.1.0-platform.3}
+    environment: &senv
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config_test.py
+      SUPERSET_SECRET_KEY: test-secret-key-not-for-prod
+      SUPERSET_META_DB_URI: postgresql+psycopg2://superset:superset@postgres:5432/superset
+      SUPERSET_REDIS_URL: redis://redis:6379
+      SUPERSET_REDIS_HOST: redis
+      KEYCLOAK_ISSUER: http://keycloak:8080/realms/platform
+      KEYCLOAK_CLIENT_ID: superset
+      KEYCLOAK_CLIENT_SECRET: test-client-secret
+      SUPERSET_GUEST_JWT_SECRET: test-guest-secret
+      SUPERSET_GAQ_JWT_SECRET: test-gaq-secret
+      SUPERSET_HOST_APP_ORIGIN: http://host-app.test
+      SMTP_HOST: mailpit
+    volumes: [./superset_config_test.py:/app/pythonpath/superset_config_test.py:ro, ./fixtures:/fixtures:ro]
+    depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_healthy }, trino: { condition: service_healthy }, keycloak: { condition: service_healthy } }
+    command: ["/bin/sh", "-c", "superset db upgrade && superset init && /fixtures/seed_institutions.sh && gunicorn -w 2 -k gevent -b 0.0.0.0:8088 'superset.app:create_app()'"]
+    ports: ["8088"]
+    healthcheck: { test: ["CMD-SHELL", "curl -sf localhost:8088/health"], interval: 5s, retries: 60 }
+  superset-worker:
+    <<: *superset
+    command: ["celery", "--app=superset.tasks.celery_app:app", "worker", "-Q", "sql_lab,reports,thumbnails,cache_warmup", "-c", "2"]
+    ports: []
+    healthcheck: { test: ["CMD-SHELL", "celery --app=superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME"], interval: 10s, retries: 20 }
+    depends_on: { superset: { condition: service_healthy } }
+  superset-beat:
+    <<: *superset
+    command: ["celery", "--app=superset.tasks.celery_app:app", "beat", "--schedule", "/tmp/celerybeat-schedule"]
+    ports: []
+    healthcheck: { test: ["CMD", "true"] }
+    depends_on: { superset: { condition: service_healthy } }

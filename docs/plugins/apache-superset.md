@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| Sürüm | 0.2.0 |
+| Sürüm | 0.3.0 |
 | Kategori | data |
 | Kaynak | `plugins/apache-superset/` |
 | Kaynak materyal | Superset ve Preset dokümanları, Stackable operator, 7 dashboard/görselleştirme kitabının bölüm özetleri ve Superset 4.1.2 lab'ları, iç araştırma dokümanları (genelleştirilmiş) |
@@ -14,6 +14,8 @@
 Superset'i platformun sunum katmanı olarak kurarken, güvenliğini sağlarken ve dashboard'ları kod olarak yönetirken ihtiyaç duyulan kararları ve politikaları taşır: dağıtım (Stackable/Helm), Keycloak ve rol eşleme, RLS, guest token ile gömme, dashboards-as-code, dataset/semantik katman, önbellek ve performans.
 
 v0.2 ile üç alan eklendi. Birincisi dashboard kalitesi: tasarım standardı, yaşam döngüsü, storytelling/declutter, grafik seçimi ve renk erişilebilirliği. İkincisi gerçek Superset davranışı: lab'larda doğrulanmış viz_type ve API sınırları. Üçüncüsü kurumdan bağımsız yönetişim: gizlilik/uyum, AI katmanı ve Superset iç yapısı.
+
+v0.3 test katmanını ekler: Superset'i platform bileşeni olarak test etme stratejisi (statik, unit, contract, integration, E2E, performans, görsel, güvenlik, upgrade; `qa-test-strategy` envanterindeki `T-bi-*` id'leriyle eşlenmiş), tek kullanımlık test ortamı (harness) ve sürüm yükseltme regresyonu.
 
 Çağrı sırası (API/MCP/CLI mekaniği) Preset'in Agent Skills'ine bırakılmıştır; bu plugin politika ve standart taşır.
 
@@ -25,7 +27,7 @@ v0.2 ile üç alan eklendi. Birincisi dashboard kalitesi: tasarım standardı, y
 ```
 
 Yerel geliştirme: `claude --plugin-dir ./plugins/apache-superset`
-Gereksinimler: örnek script'ler için Python 3 ve `pyyaml`; `chartdata.py` için pandas.
+Gereksinimler: örnek script'ler için Python 3 ve `pyyaml`; `chartdata.py` için pandas. Test örnekleri için ek olarak `pytest`, `requests`, Docker (compose), isteğe bağlı schemathesis, Playwright ve k6.
 
 ## 3. İçerik
 
@@ -48,6 +50,9 @@ Gereksinimler: örnek script'ler için Python 3 ve `pyyaml`; `chartdata.py` içi
 | `superset-privacy-compliance` | Gizlilik ve veri koruma | Küçük hücre baskılama, saklama/imha, maskeli dışa aktarım, SQL Lab korkulukları, denetim kaydı |
 | `superset-ai-layer` | Superset üzerinde AI yardımı | Yönetişimli MCP geçidi, NL2SQL, sorgu doğrulama, değerlendirme |
 | `superset-internals-contributing` | Superset'i genişletme veya hata ayıklama | DAO/Command, superset-core, WebSocket sunucusu, Extensions CLI, CI/test |
+| `superset-testing-strategy` | Superset'e dokunan her testi planlarken veya yazarken | Test piramidi, OpenAPI/schemathesis contract, RLS/maske tutarlılığı (JSON/CSV/embedded), guest token kapsamı, k6, Playwright, görsel regresyon, güvenlik başlıkları; `T-bi-*` eşleme |
+| `superset-test-harness` | Integration, E2E veya performans testi çalıştırırken | Compose/Testcontainers ile tek kullanımlık stack (PostgreSQL, Redis, Trino, Keycloak, Mailpit), test config, iki kurumlu seed, API istemcisi fixture'ları, reset/teardown |
+| `superset-upgrade-regression` | Sürüm yükseltme veya imaj yeniden derleme | UPDATING.md triyajı, metadata DB provası, asset re-export diff, SDK/extension uyumu, parite katmanları, geri alma |
 
 ### Agent'lar
 | Agent | Model | Ne yapar | Ne zaman kullanılır |
@@ -67,6 +72,9 @@ Gereksinimler: örnek script'ler için Python 3 ve `pyyaml`; `chartdata.py` içi
 | `/superset-dashboard-lint` | export klasörü | Few'in on üç hatası ve declutter kuralları için sezgisel lint |
 | `/superset-dashboard-brief` | dashboard fikri | Kitle, karar, KPI, veri, güvenlik ve başarı ölçütlerini içeren brief |
 | `/superset-chart-pick` | soru/veri tarifi | viz_type ve ayar önerir, kaçınılacakları söyler |
+| `/superset-test-plan` | değişiklik/özellik/sürüm | `T-bi-*` id'li test listesi, araç, harness boyutu, takvim, kabul ölçütleri ve envanter delta YAML'ı |
+| `/superset-assets-validate` | asset paketi | Şema, UUID kararlılığı, kimlik bilgisi, RLS varlığı ve isimlendirme için statik doğrulama; CI çıkış kodu |
+| `/superset-upgrade-regression` | hedef sürüm | Triyaj, config/flag diff, DB provası, parite katmanları, rollout/rollback ve kanıt kaydı |
 
 ### Araçlar (örnek script'ler)
 | Dosya | Ne yapar | Ek bağımlılık |
@@ -76,6 +84,10 @@ Gereksinimler: örnek script'ler için Python 3 ve `pyyaml`; `chartdata.py` içi
 | `skills/superset-chart-api-limits/examples/superset_client.py` | Lab Superset'ine API istemcisi | `requests` |
 | `skills/superset-chart-selection/examples/rules.py`, `chartdata.py` | Ölçek kuralları ve zaman ekseni sorgu yardımcıları | `chartdata.py` için pandas |
 | `skills/superset-color-accessibility/examples/checks.py` | Kontrast ve palet kontrolleri | yok |
+| `skills/superset-testing-strategy/examples/assets_validate.py` | Asset paketini statik doğrular (`--baseline`, `--superset-version`) | `pyyaml` |
+| `skills/superset-testing-strategy/examples/test_*.py`, `k6_dashboard_load.js`, `playwright/*.spec.ts` | Contract, RLS/maske, guest token, güvenlik başlığı testleri; yük ve E2E/görsel testler | `pytest`, `requests`; k6; Playwright |
+| `skills/superset-test-harness/examples/` | `docker-compose.test.yml`, `conftest.py`, `seed_institutions.sh`, idempotent import / Alerts & Reports / cache izolasyonu testleri | Docker, `pytest` |
+| `skills/superset-upgrade-regression/examples/upgrade_check.py` | Config ve flag'leri hedef sürüme göre kontrol eder (`--config --current --target`) | yok |
 
 ## 4. Hızlı başlangıç
 
@@ -102,6 +114,16 @@ Durum: Dashboard dışarıya veya geniş bir kitleye açılacak.
 Prompt: `superset-compliance-reviewer ile bu asset klasörünü incele`
 Ne olur: Agent, gizlilik ve güvenlik skill'lerine göre bulguları sıralar.
 
+**Değişiklik için test planı**
+Durum: Yeni bir gömülü dashboard paketi yayına çıkacak.
+Prompt: `/superset-test-plan yeni embedded satış dashboard'u`
+Ne olur: `T-bi-*` id'li test tablosu ve `qa-test-strategy` şemasında envanter delta YAML'ı gelir.
+
+**Sürüm yükseltme**
+Durum: Superset bir üst sürüme geçecek.
+Prompt: `/superset-upgrade-regression 6.0 -> 6.1`
+Ne olur: Kontrol listesi, komutlar ve upgrade kanıt kaydı şablonu çıkar.
+
 ## 6. Dosya yapısı
 
 ```text
@@ -109,7 +131,7 @@ plugins/apache-superset/
 ├── .claude-plugin/plugin.json
 ├── README.md
 ├── agents/      # 4 agent
-├── commands/    # 7 komut
+├── commands/    # 10 komut
 └── skills/<skill>/
     ├── SKILL.md
     ├── references/sources.md
@@ -123,6 +145,7 @@ plugins/apache-superset/
 - Lint çıktıları sezgiseldir. `dashboard_lint.py` çevrimdışı modda pie toplamı kuralını atlar.
 - `dashboard_lint.py` export klasörü okuyucusu (`from_export`) örnek bir sahte export ile denendi; gerçek export paketlerinde alan adları farklıysa uyarlama gerekebilir.
 - Guest token, gömme, alerts & reports ve `logs` saklama davranışları lab'larda doğrulanmadı.
+- Test örnekleri şablondur; çalışan bir harness'a karşı koşulmadı. `conftest.py` içindeki `test-guest-secret` yalnızca test ortamı içindir.
 - Gizlilik ve AI skill'leri kurumdan bağımsız yazıldı; mevzuata özgü maddeler (ör. KVKK/GDPR madde numaraları) içermez, hukuki görüş yerine geçmez.
 
 ## 8. Bakım

@@ -1,6 +1,6 @@
 # apache-superset
 
-Running Apache Superset 6.x as the BI/serving layer of a multi-tenant, open-source data platform, and designing dashboards that people can read. v0.2 adds chart-API limits, chart selection, dashboard lifecycle, storytelling, colour accessibility, privacy compliance, an AI layer and Superset internals.
+Running Apache Superset 6.x as the BI/serving layer of a multi-tenant, open-source data platform, and designing dashboards that people can read. v0.2 adds chart-API limits, chart selection, dashboard lifecycle, storytelling, colour accessibility, privacy compliance, an AI layer and Superset internals. v0.3 adds the testing layer (strategy, harness, upgrade regression) aligned with the `qa-test-strategy` plugin.
 
 | Kind | Name | Purpose |
 |---|---|---|
@@ -15,6 +15,9 @@ Running Apache Superset 6.x as the BI/serving layer of a multi-tenant, open-sour
 | Command | `/superset-dashboard-lint` | Heuristic lint of an export bundle: Few's thirteen mistakes + declutter rules |
 | Command | `/superset-dashboard-brief` | Dashboard brief: audience, decisions, KPIs, data, security, success measures |
 | Command | `/superset-chart-pick` | Recommend viz_type and settings for a question, with what to avoid |
+| Command | `/superset-test-plan` | Test list for a Superset change/feature/release with T-bi-* ids, tools, harness, schedule, acceptance criteria |
+| Command | `/superset-assets-validate` | Static validation of an assets bundle (schema, UUID stability, credentials, RLS presence, naming) with CI exit code |
+| Command | `/superset-upgrade-regression` | UPDATING.md triage, config/flag diff, DB-copy rehearsal, parity tiers, rollout/rollback, evidence |
 | Skill | `superset-architecture-deployment` | Components, operator vs Helm, image, config essentials, scaling, upgrades |
 | Skill | `superset-security-model` | FAB roles/permissions, DAR, dashboard RBAC, RLS, Keycloak OIDC mapping, hardening |
 | Skill | `superset-multi-tenancy-embedding` | Pool/silo/bridge, embedded SDK + guest tokens, tenant-aware operations |
@@ -31,6 +34,9 @@ Running Apache Superset 6.x as the BI/serving layer of a multi-tenant, open-sour
 | Skill | `superset-privacy-compliance` | Small-cell suppression, retention, masking-aware export, SQL Lab guardrails, audit logging |
 | Skill | `superset-ai-layer` | Governed MCP gateway, NL2SQL with allow-listed semantic layer, query validation, evaluation |
 | Skill | `superset-internals-contributing` | DAO/Command layering, superset-core, WebSocket server, Extensions CLI, CI/test stack |
+| Skill | `superset-testing-strategy` | Superset-as-component pyramid: static, unit, contract (OpenAPI/schemathesis, chart-data), integration (RLS/mask consistency across JSON/CSV/embedded, guest-token scope, assets idempotency, Alerts & Reports, cache), E2E Playwright, k6 performance, visual regression, security headers, upgrade; T-bi-* mapping |
+| Skill | `superset-test-harness` | Disposable light/full Superset stacks (compose/Testcontainers: PostgreSQL, Redis, Trino, Keycloak, Mailpit), test config, bootstrap, two-institution seeding, API client fixtures, reset/teardown |
+| Skill | `superset-upgrade-regression` | Upgrade triage, metadata-DB rehearsal, assets re-export diff, SDK/extension compatibility, parity tiers, rollout and evidence |
 
 `examples/` live inside the skill that uses them:
 - `superset-architecture-deployment`: production `superset_config.py`, Stackable `SupersetCluster` CR, Helm values
@@ -38,6 +44,9 @@ Running Apache Superset 6.x as the BI/serving layer of a multi-tenant, open-sour
 - `superset-dashboards-as-code`: templated assets (database/dataset/RLS/roles), CI workflow
 - `superset-dashboard-design`: review checklist, `dashboard_lint.py` (offline export lint)
 - `superset-storytelling-declutter`: `declutter_lint.py`
+- `superset-testing-strategy`: `assets_validate.py`, API contract / RLS-mask consistency / guest-token scope / security-header pytest modules, `k6_dashboard_load.js`, Playwright journey and visual-regression specs, `superset_test_inventory.yaml`
+- `superset-test-harness`: `docker-compose.test.yml`, `superset_config_test.py`, `conftest.py` (compose lifecycle, API client, seeding, guest tokens), `seed_institutions.sh`, idempotent-import / Alerts & Reports / cache-isolation tests
+- `superset-upgrade-regression`: `upgrade_check.py`, upgrade evidence template
 - `superset-chart-api-limits`: `superset_client.py`, `viz_registry.py`, `warehouse.py` from the lab base
 - `superset-chart-selection`: `rules.py`, `chartdata.py`
 - `superset-color-accessibility`: `checks.py`, `superset_schemes.json`
