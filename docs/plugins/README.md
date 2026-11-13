@@ -13,6 +13,7 @@ Bu repodaki plugin'lerin kullanım kılavuzları. Her plugin için bir dosya var
 | spark-code-optimizer | data | sparkopt kural motoruyla PySpark optimizasyonu: offline CLI, 7 skill, kodu yeniden yazan agent | [spark-code-optimizer.md](spark-code-optimizer.md) |
 | qa-test-strategy | testing | Veri platformu için QA süreci: STLC ve test case yaşam döngüsü, strateji/plan/rapor şablonları, suite taksonomisi, RTM ve kapsam, defect yönetimi, fonksiyonel olmayan testler, QA metrikleri, 112 testlik platform envanteri ve unit/integration/e2e rehberleri; 11 skill, 3 agent, 5 komut | [qa-test-strategy.md](qa-test-strategy.md) |
 | spark-property-based-testing | testing | Hypothesis ile PySpark property testleri: DataFrame stratejileri, schema contract, GX 1.x kalite kontrolleri, transformation invariant'ları, pytest plugin ve CLI | [spark-property-based-testing.md](spark-property-based-testing.md) |
+| presentation-motion | presentation | HTML/CSS/GSAP ile animasyonlu sunum ve demo videosu: storyboard, kitleye göre kurgu (teknik, yönetici, kamu, akademik), sahne şablonları, mimari/DAG/lineage sahneleri, Playwright ile Superset ve POC kaydı, deterministik MP4 render, gizlilik ve kalite denetimi; 14 skill, 12 agent, 24 komut | [presentation-motion.md](presentation-motion.md) |
 
 ## Kurallar
 

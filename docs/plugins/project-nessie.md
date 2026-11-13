@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| Sürüm | 0.1.0 |
+| Sürüm | 0.1.1 |
 | Kategori | data |
 | Kaynak | `plugins/project-nessie/` |
 | Kaynak materyal | projectnessie.org dokümanları ve 0.106–0.108 sürüm notları, Nessie Helm chart, Trino/ClickHouse/Iceberg dokümanları, Iceberg ve Polaris kitapları (`skills/nessie-catalog-fundamentals/references/sources.md`) |
@@ -158,7 +158,7 @@ Kurulum için önce `examples/helm-values.yaml` ve `nessie-deployment`; güvenli
 - **Trino S3 imzalama yapamaz.** REST yolunda vended credentials ve dışarıdan verilen OAuth2 token gerekir; platform varsayılanı yerel `nessie` tipidir.
 - **STS desteği store'a göre değişir.** İmzalama ve vending için object store'un STS/assume-role desteği gerekir; ObjectScale, Ceph RGW ve AIStor'da staging'de ayrıca doğrulayın.
 - **CEL kuralları örnektir.** `authorization-rules.properties`'teki rol adı ayrıştırma ifadeleri (`substring`, `split`) Keycloak grup adı biçimine (`platform_t-{kurum}_{rol}`) bağlı. Farklı bir adlandırmada kuralları yeniden yazın ve iki kurumlu test matrisiyle deneyin.
-- **Release tag adı.** `branching-workflows` `rel-{YYYYMMDD}` biçimini önerir; `wap_promote.py --release` ise `rel-{run_id}` üretir. Kendi kuralınıza göre birini seçin.
+- **Release tag adı günde bir kez atanabilir.** `wap_promote.py --release`, `branching-workflows` kuralına uygun olarak `rel-{YYYYMMDD}` (UTC) tag'i üretir. Aynı kurum için aynı gün ikinci kez `--release` çalıştırılırsa Nessie tag zaten var hatası (409) döner.
 - GC'yi cut-off değişikliğinden sonra mutlaka önce dry-run / `--defer-deletes` ile çalıştırın. GC servis hesabına WORM (Object Lock) arşiv bucket'larında silme yetkisi vermeyin.
 
 ## 8. Bakım

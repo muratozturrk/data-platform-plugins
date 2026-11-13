@@ -1,6 +1,7 @@
 """Write-Audit-Publish on Nessie via REST API v2 (control-plane helper)."""
 from __future__ import annotations
 import os, sys, httpx
+from datetime import datetime, timezone
 
 NESSIE = os.environ.get("NESSIE_URI", "https://nessie.platform.svc/api/v2")
 TOKEN = os.environ["NESSIE_TOKEN"]
@@ -46,5 +47,6 @@ if __name__ == "__main__":
             print("audit failed; branch kept for inspection"); sys.exit(1)
         merge(wap, f"t-{institution}")
         if "--release" in sys.argv:
-            tag(f"rel-{run_id}", f"t-{institution}")
+            # rel-{YYYYMMDD} per nessie-branching-workflows; one release tag per institution per day
+            tag(f"rel-{datetime.now(timezone.utc):%Y%m%d}", f"t-{institution}")
         delete_branch(wap); print("published")
