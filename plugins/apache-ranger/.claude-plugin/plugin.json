@@ -1,0 +1,8 @@
+{
+  "name": "apache-ranger",
+  "version": "0.2.0",
+  "description": "Apache Ranger (minimum 2.8.0, target 2.9.0) as the access-policy and audit plane of the HKM open-source data platform: architecture and policy model (resource, tag, masking, row-filter, deny/exceptions, zones, roles), Kubernetes deployment without an official chart, identity sync with Keycloak/LDAP, RBAC+ABAC policy design for multi-institution tenancy and KVKK purpose limitation, engine plugins (Trino, Kafka/Strimzi, Spark via Kyuubi AuthZ) and native compilation for engines without plugins (ClickHouse, Superset, Nessie, CKAN), audit to OpenSearch/immudb, REST API and policy-as-code, operations and upgrades",
+  "author": { "name": "Murat Öztürk", "url": "https://github.com/muratozturrk/data-platform-plugins" },
+  "license": "MIT",
+  "keywords": ["ranger", "access-control", "abac", "rbac", "masking", "row-filter", "audit", "trino", "kafka", "kvkk", "policy-as-code"]
+}

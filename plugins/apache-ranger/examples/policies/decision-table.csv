@@ -1,0 +1,27 @@
+case,principal,groups,engine,resource,action,expected,detail
+D01,ayse,platform_t-acme_analyst,trino,t_acme_lake.gold_sales.fct_orders,select,allow,ra-0001
+D02,ayse,platform_t-acme_analyst,trino,t_globex_lake.gold_sales.fct_orders,select,deny,cross-institution
+D03,ayse,platform_t-acme_analyst,trino,t_acme_lake.silver_sales.orders,insert,deny,analyst cannot write
+D04,ali,platform_t-acme_engineer,trino-etl,t_acme_lake.silver_sales.orders,insert,allow,ra-0002 staging via ETL cluster (D8)
+D05,ayse,platform_t-acme_analyst,trino,t_acme_lake.gold_sales.dim_customers.iban,select,mask,MASK_SHOW_LAST_4 (PII type=iban)
+D06,emre,platform_t-globex_credit-risk,trino,t_globex_lake.gold_risk.loans.national_id,select,allow,unmasked (ra-0009 pii-reader activated)
+D07,selin,platform_t-acme_marketing-analyst,trino,t_globex_lake.gold_risk.loans,select,filter,region = 'TR' (ra-0010 share SA-0077)
+D08,deniz,platform_t-globex_risk-analyst,trino,t_globex_lake.gold_risk.loans,select,filter,1 = 1 (owner group all rows)
+D09,ayse,platform_t-acme_analyst,trino,t_acme_lake.gold_risk.fraud_cases,select,deny,no assignment on risk
+D10,can,platform_t-acme_fraud,trino,t_acme_lake.gold_risk.fraud_cases.suspect_note,select,mask,MASK_NULL (RESTRICTED column; ra-0005 not activated)
+D11,wi-t-acme-orders-ingest,,kafka,t.acme.sales.pub.order-created.v1,publish,allow,ra-0003 pipeline writes published topic
+D12,ali,platform_t-acme_engineer,kafka,t.globex.sales.pub.order-created.v1,consume,deny,cross-institution
+D13,svc-superset,,trino,impersonate ayse,impersonate,allow,interactive client only
+D14,ayse,platform_t-acme_analyst,trino,SET SESSION query_max_memory,alter,deny,session property locked
+D15,ali,platform_t-acme_engineer,trino,t_acme_lake.gold_sales.fct_orders,insert,deny,humans do not write published layers (#61)
+D16,ali,platform_t-acme_engineer,kafka,t.acme.sales.pub.order-created.v1,publish,deny,humans do not write .pub. topics (#61)
+D17,ali,platform_t-acme_engineer,kafka,t.acme.sales.int.orders-raw.v1,publish,allow,ra-0002 staging topic
+D18,svc-airflow,,trino,impersonate ayse,impersonate,deny,pipelines never impersonate (#23)
+D19,can,platform_t-acme_fraud,trino,t_acme_lake.gold_risk.sanctions_hits,select,deny,RESTRICTED level=table guardrail (D1)
+D20,can,platform_t-acme_fraud,trino,t_acme_lake.gold_risk.fraud_cases.suspect_note,select,allow,unmasked after activation of ra-0005 restricted-reader (D1)
+D21,selin,platform_t-acme_marketing-analyst,spark,t_globex_lake_gold_risk.loans,select,deny,share is Trino-only (D4)
+D22,ayse,platform_t-acme_analyst,kafka,t.acme.sales.pub.order-created.v1,consume,allow,.pub. topic is de-identified and carries no PII (D3)
+D23,wi-t-acme-orders-ingest,,trino,t_acme_lake.gold_sales.fct_orders,insert,deny,no writes on trino-interactive (D8)
+D24,wi-t-acme-orders-ingest,,trino-etl,t_acme_lake.gold_sales.fct_orders,insert,allow,ra-0003 writes via trino-etl (D8)
+D25,kim,platform_breakglass,trino,t_acme_lake.gold_risk.sanctions_hits,select,allow,activated break-glass: deny exception + zone break-glass allow (F11)
+D26,ali,platform_t-acme_engineer,kafka,t.acme.sales.int.orders-raw.v1,consume,deny,clear .int. topics are read only by pipelines (D3)

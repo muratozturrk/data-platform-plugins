@@ -1,0 +1,142 @@
+[
+  {
+    "service": "trino-interactive",
+    "name": "base-own-queries",
+    "policyType": 0,
+    "isAuditEnabled": true,
+    "policyLabels": [
+      "layer:0"
+    ],
+    "resources": {
+      "queryid": {
+        "values": [
+          "*"
+        ]
+      }
+    },
+    "policyItems": [
+      {
+        "users": [
+          "{USER}"
+        ],
+        "accesses": [
+          {
+            "type": "execute",
+            "isAllowed": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "service": "trino-interactive",
+    "name": "base-system-metadata",
+    "policyType": 0,
+    "isAuditEnabled": false,
+    "policyLabels": [
+      "layer:0"
+    ],
+    "resources": {
+      "catalog": {
+        "values": [
+          "system"
+        ]
+      },
+      "schema": {
+        "values": [
+          "jdbc",
+          "metadata",
+          "information_schema"
+        ]
+      },
+      "table": {
+        "values": [
+          "*"
+        ]
+      },
+      "column": {
+        "values": [
+          "*"
+        ]
+      }
+    },
+    "policyItems": [
+      {
+        "groups": [
+          "public"
+        ],
+        "accesses": [
+          {
+            "type": "select",
+            "isAllowed": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "service": "trino-interactive",
+    "name": "base-impersonation-superset",
+    "policyType": 0,
+    "isAuditEnabled": true,
+    "policyLabels": [
+      "layer:0"
+    ],
+    "resources": {
+      "trinouser": {
+        "values": [
+          "ayse",
+          "can",
+          "selin",
+          "deniz",
+          "emre"
+        ]
+      }
+    },
+    "policyItems": [
+      {
+        "users": [
+          "svc-superset"
+        ],
+        "accesses": [
+          {
+            "type": "impersonate",
+            "isAllowed": true
+          }
+        ]
+      }
+    ],
+    "description": "svc-superset may act only for members of the groups it serves (platform_t-acme_analyst, platform_t-acme_fraud, platform_t-acme_marketing-analyst, platform_t-globex_risk-analyst, platform_t-globex_credit-risk); trinouser holds user names, so a compile step expands those Keycloak groups to their members at compile time (not yet in compile_policies.py; this list is its output). Never a wildcard (F12). Break-glass allows are generated per zone by compile_policies.py ({zone}-breakglass-*, F11)."
+  },
+  {
+    "service": "trino-interactive",
+    "name": "base-session-properties-locked",
+    "policyType": 0,
+    "isAuditEnabled": true,
+    "policyLabels": [
+      "layer:0"
+    ],
+    "resources": {
+      "systemproperty": {
+        "values": [
+          "query_max_memory*",
+          "query_max_run_time",
+          "query_max_execution_time"
+        ]
+      }
+    },
+    "policyItems": [
+      {
+        "accesses": [
+          {
+            "type": "alter",
+            "isAllowed": true
+          }
+        ],
+        "groups": [
+          "platform_admins"
+        ]
+      }
+    ]
+  }
+]

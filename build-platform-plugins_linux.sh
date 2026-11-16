@@ -320,6 +320,7 @@ echo "apache-polaris:data" >> "$CATS_FILE"
 echo "apache-superset:data" >> "$CATS_FILE"
 echo "openmetadata:governance" >> "$CATS_FILE"
 echo "project-nessie:data" >> "$CATS_FILE"
+echo "apache-ranger:data" >> "$CATS_FILE"
 echo "qa-test-strategy:testing" >> "$CATS_FILE"
 echo "presentation-motion:presentation" >> "$CATS_FILE"
 

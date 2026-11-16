@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<configuration>
+  <property><name>ranger.plugin.kafka.service.name</name><value>kafka-main</value></property>
+  <property><name>ranger.plugin.kafka.policy.rest.url</name><value>https://ranger.platform-ranger.svc:6182</value></property>
+  <property><name>ranger.plugin.kafka.policy.source.impl</name><value>org.apache.ranger.admin.client.RangerAdminRESTClient</value></property>
+  <property><name>ranger.plugin.kafka.policy.pollIntervalMs</name><value>30000</value></property>
+  <property><name>ranger.plugin.kafka.policy.cache.dir</name><value>/var/kafka/ranger/policycache</value></property>
+  <property><name>ranger.plugin.kafka.policy.rest.ssl.config.file</name><value>/opt/kafka/ranger-conf/ranger-policymgr-ssl.xml</value></property>
+</configuration>

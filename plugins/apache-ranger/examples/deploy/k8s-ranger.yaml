@@ -1,0 +1,93 @@
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata: { name: ranger-secrets, namespace: platform-ranger }
+spec:
+  refreshInterval: 1h
+  secretStoreRef: { name: openbao, kind: ClusterSecretStore }
+  target: { name: ranger-secrets }
+  dataFrom: [{ extract: { key: platform/ranger/admin } }]
+---
+apiVersion: batch/v1
+kind: Job
+metadata: { name: ranger-db-setup-2-8-0, namespace: platform-ranger }
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: setup
+          image: registry.hkm.internal/platform/ranger-admin:2.8.0-hkm.1
+          command: ["/bin/bash", "-c", "envsubst < /config/install.properties > /opt/ranger/install.properties && cd /opt/ranger && ./setup.sh"]
+          envFrom: [{ secretRef: { name: ranger-secrets } }]
+          volumeMounts: [{ name: config, mountPath: /config }, { name: tls, mountPath: /etc/ranger/tls }]
+      volumes:
+        - { name: config, configMap: { name: ranger-install } }
+        - { name: tls, secret: { secretName: ranger-tls } }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: ranger-admin, namespace: platform-ranger, labels: { app.kubernetes.io/name: ranger-admin, app.kubernetes.io/part-of: data-platform } }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app.kubernetes.io/name: ranger-admin } }
+  template:
+    metadata: { labels: { app.kubernetes.io/name: ranger-admin } }
+    spec:
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: admin
+          image: registry.hkm.internal/platform/ranger-admin:2.8.0-hkm.1
+          command: ["/bin/bash", "-c", "envsubst < /config/install.properties > /opt/ranger/install.properties && /opt/ranger/ews/ranger-admin-services.sh start && tail -F /var/log/ranger/*.log"]
+          envFrom: [{ secretRef: { name: ranger-secrets } }]
+          ports: [{ name: https, containerPort: 6182 }]
+          startupProbe: { tcpSocket: { port: 6182 }, failureThreshold: 60, periodSeconds: 5 }
+          readinessProbe: { httpGet: { path: /login.jsp, port: 6182, scheme: HTTPS }, periodSeconds: 10 }
+          livenessProbe: { tcpSocket: { port: 6182 }, periodSeconds: 20 }
+          resources: { requests: { cpu: "1", memory: 3Gi }, limits: { cpu: "2", memory: 4Gi } }
+          volumeMounts: [{ name: config, mountPath: /config }, { name: tls, mountPath: /etc/ranger/tls }]
+      volumes:
+        - { name: config, configMap: { name: ranger-install } }
+        - { name: tls, secret: { secretName: ranger-tls } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: ranger, namespace: platform-ranger }
+spec:
+  selector: { app.kubernetes.io/name: ranger-admin }
+  ports: [{ name: https, port: 6182, targetPort: 6182 }]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: ranger-admin, namespace: platform-ranger }
+spec: { minAvailable: 1, selector: { matchLabels: { app.kubernetes.io/name: ranger-admin } } }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: ranger-usersync, namespace: platform-ranger }
+spec:
+  replicas: 1                                   # never more than one
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app.kubernetes.io/name: ranger-usersync } }
+  template:
+    metadata: { labels: { app.kubernetes.io/name: ranger-usersync } }
+    spec:
+      containers:
+        - name: usersync
+          image: registry.hkm.internal/platform/ranger-usersync:2.8.0-hkm.1
+          envFrom: [{ secretRef: { name: ranger-secrets } }]
+          volumeMounts: [{ name: config, mountPath: /config }]
+          resources: { requests: { cpu: 250m, memory: 512Mi }, limits: { cpu: "1", memory: 1Gi } }
+      volumes: [{ name: config, configMap: { name: ranger-usersync } }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: ranger-admin-ingress, namespace: platform-ranger }
+spec:
+  podSelector: { matchLabels: { app.kubernetes.io/name: ranger-admin } }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { platform.example/ranger-client: "true" } }
+      ports: [{ port: 6182 }]

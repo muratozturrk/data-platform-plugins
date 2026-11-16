@@ -1,0 +1,29 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata: { name: platform-kafka, namespace: kafka }
+spec:
+  kafka:
+    version: 3.9.1
+    image: registry.hkm.internal/platform/kafka-ranger:3.9.1-ranger2.8.0-hkm.1   # Strimzi Kafka image + Ranger Kafka plugin layer
+    authorization:
+      type: custom
+      authorizerClass: org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer
+      superUsers:
+        - CN=platform-kafka-kafka
+        - CN=platform-kafka-entity-operator
+        - CN=platform-kafka-kafka-exporter
+        - svc-control-plane
+      supportsAdminApi: true
+    config:
+      ssl.principal.mapping.rules: "RULE:^CN=(.*?)(,.*)?$/$1/L,DEFAULT"
+    template:
+      pod:
+        volumes:
+          - { name: ranger-conf, configMap: { name: ranger-kafka-conf } }
+          - { name: ranger-work, emptyDir: {} }      # use a PVC in production for policy cache + audit spool
+      kafkaContainer:
+        env: [{ name: CLASSPATH, value: "/opt/kafka/ranger-conf" }]
+        volumeMounts:
+          - { name: ranger-conf, mountPath: /opt/kafka/ranger-conf }
+          - { name: ranger-work, mountPath: /var/kafka/ranger }

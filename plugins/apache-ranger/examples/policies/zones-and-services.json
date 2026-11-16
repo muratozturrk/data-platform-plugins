@@ -1,0 +1,186 @@
+{
+  "services": [
+    {
+      "name": "trino-interactive",
+      "type": "trino",
+      "tagService": "platform-tags",
+      "configs": {
+        "username": "svc-ranger-lookup",
+        "jdbc.driverClassName": "io.trino.jdbc.TrinoDriver",
+        "jdbc.url": "jdbc:trino://trino-gateway.platform.svc:443?SSL=true",
+        "policy.download.auth.users": "svc-trino",
+        "tag.download.auth.users": "svc-trino"
+      }
+    },
+    {
+      "name": "trino-etl",
+      "type": "trino",
+      "tagService": "platform-tags",
+      "description": "ETL Trino cluster: the only Trino service that carries write access types (D8)",
+      "configs": {
+        "username": "svc-ranger-lookup",
+        "jdbc.driverClassName": "io.trino.jdbc.TrinoDriver",
+        "jdbc.url": "jdbc:trino://trino-etl.platform.svc:443?SSL=true",
+        "policy.download.auth.users": "svc-trino-etl",
+        "tag.download.auth.users": "svc-trino-etl"
+      }
+    },
+    {
+      "name": "kafka-main",
+      "type": "kafka",
+      "tagService": "platform-tags",
+      "configs": {
+        "username": "svc-ranger-lookup",
+        "zookeeper.connect": "",
+        "policy.download.auth.users": "platform-kafka-kafka"
+      }
+    },
+    {
+      "name": "spark-sql",
+      "type": "hive",
+      "tagService": "platform-tags",
+      "configs": {
+        "policy.download.auth.users": "svc-spark"
+      },
+      "description": "hive-type service for Spark via Kyuubi AuthZ; database = <catalog>_<schema> (D5, provisional, lab check)"
+    },
+    {
+      "name": "platform-tags",
+      "type": "tag"
+    }
+  ],
+  "zones": [
+    {
+      "name": "t-acme",
+      "auditUserGroups": [
+        "platform_auditors"
+      ],
+      "services": {
+        "trino-interactive": {
+          "resources": [
+            {
+              "catalog": [
+                "t_acme_lake",
+                "t_acme_erp"
+              ]
+            }
+          ]
+        },
+        "trino-etl": {
+          "resources": [
+            {
+              "catalog": [
+                "t_acme_lake",
+                "t_acme_erp"
+              ]
+            }
+          ]
+        },
+        "kafka-main": {
+          "resources": [
+            {
+              "topic": [
+                "t.acme.*"
+              ]
+            },
+            {
+              "consumergroup": [
+                "t.acme.*"
+              ]
+            }
+          ]
+        },
+        "spark-sql": {
+          "resources": [
+            {
+              "database": [
+                "t_acme_lake_*"
+              ]
+            }
+          ]
+        }
+      },
+      "tagServices": [
+        "platform-tags"
+      ],
+      "adminUsers": [
+        "svc-ranger-ci"
+      ]
+    },
+    {
+      "name": "t-globex",
+      "auditUserGroups": [
+        "platform_auditors"
+      ],
+      "services": {
+        "trino-interactive": {
+          "resources": [
+            {
+              "catalog": [
+                "t_globex_lake"
+              ]
+            }
+          ]
+        },
+        "trino-etl": {
+          "resources": [
+            {
+              "catalog": [
+                "t_globex_lake"
+              ]
+            }
+          ]
+        },
+        "kafka-main": {
+          "resources": [
+            {
+              "topic": [
+                "t.globex.*"
+              ]
+            },
+            {
+              "consumergroup": [
+                "t.globex.*"
+              ]
+            }
+          ]
+        },
+        "spark-sql": {
+          "resources": [
+            {
+              "database": [
+                "t_globex_lake_*"
+              ]
+            }
+          ]
+        }
+      },
+      "tagServices": [
+        "platform-tags"
+      ],
+      "adminUsers": [
+        "svc-ranger-ci"
+      ]
+    },
+    {
+      "name": "shared",
+      "auditUserGroups": [
+        "platform_auditors"
+      ],
+      "services": {
+        "trino-interactive": {
+          "resources": [
+            {
+              "catalog": [
+                "lake"
+              ]
+            }
+          ]
+        }
+      },
+      "adminUsers": [
+        "svc-ranger-ci"
+      ]
+    }
+  ]
+}

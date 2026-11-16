@@ -342,6 +342,7 @@ $cats["apache-polaris"] = "data"
 $cats["apache-superset"] = "data"
 $cats["openmetadata"] = "governance"
 $cats["project-nessie"] = "data"
+$cats["apache-ranger"] = "data"
 $cats["qa-test-strategy"] = "testing"
 $cats["presentation-motion"] = "presentation"
 

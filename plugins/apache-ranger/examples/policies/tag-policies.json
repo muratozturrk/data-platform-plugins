@@ -1,0 +1,67 @@
+[
+  {
+    "service": "platform-tags",
+    "zoneName": "t-acme",
+    "name": "t-acme-tag-mask",
+    "policyType": 1,
+    "isAuditEnabled": true,
+    "description": "Zone tag mask, t-acme instance as compiled by compile_policies.py (no activation open). Each zone has its own; activated pii-reader / restricted-reader items are prepended with their own validitySchedules (D2). Infotypes are attributes of PII (type=tckn, type=iban), never separate tags; PII is mask-only (D10, D11). Column-level RESTRICTED -> MASK_NULL (D1). Lab check: zone-scoped tag policies and TAG._type / TAG.type expression conditions (trial: ranger-policy-compile, 2026-11-16).",
+    "policyLabels": ["layer:3", "kvkk", "source:policy-manifest", "institution:t-acme"],
+    "resources": { "tag": { "values": ["PII", "RESTRICTED"] } },
+    "dataMaskPolicyItems": [
+      {"groups": ["public"], "users": [], "roles": [], "accesses": [{"type": "trino:select", "isAllowed": true}], "dataMaskInfo": {"dataMaskType": "trino:MASK_SHOW_LAST_4"}, "conditions": [{"type": "expression", "values": ["TAG._type == 'PII' && TAG.type == 'iban'"]}]},
+      {"groups": ["public"], "users": [], "roles": [], "accesses": [{"type": "hive:select", "isAllowed": true}], "dataMaskInfo": {"dataMaskType": "hive:MASK_SHOW_LAST_4"}, "conditions": [{"type": "expression", "values": ["TAG._type == 'PII' && TAG.type == 'iban'"]}]},
+      {"groups": ["public"], "users": [], "roles": [], "accesses": [{"type": "trino:select", "isAllowed": true}], "dataMaskInfo": {"dataMaskType": "trino:MASK_HASH"}, "conditions": [{"type": "expression", "values": ["TAG._type == 'PII'"]}]},
+      {"groups": ["public"], "users": [], "roles": [], "accesses": [{"type": "hive:select", "isAllowed": true}], "dataMaskInfo": {"dataMaskType": "hive:MASK_HASH"}, "conditions": [{"type": "expression", "values": ["TAG._type == 'PII'"]}]},
+      {"groups": ["public"], "users": [], "roles": [], "accesses": [{"type": "trino:select", "isAllowed": true}], "dataMaskInfo": {"dataMaskType": "trino:MASK_NULL"}, "conditions": [{"type": "expression", "values": ["TAG._type == 'RESTRICTED'"]}]},
+      {"groups": ["public"], "users": [], "roles": [], "accesses": [{"type": "hive:select", "isAllowed": true}], "dataMaskInfo": {"dataMaskType": "hive:MASK_NULL"}, "conditions": [{"type": "expression", "values": ["TAG._type == 'RESTRICTED'"]}]}
+    ]
+  },
+  {
+    "service": "platform-tags",
+    "name": "guardrail-restricted-read",
+    "policyType": 0,
+    "isAuditEnabled": true,
+    "description": "Platform guardrail: no read on tables (and topics) tagged RESTRICTED with attribute level=table; exception only platform_breakglass, whose allow is the per-zone {zone}-breakglass-* policy. Column-level RESTRICTED is masked, not denied (D1). Lab check: TAG.level expression condition (trial: ranger-policy-compile, 2026-11-16).",
+    "policyLabels": ["layer:3"],
+    "resources": { "tag": { "values": ["RESTRICTED"] } },
+    "denyPolicyItems": [
+      {
+        "groups": ["public"],
+        "accesses": [
+          { "type": "trino:select", "isAllowed": true },
+          { "type": "hive:select", "isAllowed": true },
+          { "type": "kafka:consume", "isAllowed": true }
+        ],
+        "conditions": [ { "type": "expression", "values": ["TAG.level == 'table'"] } ]
+      }
+    ],
+    "denyExceptions": [
+      {
+        "groups": ["platform_breakglass"],
+        "accesses": [
+          { "type": "trino:select", "isAllowed": true },
+          { "type": "hive:select", "isAllowed": true }
+        ]
+      }
+    ]
+  },
+  {
+    "service": "platform-tags",
+    "name": "tag-expired-deny",
+    "policyType": 0,
+    "isAuditEnabled": true,
+    "policyLabels": ["layer:3", "retention"],
+    "resources": { "tag": { "values": ["EXPIRES_ON"] } },
+    "denyPolicyItems": [
+      {
+        "groups": ["public"],
+        "accesses": [
+          { "type": "trino:select", "isAllowed": true },
+          { "type": "hive:select", "isAllowed": true }
+        ],
+        "conditions": [ { "type": "accessed-after-expiry", "values": ["yes"] } ]
+      }
+    ]
+  }
+]

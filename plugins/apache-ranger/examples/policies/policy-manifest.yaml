@@ -1,0 +1,169 @@
+# Platform manifest (source of truth in Git) → compiled by automation/compile_policies.py
+# Shape: azure-style-rbac-abac.md › Manifest shape (platform). Ids are immutable keys.
+# Decisions D1-D11: trial: ranger-policy-compile, 2026-11-16.
+kind: Institution
+metadata: { id: t-acme }
+spec:
+  zone: t-acme
+  services: { trino: trino-interactive, trinoEtl: trino-etl, kafka: kafka-main, spark: spark-sql }   # writes only trino-etl + spark (D8)
+  catalog: t_acme_lake                       # Spark database = <catalog>_<schema>, e.g. t_acme_lake_gold_sales (D5, provisional)
+  topicPrefix: t.acme
+  owner: t-acme-institution-owner
+  reviewBy: "2027-02-15"                     # default review date of every assignment without its own reviewBy
+  domains:                                   # published = domain scope (#48, #58); staging = raw/staging (#61); datasets: table -> schema
+    sales: { published: [gold_sales], staging: [silver_sales], datasets: { fct_orders: gold_sales, dim_customers: gold_sales } }
+    risk:  { published: [gold_risk],  staging: [], datasets: { fraud_cases: gold_risk, sanctions_hits: gold_risk } }
+---
+kind: Institution
+metadata: { id: t-globex }
+spec:
+  zone: t-globex
+  services: { trino: trino-interactive, trinoEtl: trino-etl, kafka: kafka-main, spark: spark-sql }
+  catalog: t_globex_lake
+  topicPrefix: t.globex
+  owner: t-globex-institution-owner
+  reviewBy: "2027-02-15"
+  domains:
+    risk: { published: [gold_risk], staging: [], datasets: { loans: gold_risk } }
+---
+kind: RoleDefinition
+metadata: { id: data-reader, displayName: Data Reader }
+spec:
+  actions: []
+  dataActions: ["trino:select", "spark:select", "kafka:consume", "kafka:describe"]
+  notDataActions: []
+  assignableScopes: ["/institutions/*"]
+---
+kind: RoleDefinition
+metadata: { id: data-contributor, displayName: Data Contributor }
+spec:
+  actions: []
+  dataActions: ["trino:select", "trino:insert", "trino:update", "trino:delete", "spark:select", "spark:update",
+                "kafka:publish", "kafka:consume", "kafka:describe"]
+  notDataActions: []
+  assignableScopes: ["/institutions/*"]
+---
+kind: RoleDefinition
+metadata: { id: pii-reader, displayName: PII Reader }
+spec:                                        # lifts the PII mask in the zone tag mask policy; eligible-only, P3M / PT8H (D7)
+  actions: []
+  dataActions: ["unmask:PII"]
+  assignableScopes: ["/institutions/*"]
+---
+kind: RoleDefinition
+metadata: { id: restricted-reader, displayName: Restricted Reader }
+spec:                                        # custom role, reason: column-level RESTRICTED is a mask (D1); same mechanism as PII Reader
+  actions: []
+  dataActions: ["unmask:RESTRICTED"]
+  assignableScopes: ["/institutions/*"]
+---
+kind: RoleAssignment
+metadata: { id: ra-0001 }
+spec:
+  principal: { type: group, name: platform_t-acme_analyst }
+  roleDefinition: data-reader
+  scope: /institutions/t-acme/domains/sales          # t_acme_lake.gold_sales.*, t_acme_lake_gold_sales, t.acme.sales.pub.*
+  description: "Monthly sales reporting, ticket ACC-112"
+  request: ACC-112
+---
+kind: RoleAssignment
+metadata: { id: ra-0002 }
+spec:
+  principal: { type: group, name: platform_t-acme_engineer }
+  roleDefinition: data-contributor
+  scope: /institutions/t-acme/domains/sales/staging  # humans write only raw/staging/sandbox (#61); no consume on .int. topics (D3)
+  description: "Sales pipeline development, ticket ACC-118"
+  request: ACC-118
+---
+kind: RoleAssignment
+metadata: { id: ra-0003 }
+spec:
+  principal: { type: workloadIdentity, name: wi-t-acme-orders-ingest }   # direct assignment (#23)
+  roleDefinition: data-contributor
+  scope: /institutions/t-acme/domains/sales          # published layer: pipeline-only writes, via trino-etl and spark (D8)
+  description: "Orders ingest pipeline, ADR-031"
+  reviewBy: "2027-02-15"
+---
+kind: RoleAssignment
+metadata: { id: ra-0004 }
+spec:
+  principal: { type: group, name: platform_t-acme_fraud }
+  roleDefinition: data-reader
+  scope: /institutions/t-acme/domains/risk
+  validity: { start: "2026-11-01T00:00:00+03:00", end: "2027-01-31T23:59:59+03:00" }
+  description: "Fraud analysis purpose, request REQ-2026-0412"   # RESTRICTED columns stay masked (MASK_NULL) unless ra-0005 is activated (D1)
+  request: REQ-2026-0412
+---
+kind: RoleAssignment
+metadata: { id: ra-0005 }
+spec:
+  principal: { type: group, name: platform_t-acme_fraud }
+  roleDefinition: restricted-reader
+  scope: /institutions/t-acme/domains/risk
+  assignmentType: eligible                   # no activation yet: compiles to nothing
+  eligibility: { start: "2026-11-16T00:00:00+03:00", end: "2027-01-31T23:59:59+03:00" }
+  description: "Unmasked RESTRICTED columns of fraud_cases for case review, request REQ-2026-0413"
+  request: REQ-2026-0413
+---
+kind: RoleAssignment
+metadata: { id: ra-0006 }
+spec:
+  principal: { type: group, name: platform_t-acme_marketing-analyst }
+  roleDefinition: data-reader
+  scope: /institutions/t-acme/domains/sales/datasets/dim_customers
+  columns: [customer_id, segment, city]      # dataset + column scope; no Kafka (no topics listed)
+  description: "Customer segmentation, ticket ACC-151"
+  request: ACC-151
+---
+kind: RoleAssignment
+metadata: { id: ra-0007 }
+spec:
+  principal: { type: group, name: platform_t-globex_risk-analyst }
+  roleDefinition: data-reader
+  scope: /institutions/t-globex/domains/risk/datasets/loans
+  description: "Risk analysis on loans, ticket GLX-201"
+  request: GLX-201
+---
+kind: RoleAssignment
+metadata: { id: ra-0008 }
+spec:
+  principal: { type: group, name: platform_t-globex_credit-risk }
+  roleDefinition: data-reader
+  scope: /institutions/t-globex/domains/risk/datasets/loans
+  validity: { start: "2026-11-16T00:00:00+03:00", end: "2027-02-15T23:59:59+03:00" }
+  description: "Credit-risk review, request REQ-2026-0501"
+  request: REQ-2026-0501
+---
+kind: RoleAssignment
+metadata: { id: ra-0009 }
+spec:
+  principal: { type: group, name: platform_t-globex_credit-risk }
+  roleDefinition: pii-reader
+  scope: /institutions/t-globex/domains/risk/datasets/loans   # unmask lands in t-globex-tag-mask; reads still need ra-0008
+  assignmentType: eligible
+  eligibility: { start: "2026-11-16T00:00:00+03:00", end: "2027-02-15T23:59:59+03:00" }   # at most 3 months (D7)
+  activation: { start: "2026-11-17T09:00:00+03:00", end: "2026-11-17T17:00:00+03:00", requireMfa: true, requireJustification: true }   # at most PT8H
+  description: "Unmasked national_id for credit-risk review, request REQ-2026-0501"
+  request: REQ-2026-0501
+---
+kind: RoleAssignment
+metadata: { id: ra-0010 }
+spec:
+  principal: { type: group, name: platform_t-acme_marketing-analyst }   # other institution: share, decided in the owning zone
+  roleDefinition: data-reader
+  scope: /institutions/t-globex/domains/risk/datasets/loans
+  columns: [loan_id, amount, region]
+  agreement: { id: SA-0077, purpose: analytics, environment: prod, rowFilter: "region = 'TR'", approvedBy: t-globex-institution-owner }
+  validity: { start: "2026-11-16T00:00:00+03:00", end: "2027-05-15T23:59:59+03:00" }
+  description: "Share to t-acme marketing, agreement SA-0077"   # Trino interactive only (and Superset on it), never Spark or Kafka (D4)
+  request: SHR-0077
+---
+kind: RoleAssignment
+metadata: { id: ra-0011 }
+spec:
+  principal: { type: workloadIdentity, name: wi-t-globex-loans-ingest }
+  roleDefinition: data-contributor
+  scope: /institutions/t-globex/domains/risk/datasets/loans
+  topics: [t.globex.risk.pub.loans.v1]       # de-identified stream only (D3)
+  description: "Loans ingest pipeline, only writer of gold_risk.loans; row-filter exemption (D6)"
+  reviewBy: "2027-02-15"                     # exemption:owning-pipeline is reviewed quarterly

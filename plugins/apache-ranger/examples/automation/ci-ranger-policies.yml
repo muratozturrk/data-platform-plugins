@@ -1,0 +1,46 @@
+name: ranger-policies
+on:
+  pull_request: { paths: ["policies/**"] }
+  push: { branches: [main], paths: ["policies/**"] }
+  schedule: [{ cron: "0 2 * * *" }]
+jobs:
+  validate-and-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pyyaml httpx trino pytest kafka-python
+      - name: compile
+        run: python tools/compile_policies.py policies/manifests/*.yaml > desired.json
+      - name: static validation
+        run: python tools/validate_policies.py desired.json        # labels, no users, mask default, no public wildcard allow, naming
+      - name: decision-table tests on the harness
+        run: |
+          docker compose -f tests/harness/docker-compose.yml up -d --wait
+          RANGER_URL=http://localhost:6080 RANGER_USER=admin RANGER_PASSWORD='rangerR0cks!' python tools/apply_policies.py apply desired.json
+          sleep 35      # one policy poll interval
+          pytest tests/ranger -m "decision"
+      - name: plan against staging
+        env: { RANGER_URL: "${{ vars.RANGER_STAGING_URL }}", RANGER_USER: svc-control-plane, RANGER_PASSWORD: "${{ secrets.RANGER_STAGING_PASSWORD }}" }
+        run: python tools/apply_policies.py plan desired.json | tee plan.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: ranger-plan, path: [desired.json, plan.txt] }
+  apply-prod:
+    if: github.event_name == 'push'
+    needs: validate-and-plan
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyyaml httpx && python tools/compile_policies.py policies/manifests/*.yaml > desired.json
+      - env: { RANGER_URL: "${{ vars.RANGER_PROD_URL }}", RANGER_USER: svc-control-plane, RANGER_PASSWORD: "${{ secrets.RANGER_PROD_PASSWORD }}" }
+        run: python tools/apply_policies.py apply desired.json && python tools/verify_propagation.py
+  drift:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyyaml httpx && python tools/compile_policies.py policies/manifests/*.yaml > desired.json
+      - env: { RANGER_URL: "${{ vars.RANGER_PROD_URL }}", RANGER_USER: svc-ranger-audit-reader, RANGER_PASSWORD: "${{ secrets.RANGER_PROD_RO_PASSWORD }}" }
+        run: python tools/apply_policies.py drift desired.json

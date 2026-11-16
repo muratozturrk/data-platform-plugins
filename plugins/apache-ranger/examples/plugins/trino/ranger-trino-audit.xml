@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<configuration>
+  <property><name>xasecure.audit.is.enabled</name><value>true</value></property>
+  <!-- primary: Elasticsearch-compatible (OpenSearch) -->
+  <property><name>xasecure.audit.destination.elasticsearch</name><value>true</value></property>
+  <property><name>xasecure.audit.destination.elasticsearch.urls</name><value>opensearch.platform-observability.svc</value></property>
+  <property><name>xasecure.audit.destination.elasticsearch.port</name><value>9200</value></property>
+  <property><name>xasecure.audit.destination.elasticsearch.protocol</name><value>https</value></property>
+  <property><name>xasecure.audit.destination.elasticsearch.index</name><value>ranger-audit</value></property>
+  <property><name>xasecure.audit.destination.elasticsearch.user</name><value>ranger_audit</value></property>
+  <property><name>xasecure.audit.destination.elasticsearch.password</name><value>${ENV:RANGER_AUDIT_OS_PASSWORD}</value></property>
+  <property><name>xasecure.audit.destination.elasticsearch.batch.filespool.dir</name><value>/var/trino/ranger/audit/spool-es</value></property>
+  <!-- secondary: Kafka for immudb / WORM archive -->
+  <property><name>xasecure.audit.destination.kafka</name><value>true</value></property>
+  <property><name>xasecure.audit.destination.kafka.broker_list</name><value>platform-kafka-bootstrap.kafka.svc:9093</value></property>
+  <property><name>xasecure.audit.destination.kafka.topic_name</name><value>platform.audit.ranger.v1</value></property>
+  <property><name>xasecure.audit.destination.kafka.batch.filespool.dir</name><value>/var/trino/ranger/audit/spool-kafka</value></property>
+</configuration>

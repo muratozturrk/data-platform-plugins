@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<configuration>
+  <property><name>ranger.plugin.trino.service.name</name><value>trino-interactive</value></property>
+  <property><name>ranger.plugin.trino.policy.rest.url</name><value>https://ranger.platform-ranger.svc:6182</value></property>
+  <property><name>ranger.plugin.trino.policy.source.impl</name><value>org.apache.ranger.admin.client.RangerAdminRESTClient</value></property>
+  <property><name>ranger.plugin.trino.policy.pollIntervalMs</name><value>30000</value></property>
+  <property><name>ranger.plugin.trino.policy.cache.dir</name><value>/var/trino/ranger/policycache</value></property>
+  <property><name>ranger.plugin.trino.policy.rest.ssl.config.file</name><value>/etc/trino/ranger-policymgr-ssl.xml</value></property>
+  <property><name>ranger.plugin.trino.access.cluster.name</name><value>trino-interactive</value></property>
+  <property><name>ranger.plugin.trino.super.users</name><value>svc-platform-admin</value></property>
+</configuration>

@@ -34,6 +34,18 @@
                         "category":  "data"
                     },
                     {
+                        "name":  "apache-ranger",
+                        "source":  "./plugins/apache-ranger",
+                        "description":  "Apache Ranger (minimum 2.8.0, target 2.9.0) as the access-policy and audit plane of the HKM open-source data platform: architecture and policy model (resource, tag, masking, row-filter, deny/exceptions, zones, roles), Kubernetes deployment without an official chart, identity sync with Keycloak/LDAP, RBAC+ABAC policy design for multi-institution tenancy and KVKK purpose limitation, engine plugins (Trino, Kafka/Strimzi, Spark via Kyuubi AuthZ) and native compilation for engines without plugins (ClickHouse, Superset, Nessie, CKAN), audit to OpenSearch/immudb, REST API and policy-as-code, operations and upgrades",
+                        "version":  "0.2.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk",
+                                       "url":  "https://github.com/muratozturrk/data-platform-plugins"
+                                   },
+                        "license":  "MIT",
+                        "category":  "data"
+                    },
+                    {
                         "name":  "apache-superset",
                         "source":  "./plugins/apache-superset",
                         "description":  "Apache Superset (6.x) on the data platform: Kubernetes deployment (Stackable/Helm), Keycloak OIDC + role mapping, RLS and multi-tenant embedding with guest tokens, dashboards-as-code (superset-cli sync, GitOps), dataset/semantic-layer design over Trino/ClickHouse/Iceberg, caching/async performance, dashboard design and lifecycle (Few, Knaflic, Tufte, Wexler, Kirk, Desbarats), chart selection and verified chart-API limits, colour accessibility, privacy compliance, AI layer (governed MCP, NL2SQL), Superset internals, Extensions and MCP; v0.3 adds the testing layer: Superset-as-component test strategy (static/unit/contract/integration/E2E/performance/visual/security/upgrade mapped to qa-test-strategy ids), a disposable test harness (compose/Testcontainers with Trino, Keycloak, Mailpit; API client, seeding, guest-token minting) and upgrade regression",
