@@ -11,7 +11,9 @@
     "demo": "node capture/compose/compose.mjs"
   },
   "dependencies": {
+    "jszip": "^3.10.1",
     "playwright": "^1.59.0",
+    "pptxgenjs": "^3.12.0",
     "yaml": "^2.6.0"
   }
 }

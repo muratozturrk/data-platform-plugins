@@ -24,7 +24,17 @@ Video, gerçek zamanlı kayıt değil **kare kare hesaplama**dır: her kare içi
   PM.start();                 // fontları bekler, ready=true; önizlemede oynatır
 </script>
 ```
-Runtime API: `PM.data`, `PM.timeline()`, `PM.seek(t)`, `PM.duration()`, `PM.time()`, `PM.random()`, `PM.fmt(v,d)`, `PM.render`.
+Runtime API: `PM.data`, `PM.timeline()`, `PM.seek(t)`, `PM.duration()`, `PM.time()`, `PM.random()`, `PM.fmt(v,d)`, `PM.render`, `PM.steps()`.
+
+## Tıklama durakları (PPTX'te slayt içi adımlar)
+`tl.addLabel('step-1', t)` → PowerPoint'te o noktada sunucunun tıklaması beklenir. Kurallar:
+- Label adı `step-` ile başlar ve sahnede tekildir (`step-1`, `step-2`, `step-highlight`).
+- Durak anında ekran **durağan** olmalı: bir önceki hareket bitmiş, sonraki başlamamış. Durak bir tween'in ortasına düşerse parça o karede donar ve tıklamada hareket kaldığı yerden sürer.
+- İlk parça (0 → ilk durak) slayt açılınca kendiliğinden oynar; son parça `data-hold` süresini içerir.
+- Label'lar video çıktısını değiştirmez; aynı sahne hem MP4 hem tıklamalı PPTX olarak kullanılabilir.
+- Hazır örnek: `templates/bullets.html` (her madde ve vurgu ayrı tıklama).
+
+Üretim: `render-scene.mjs <scenes/> --steps -o out/steps` → `<sahne>-01.mp4, -02.mp4 …`; ardından `build-pptx.mjs out/steps -o out/sunum.pptx` (komut: `/presentation-motion:pptx`).
 
 ## Yasaklar (lint + hook yakalar)
 | Yasak | Yerine |

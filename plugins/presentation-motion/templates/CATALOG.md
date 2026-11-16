@@ -10,7 +10,7 @@ Kullanım (`demo.yaml`): `{ type: html, template: <ad>, data: {...} }` veya `sou
 |---|---|---|---|
 | `title` | ✅ | eyebrow, title, subtitle, author, date | harf harf maske, çizgi, alt başlık |
 | `section-cover` | ✅ | number, title, hint | Codrops tarzı dairesel clip-path açılışı, sayaç |
-| `bullets` | ✅ | eyebrow, title, items[{text, detail}], highlight | bar + maske, vurgu: diğerleri solar, el çizimi alt çizgi |
+| `bullets` | ✅ | eyebrow, title, items[{text, detail}], highlight | bar + maske, vurgu: diğerleri solar, el çizimi alt çizgi; `step-*` durakları: PPTX'te her madde ve vurgu ayrı tıklama |
 | `chart` | 📝 | type(bar/line), labels, series, source | eksen → bar/çizgi |
 | `formula` | 📝 | latex, terms | KaTeX parça parça |
 | `diagram-flow` | 📝 | steps | kutu + ok çizimi |

@@ -1,10 +1,10 @@
 # presentation-motion
 
-> HTML/CSS/GSAP ile animasyonlu sunum ve demo videoları üretir: storyboard, sahne şablonları, Playwright ile gerçek uygulama kaydı (Superset, POC/MVP), deterministik MP4 render, kalite ve gizlilik denetimi.
+> HTML/CSS/GSAP ile animasyonlu sunum ve demo videoları üretir: storyboard, sahne şablonları, Playwright ile gerçek uygulama kaydı (Superset, POC/MVP), deterministik MP4 render, slayt içinde tıklamayla ilerleyen PowerPoint sunumu, kalite ve gizlilik denetimi.
 
 | | |
 | --- | --- |
-| Sürüm | 0.1.0 |
+| Sürüm | 0.2.0 |
 | Kategori | presentation |
 | Kaynak | `plugins/presentation-motion/` |
 | Kaynak materyal | Plugin bu repoda elle yazıldı. Üçüncü taraf kütüphaneler `vendor/` altında: GSAP 3.13 (No-Charge lisansı), KaTeX 0.16, D3 7.9, rough-notation (`vendor/README.md`) |
@@ -113,12 +113,15 @@ Hepsi `model: inherit`.
 | `/review` | `[--audience ...] [--strict]` | Bağımsız kalite incelemesi, `review.md` |
 | `/redact` | `[--dry-run]` | Hassas veriyi sentetik/maskeli veriyle değiştirir |
 | `/render` | `[pptx\|web\|4k\|alpha] [--max-mb 25] [--skip-review]` | Final video, boyut hedefi ve doğrulama |
+| `/pptx` | `[scenes/] [-o out/sunum.pptx] [--auto] [--notes notlar.json]` | Her sahne bir slayt; `step-*` durakları olan sahnelerde slayt içinde tıklamayla adım adım ilerleyen PowerPoint dosyası |
 
 ### Araçlar (scripts/, capture/)
 
 | Dosya | Ne yapar | Ek bağımlılık |
 | --- | --- | --- |
 | `scripts/render-scene.mjs` | Sahne veya klasörü kare kare render eder. Profiller: `pptx` (H.264 CRF 18), `web` (AV1 CRF 30), `4k` (3840×2160), `alpha` (WebM VP9 + şeffaflık) | Playwright, ffmpeg |
+| `scripts/render-scene.mjs --steps` | Sahneyi `step-*` label'larından parçalara böler: `out/steps/<sahne>-01.mp4, -02.mp4 …`; parçanın son karesi sonrakinin ilk karesidir | Playwright, ffmpeg |
+| `scripts/build-pptx.mjs` | Parçalardan PPTX üretir: ilk parça slayt açılınca oynar, her tıklama sonraki parçayı gösterip oynatır; `--notes`, `--auto` (kiosk) | pptxgenjs, jszip, ffprobe |
 | `scripts/lint-determinism.mjs` | Sahnelerde videoyu bozan kalıpları yakalar: `Date.now`, `Math.random`, `setTimeout`, `requestAnimationFrame`, CSS `transition`, `tl.play()`, CDN'den uzak kaynak. Satıra `pm-lint-ignore` yazılırsa atlanır. `--hook` ile PostToolUse hook'u olarak çalışır | Node |
 | `scripts/size-budget.mjs` | Sahnenin yüklediği yerel JS dosyalarının gzip toplamını ölçer (varsayılan bütçe 60 KB, `--budget`) | Node |
 | `scripts/probe.mjs` | Çıktı videosunu ffprobe ile doğrular (`--max-mb`, `--fps`) | ffprobe |
@@ -149,6 +152,7 @@ Tipik akış:
 ```text
 /new → /storyboard → /build → /review → /render
 POC/demo: /poc → /record | /superset | /tape → /demo
+PowerPoint (slayt içi tıklamalı): /build → /pptx
 ```
 
 ## 5. Kullanım senaryoları
@@ -183,13 +187,19 @@ POC/demo: /poc → /record | /superset | /tape → /demo
 - **Ne olur:** `government-protocol` kurallarıyla hitap, logo ve KVKK atıfları düzenlenir. `compliance-guard` kişisel veri, gerçek host/IP/token ve kurum adlarını raporlar; `synthetic-data` bunları tutarlı takma adlarla değiştirir.
 - **Çıktı:** Maskelenmiş proje, compliance raporu, çevrimdışı teslim edilebilir video.
 
+### Senaryo 6: Slayt içinde tıklamayla ilerleyen PowerPoint
+- **Durum:** Sunumu canlı anlatacaksınız; maddelerin ve diyagram adımlarının siz tıkladıkça gelmesini istiyorsunuz.
+- **Ne yazarsınız:** "Sahnelerden PowerPoint üret; 3. sahnede her madde ayrı tıklamayla gelsin." ya da doğrudan `/presentation-motion:pptx`.
+- **Ne olur:** Gerekirse sahneye `step-*` durakları eklenir. `render-scene.mjs --steps` sahneyi parçalara böler, `build-pptx.mjs` parçaları aynı slayta üst üste koyar. İlk parça slayt açılınca oynar, her tıklama bir sonrakini oynatır. Parça sınırındaki kareler aynı olduğu için geçiş görünmez.
+- **Çıktı:** `out/<deck>.pptx`. `templates/bullets.html` hazır durakları olan örnektir.
+
 ## 6. Dosya yapısı
 
 ```text
 plugins/presentation-motion/
 ├── .claude-plugin/plugin.json
 ├── agents/        12 agent
-├── commands/      24 komut
+├── commands/      25 komut
 ├── skills/        14 skill (her biri SKILL.md)
 ├── hooks/hooks.json            Write/Edit sonrası determinism lint'i
 ├── templates/                  8 hazır şablon + _base/ runtime + CATALOG.md
@@ -197,7 +207,7 @@ plugins/presentation-motion/
 │   ├── playwright/             recorder.mjs, overlay.js, mask.css, adapters/
 │   ├── terminal/               VHS tape örnekleri
 │   └── compose/                compose.mjs, demo.schema.json
-├── scripts/                    render-scene, lint-determinism, size-budget, probe, fetch-vendor
+├── scripts/                    render-scene, build-pptx, lint-determinism, size-budget, probe, fetch-vendor
 ├── vendor/                     GSAP, KaTeX, D3, rough-notation (çevrimdışı)
 ├── examples/                   30+ örnek kataloğu (README.md)
 ├── package.json                playwright, yaml
@@ -217,6 +227,7 @@ Nereye bakılır:
 - **Adapter seçicileri doğrulanmadı.** Superset, Airflow ve Jupyter adapter'ları gerçek bir kurulumda denenmedi. Sürümünüze göre selector'ları güncelleyin; `/rerecord --check` kaydetmeden selector'ları doğrular.
 - **VHS terminal segmenti test edilmedi.** VHS yoksa `terminal` HTML şablonu kullanılır, o çalışıyor.
 - **KaTeX fontları repoda yok.** Formül sahneleri için `node_modules` veya jsDelivr'dan `katex@0.16.11/dist/fonts/` içeriğini `vendor/katex/fonts/` altına kopyalayın; yoksa formüller yedek fontla çizilir.
+- **Tıklamalı PPTX'te slayt içeriği videodur.** Metin PowerPoint'te düzenlenemez. Bir parça bitmeden tıklanırsa sonraki parça hemen başlar. Geri (←) tuşu önce slayt içindeki adımları geri alır. PowerPoint 365 dosyayı doğru animasyon sırasıyla açıyor, ama sunum bilgisayarında F5 ile bir kez deneyin.
 - **`web` profili AV1 ister.** ffmpeg'iniz `libsvtav1` içermiyorsa `pptx` profilini kullanın.
 - **Determinism kuralı.** Sahnede gerçek zamana bağlı hiçbir şey olmamalı (`Date.now`, `Math.random`, CSS transition, scroll tetikleyicisi). Zaman için `PM.time()`, rastgelelik için `PM.random()` kullanılır ve her hareket timeline'a bağlanır, yoksa önizleme ile video farklı olur.
 - **GSAP lisansı.** GSAP "No-Charge" lisansıyla gelir; ticari bir üründe yeniden dağıtmadan önce lisans koşullarını okuyun (`vendor/README.md`).

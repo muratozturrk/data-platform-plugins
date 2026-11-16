@@ -7,6 +7,8 @@
  *   3. Tüm animasyon tek bir paused timeline'dadır:  const tl = PM.timeline();
  *   4. Sahne kurulunca PM.start() çağrılır.
  *   5. <body data-hold="2"> → animasyon bittikten sonra 2 sn durağan son kare.
+ *   6. (isteğe bağlı) tl.addLabel('step-1', t) → PPTX'te tıklama durağı. Durak anında
+ *      ekran durağan olmalı; render --steps sahneyi bu noktalardan parçalara böler.
  *
  * Modlar:
  *   ?render=1  → render script'i her kare için PM.seek(t) çağırır (oynatma yok).
@@ -45,6 +47,12 @@
     hold() { return Number(document.body.dataset.hold || 1.5); },
     duration() { return PM.tl ? PM.tl.duration() + PM.hold() : 0; },
     seek(t) { if (PM.tl) PM.tl.seek(Math.min(t, PM.tl.duration()), false); },
+
+    /** Tıklama durakları: 'step-' ile başlayan label'ların zamanları (render --steps ve PPTX için) */
+    steps() {
+      if (!PM.tl) return [];
+      return Object.entries(PM.tl.labels).filter(([k]) => k.startsWith('step-')).map(([, t]) => t).sort((a, b) => a - b);
+    },
 
     /** Türkçe sayı biçimi */
     fmt(v, digits = 0) {

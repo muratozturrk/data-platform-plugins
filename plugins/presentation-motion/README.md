@@ -46,13 +46,13 @@ node capture/playwright/recorder.mjs capture/tour.yaml -o out/tour.mp4
 ## Yapı
 | Klasör | İçerik |
 |---|---|
-| `commands/` (24) | new, storyboard, build, animate, theme, preview, inspire, audience, variants, handout, subtitles, arch, dag, lineage, sql, record, demo, poc, superset, tape, rerecord, review, redact, render |
+| `commands/` (25) | new, storyboard, build, animate, theme, preview, inspire, audience, variants, handout, subtitles, arch, dag, lineage, sql, record, demo, poc, superset, tape, rerecord, review, redact, render, pptx |
 | `agents/` (12) | director, artist, animator, data-scientist, solution-architect, audience-adapter, demo-scripter, camera-operator, narrator, render-engineer, compliance-guard, reviewer |
 | `skills/` (14) | motion-recipes, deterministic-render, video-export, brand-theme, academic-blocks, diagram-as-code, data-diagram-kit, tr-number-format, executive-storytelling, technical-storytelling, government-protocol, synthetic-data, product-ui-recreation, ui-capture |
 | `templates/` | `_base/` runtime + 8 hazır şablon (bkz. `CATALOG.md`) |
 | `capture/` | `playwright/` recorder + overlay + adapter'lar (superset, airflow, jupyter, generic) · `terminal/` VHS tape'leri · `compose/` demo.yaml birleştirici |
 | `examples/` | 30 örnek kataloğu; `26-poc-realtime-pipeline` uçtan uca çalışır |
-| `scripts/` | render-scene, lint-determinism, size-budget, probe, fetch-vendor |
+| `scripts/` | render-scene (`--steps`: tıklama duraklarından parçalara böler), build-pptx (slayt içi tıklamalı PPTX), lint-determinism, size-budget, probe, fetch-vendor |
 | `hooks/` | sahne/şablon dosyası yazılınca determinism lint'i (PostToolUse) |
 
 ## Agent rolleri

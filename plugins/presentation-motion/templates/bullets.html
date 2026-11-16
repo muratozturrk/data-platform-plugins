@@ -56,7 +56,9 @@
   const tl = PM.timeline();
   tl.from('#eyebrow', { opacity: 0, y: 16, duration: 0.5 })
     .from('#title', { opacity: 0, y: 40, duration: 0.8 }, '-=0.25');
+  // step-* label'ları: tıklamalı PPTX'te her madde ve vurgu ayrı bir tıklamayla gelir (video çıktısını etkilemez)
   document.querySelectorAll('.item').forEach((el, i) => {
+    if (i > 0) tl.addLabel(`step-${i}`, 1 + i * 0.9);
     tl.from(el.querySelector('.bar'), { scaleY: 0, duration: 0.5, ease: 'power3.inOut' }, 1 + i * 0.9)
       .from(el.querySelector('.text'), { yPercent: 100, duration: 0.8, ease: 'expo.out' }, '<0.15');
   });
@@ -65,7 +67,8 @@
   if (hl) {
     const len = hl.getTotalLength();
     gsap.set(hl, { strokeDasharray: len, strokeDashoffset: len });
-    tl.to([...document.querySelectorAll('.item')].filter((_, i) => i !== D.highlight), { opacity: 0.35, duration: 0.6 }, '+=0.8')
+    tl.addLabel('step-highlight', '+=0.8')
+      .to([...document.querySelectorAll('.item')].filter((_, i) => i !== D.highlight), { opacity: 0.35, duration: 0.6 }, 'step-highlight')
       .to(hl, { strokeDashoffset: 0, duration: 0.7, ease: 'power2.inOut' }, '<');
   }
   PM.start();

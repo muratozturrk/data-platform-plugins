@@ -345,8 +345,8 @@
                     {
                         "name":  "presentation-motion",
                         "source":  "./plugins/presentation-motion",
-                        "description":  "HTML/CSS/GSAP ile animasyonlu sunum ve demo videoları üretir: storyboard, sahne şablonları, Playwright ile UI kaydı (Superset, POC/MVP), deterministik MP4 render, kalite ve gizlilik denetimi.",
-                        "version":  "0.1.0",
+                        "description":  "HTML/CSS/GSAP ile animasyonlu sunum ve demo videoları üretir: storyboard, sahne şablonları, Playwright ile UI kaydı (Superset, POC/MVP), deterministik MP4 render, slayt içi tıklamalı PPTX, kalite ve gizlilik denetimi.",
+                        "version":  "0.2.0",
                         "author":  {
                                        "name":  "Murat Öztürk",
                                        "email":  "muratozturrk@gmail.com"
