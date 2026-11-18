@@ -1,0 +1,26 @@
+# Strimzi Kafka listener with SASL OAUTHBEARER validated locally against Keycloak's JWKS.
+# Principal = preferred_username (service-account-<client> for workloads); authorization by the
+# Ranger Kafka authorizer (see apache-ranger plugin examples/plugins/kafka), not KeycloakAuthorizer.
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: hkm-kafka
+  namespace: kafka
+spec:
+  kafka:
+    listeners:
+      - name: oauth
+        port: 9094
+        type: internal
+        tls: true
+        authentication:
+          type: oauth
+          validIssuerUri: https://sso.hkm.example/realms/hkm
+          jwksEndpointUri: https://sso.hkm.example/realms/hkm/protocol/openid-connect/certs
+          userNameClaim: preferred_username
+          checkAudience: true
+          clientId: kafka                       # tokens must carry aud=kafka (scope aud-kafka)
+          maxSecondsWithoutReauthentication: 3600
+          tlsTrustedCertificates:
+            - secretName: sso-ca
+              pattern: "*.crt"

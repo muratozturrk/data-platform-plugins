@@ -1,0 +1,3 @@
+# Normally generated: institutions.auto.tfvars.json from examples/automation/tenant_to_tfvars.py
+keycloak_url = "https://sso.hkm.example"
+realm        = "hkm"

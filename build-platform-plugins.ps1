@@ -343,6 +343,7 @@ $cats["apache-superset"] = "data"
 $cats["openmetadata"] = "governance"
 $cats["project-nessie"] = "data"
 $cats["apache-ranger"] = "data"
+$cats["keycloak"] = "platform"
 $cats["qa-test-strategy"] = "testing"
 $cats["presentation-motion"] = "presentation"
 

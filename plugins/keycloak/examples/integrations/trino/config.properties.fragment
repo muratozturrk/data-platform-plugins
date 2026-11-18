@@ -1,0 +1,22 @@
+# Trino coordinator: OAuth2 for Web UI and CLI (external authentication) + JWT for service callers.
+# Groups are NOT taken from the token: Ranger resolves groups for the principal (usersync).
+http-server.authentication.type=OAUTH2,JWT
+http-server.authentication.oauth2.issuer=https://sso.hkm.example/realms/hkm
+http-server.authentication.oauth2.client-id=trino
+http-server.authentication.oauth2.client-secret=${ENV:TRINO_OAUTH2_CLIENT_SECRET}
+http-server.authentication.oauth2.scopes=openid,offline_access,aud-trino
+http-server.authentication.oauth2.principal-field=preferred_username
+http-server.authentication.oauth2.additional-audiences=trino
+http-server.authentication.oauth2.refresh-tokens=true
+# User names are lowercase in Keycloak; reject anything else instead of rewriting.
+http-server.authentication.oauth2.user-mapping.pattern=([a-z0-9._-]+)
+
+http-server.authentication.jwt.key-file=https://sso.hkm.example/realms/hkm/protocol/openid-connect/certs
+http-server.authentication.jwt.required-issuer=https://sso.hkm.example/realms/hkm
+http-server.authentication.jwt.required-audience=trino
+http-server.authentication.jwt.principal-field=preferred_username
+
+web-ui.authentication.type=oauth2
+# Open: Trino's OAuth2 client authenticates with a client secret, while HKM D12 allows only
+# client-jwt (terraform/clients/web-apps.tf). Confirm signed-JWT support in the installed Trino,
+# or get a recorded per-client exception decision before deploying.

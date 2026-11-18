@@ -1,0 +1,38 @@
+{
+  "realm": "hkm",
+  "sslRequired": "none",
+  "bruteForceProtected": false,
+  "registrationAllowed": true,
+  "editUsernameAllowed": true,
+  "eventsEnabled": false,
+  "adminEventsEnabled": false,
+  "ssoSessionIdleTimeout": 28800,
+  "ssoSessionMaxLifespan": 604800,
+  "accessTokenLifespan": 3600,
+  "passwordPolicy": "length(6) and hashAlgorithm(pbkdf2-sha256)",
+  "otpPolicyType": "totp",
+  "otpPolicyPeriod": 30,
+  "otpPolicyCodeReusable": true,
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {"config": {"kc.user.profile.config": ["{\"unmanagedAttributePolicy\": \"ENABLED\", \"attributes\": []}"]}}
+    ]
+  },
+  "clientScopes": [
+    {"name": "hkm-claims", "protocolMappers": [
+      {"name": "groups", "protocolMapper": "oidc-group-membership-mapper", "config": {"full.path": "true"}}
+    ]}
+  ],
+  "identityProviders": [
+    {"alias": "legacy", "providerId": "oidc", "trustEmail": true, "config": {"validateSignature": "false"}}
+  ],
+  "clients": [
+    {"clientId": "portal", "publicClient": true, "standardFlowEnabled": true, "implicitFlowEnabled": true,
+     "directAccessGrantsEnabled": true, "redirectUris": ["*", "http://portal.hkm.example/cb"],
+     "webOrigins": ["*"], "attributes": {}},
+    {"clientId": "legacy-app", "publicClient": false, "standardFlowEnabled": true, "fullScopeAllowed": false,
+     "clientAuthenticatorType": "client-jwt", "frontchannelLogout": true,
+     "redirectUris": ["https://legacy.hkm.example/cb"],
+     "attributes": {"pkce.code.challenge.method": "S256"}}
+  ]
+}

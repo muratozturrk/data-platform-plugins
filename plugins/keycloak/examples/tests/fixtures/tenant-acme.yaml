@@ -1,0 +1,19 @@
+apiVersion: platform.hkm/v1
+kind: Tenant
+metadata:
+  name: t-acme
+spec:
+  displayName: ACME Genel Müdürlüğü
+  roles: [analyst, engineer, steward, pii-reader, admin]
+  identity:
+    domains: [acme.gov.tr]
+    idp:
+      type: oidc
+      alias: acme-adfs
+      issuer: https://adfs.acme.gov.tr/adfs
+      metadataUrl: https://adfs.acme.gov.tr/adfs/.well-known/openid-configuration
+      clientId: hkm-sso
+      verifiesEmail: true
+      groupMap:
+        HKM-Analistler: analyst
+        HKM-Yoneticiler: admin

@@ -285,6 +285,18 @@
                         "category":  "engineering"
                     },
                     {
+                        "name":  "keycloak",
+                        "source":  "./plugins/keycloak",
+                        "description":  "Keycloak 26.8 as the identity provider of the HKM open-source data platform: realm and organization design for many institutions, Kubernetes deployment with the Operator and CloudNativePG, sizing and HA, LDAP/AD federation and institution identity brokering, authentication assurance (passkeys, MFA, step-up, NIST SP 800-63-4 and the Turkish Bilgi ve İletişim Güvenliği Rehberi), OAuth 2.0/OIDC client profile (PKCE, DPoP, token exchange, federated client authentication), a claims contract consumed by Ranger, Trino, Superset, Airflow, Kafka and the rest of the stack, delegated administration with FGAP v2, configuration as code with Terraform, events and audit to OpenSearch/immudb, KVKK, operations and upgrades",
+                        "version":  "0.1.0",
+                        "author":  {
+                                       "name":  "Murat Öztürk",
+                                       "url":  "https://github.com/muratozturrk/data-platform-plugins"
+                                   },
+                        "license":  "MIT",
+                        "category":  "platform"
+                    },
+                    {
                         "name":  "kubernetes-operations",
                         "source":  "./plugins/kubernetes-operations",
                         "description":  "Kubernetes manifest generation, networking configuration, security policies, observability setup, GitOps workflows, and auto-scaling",

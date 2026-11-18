@@ -1,0 +1,27 @@
+# PostgreSQL for Keycloak with CloudNativePG: 3 instances, synchronous replication, backups.
+# Keycloak supports PostgreSQL 14-18; the database must use UTF8.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloak-db
+  namespace: iam
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:17
+  primaryUpdateStrategy: unsupervised
+  minSyncReplicas: 1
+  maxSyncReplicas: 1
+  storage:
+    size: 50Gi
+  bootstrap:
+    initdb:
+      database: keycloak
+      owner: keycloak
+      encoding: UTF8
+  postgresql:
+    parameters:
+      max_connections: "300"
+  monitoring:
+    enablePodMonitor: true
+  # Continuous archiving and base backups: configure the Barman Cloud plugin / object store
+  # of the installed CNPG version (S3-compatible bucket with Object Lock), and test restores.
